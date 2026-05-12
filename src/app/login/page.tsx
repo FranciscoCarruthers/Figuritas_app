@@ -79,7 +79,7 @@ export default function LoginPage() {
               onChange={event => setUsername(event.target.value)}
               autoCapitalize="none"
               autoComplete="username"
-              placeholder="albumcasa"
+              placeholder="usuario"
               className="min-w-0 flex-1 bg-transparent text-base font-semibold outline-none"
             />
           </div>
