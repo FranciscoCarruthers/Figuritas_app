@@ -1,0 +1,10 @@
+.env*
+!.env.example
+.next
+node_modules
+out
+dist
+coverage
+.vercel
+*.tsbuildinfo
+Thumbs.db
