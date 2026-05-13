@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
-import { Check } from 'lucide-react'
 import type { Sticker } from '@/lib/types'
 
 function getStickerLabel(sticker: Sticker): string {
@@ -78,11 +77,6 @@ export default function StickerCircle({
       className={`relative grid aspect-square w-full min-w-0 touch-manipulation select-none place-items-center overflow-hidden rounded-full text-base font-semibold transition active:scale-95 ${isPopping ? 'sticker-pop' : ''} ${stateClass}`}
     >
       <span className={owned ? 'translate-y-0 transition' : 'transition'}>{getStickerLabel(sticker)}</span>
-      {owned ? (
-        <span className={`absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-red-700 text-white shadow-sm ${isPopping ? 'sticker-check-pop' : ''}`}>
-          <Check className="h-3.5 w-3.5" strokeWidth={3} />
-        </span>
-      ) : null}
     </button>
   )
 }

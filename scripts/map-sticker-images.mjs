@@ -202,8 +202,8 @@ async function main() {
 
   for (const item of accepted.values()) {
     await sharp(item.candidate.path)
-      .resize({ width: 320, height: 430, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 76 })
+      .resize({ width: 520, height: 700, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 82 })
       .toFile(path.join(outDir, `${item.sticker.code}.webp`))
   }
 
