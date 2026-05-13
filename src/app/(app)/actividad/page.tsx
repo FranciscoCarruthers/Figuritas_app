@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { Activity } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Activity, CheckCircle2, XCircle } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { ActivityEntry } from '@/lib/types'
 import { useAuth } from '@/context/AuthContext'
@@ -14,6 +14,32 @@ function timeAgo(value: string): string {
   const hours = Math.floor(minutes / 60)
   if (hours < 24) return `hace ${hours} h`
   return `hace ${Math.floor(hours / 24)} d`
+}
+
+function dayKey(value: string): string {
+  const date = new Date(value)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function dayLabel(value: string): string {
+  const date = new Date(value)
+  const today = dayKey(new Date().toISOString())
+  const yesterday = dayKey(new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+  const key = dayKey(value)
+
+  if (key === today) return 'Hoy'
+  if (key === yesterday) return 'Ayer'
+
+  return date.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })
+}
+
+function entryMessage(entry: ActivityEntry): string {
+  const user = entry.user_name || 'Alguien'
+  const action = entry.quantity > 0 ? 'marco' : 'desmarco'
+  return `${user} ${action} ${entry.sticker_code}`
 }
 
 export default function ActividadPage() {
@@ -57,6 +83,15 @@ export default function ActividadPage() {
     }
   }, [profile])
 
+  const groupedEntries = useMemo(() => {
+    const groups = new Map<string, ActivityEntry[]>()
+    for (const entry of entries) {
+      const key = dayKey(entry.created_at)
+      groups.set(key, [...(groups.get(key) ?? []), entry])
+    }
+    return [...groups.entries()].map(([key, items]) => ({ key, label: dayLabel(items[0].created_at), items }))
+  }, [entries])
+
   return (
     <main className="mx-auto max-w-4xl px-4 pb-5 pt-5 lg:px-8 lg:pb-8">
       <header className="safe-top">
@@ -77,18 +112,29 @@ export default function ActividadPage() {
           <p className="mt-4 text-sm font-bold text-slate-500">Sin movimientos todavia.</p>
         </section>
       ) : (
-        <section className="mt-6 divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white shadow-sm">
-          {entries.map(entry => (
-            <article key={entry.id} className="flex items-start gap-3 p-3 lg:p-4">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-red-50 text-xs font-black text-red-700">
-                {entry.user_name.slice(0, 2).toUpperCase()}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold leading-snug text-slate-900">{entry.action}</p>
-                <p className="mt-0.5 truncate text-xs font-medium text-slate-500">{entry.sticker_team}</p>
+        <section className="mt-6 space-y-5">
+          {groupedEntries.map(group => (
+            <div key={group.key}>
+              <h2 className="mb-2 text-xs font-black uppercase tracking-[0.14em] text-slate-400">{group.label}</h2>
+              <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white shadow-sm">
+                {group.items.map(entry => (
+                  <article key={entry.id} className="flex items-start gap-3 p-3 lg:p-4">
+                    <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${
+                      entry.quantity > 0 ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-500'
+                    }`}>
+                      {entry.quantity > 0 ? <CheckCircle2 className="h-5 w-5" /> : <XCircle className="h-5 w-5" />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-black leading-snug text-slate-950">{entryMessage(entry)}</p>
+                      <p className="mt-0.5 truncate text-xs font-semibold text-slate-500">
+                        {entry.sticker_name} - {entry.sticker_team}
+                      </p>
+                    </div>
+                    <time className="shrink-0 text-xs font-semibold text-slate-400">{timeAgo(entry.created_at)}</time>
+                  </article>
+                ))}
               </div>
-              <time className="shrink-0 text-xs font-semibold text-slate-400">{timeAgo(entry.created_at)}</time>
-            </article>
+            </div>
           ))}
         </section>
       )}

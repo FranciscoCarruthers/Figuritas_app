@@ -1,11 +1,14 @@
 'use client'
 
-import { useMemo, type ReactNode } from 'react'
-import { CheckCircle2, CircleDashed, Flag, Percent, Trophy } from 'lucide-react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { CalendarDays, CheckCircle2, CircleDashed, Flag, Percent, Sparkles, TrendingUp, Trophy } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
+import { useAuth } from '@/context/AuthContext'
 import { getProgress } from '@/lib/album'
+import { getSupabaseBrowserClient } from '@/lib/supabase'
+import type { ActivityEntry } from '@/lib/types'
 
 type StatCardProps = {
   label: string
@@ -31,10 +34,27 @@ function StatCard({ label, value, detail, icon }: StatCardProps) {
 
 export default function EstadisticasPage() {
   const { albumState } = useAlbum()
+  const { profile } = useAuth()
+  const [weeklyEntries, setWeeklyEntries] = useState<ActivityEntry[]>([])
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient()
+    if (!profile) return
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    supabase
+      .from('activity_log')
+      .select('*')
+      .eq('album_id', profile.album_id)
+      .gte('created_at', since)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setWeeklyEntries((data as ActivityEntry[]) ?? []))
+  }, [profile])
 
   const stats = useMemo(() => {
     const overall = getProgress(albumState, STICKERS)
     const intro = getProgress(albumState, getTeamStickers('FWC'))
+    const foil = getProgress(albumState, STICKERS.filter(sticker => sticker.isFoil))
 
     const teamStats = ALBUM_GROUPS.flatMap(group =>
       group.teams
@@ -58,15 +78,20 @@ export default function EstadisticasPage() {
     })
 
     const completedTeams = teamStats.filter(item => item.progress.percent === 100).length
+    const bestTeam = [...teamStats]
+      .sort((a, b) => b.progress.percent - a.progress.percent || b.progress.owned - a.progress.owned)
+      .find(item => item.progress.owned > 0)
     const closestTeams = [...teamStats]
       .filter(item => item.progress.percent > 0 && item.progress.percent < 100)
       .sort((a, b) => b.progress.percent - a.progress.percent || a.progress.missing - b.progress.missing)
       .slice(0, 4)
 
-    return { overall, intro, groupStats, teamStats, completedTeams, closestTeams }
+    return { overall, intro, foil, groupStats, teamStats, completedTeams, bestTeam, closestTeams }
   }, [albumState])
 
   const completedGroups = stats.groupStats.filter(item => item.progress.percent === 100).length
+  const weeklyMarked = weeklyEntries.filter(entry => entry.quantity > 0).length
+  const weeklyUnmarked = weeklyEntries.filter(entry => entry.quantity === 0).length
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-28 lg:px-8 lg:pb-8">
@@ -119,6 +144,27 @@ export default function EstadisticasPage() {
           value={`${completedGroups}/${stats.groupStats.length}`}
           detail="completas"
           icon={<Trophy className="h-5 w-5" />}
+        />
+      </section>
+
+      <section className="mt-4 grid gap-3 lg:grid-cols-3">
+        <StatCard
+          label="Brillantes"
+          value={`${stats.foil.owned}/${stats.foil.total}`}
+          detail={`${stats.foil.missing} faltan`}
+          icon={<Sparkles className="h-5 w-5" />}
+        />
+        <StatCard
+          label="Mejor equipo"
+          value={stats.bestTeam ? `${stats.bestTeam.team.code} ${stats.bestTeam.progress.percent}%` : '-'}
+          detail={stats.bestTeam ? `${stats.bestTeam.progress.owned}/${stats.bestTeam.progress.total} tengo` : 'todavia sin empezar'}
+          icon={<TrendingUp className="h-5 w-5" />}
+        />
+        <StatCard
+          label="Ultimos 7 dias"
+          value={String(weeklyEntries.length)}
+          detail={`${weeklyMarked} marcadas, ${weeklyUnmarked} desmarcadas`}
+          icon={<CalendarDays className="h-5 w-5" />}
         />
       </section>
 

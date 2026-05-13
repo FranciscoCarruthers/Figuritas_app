@@ -1,7 +1,8 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
+import { Check } from 'lucide-react'
 import type { Sticker } from '@/lib/types'
 
 function getStickerLabel(sticker: Sticker): string {
@@ -22,6 +23,16 @@ export default function StickerCircle({
 }) {
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const didHoldRef = useRef(false)
+  const previousOwnedRef = useRef(owned)
+  const [isPopping, setIsPopping] = useState(false)
+
+  useEffect(() => {
+    if (previousOwnedRef.current === owned) return
+    previousOwnedRef.current = owned
+    setIsPopping(true)
+    const timeout = setTimeout(() => setIsPopping(false), 320)
+    return () => clearTimeout(timeout)
+  }, [owned])
 
   function startHold(event: PointerEvent<HTMLButtonElement>) {
     if (event.pointerType === 'mouse' && event.button !== 0) return
@@ -64,9 +75,14 @@ export default function StickerCircle({
       }}
       aria-pressed={owned}
       aria-label={`${owned ? 'Desmarcar' : 'Marcar'} ${sticker.code} ${sticker.name}`}
-      className={`grid aspect-square w-full min-w-0 touch-manipulation select-none place-items-center rounded-full text-base font-semibold transition active:scale-95 ${stateClass}`}
+      className={`relative grid aspect-square w-full min-w-0 touch-manipulation select-none place-items-center overflow-hidden rounded-full text-base font-semibold transition active:scale-95 ${isPopping ? 'sticker-pop' : ''} ${stateClass}`}
     >
-      {getStickerLabel(sticker)}
+      <span className={owned ? 'translate-y-0 transition' : 'transition'}>{getStickerLabel(sticker)}</span>
+      {owned ? (
+        <span className={`absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-red-700 text-white shadow-sm ${isPopping ? 'sticker-check-pop' : ''}`}>
+          <Check className="h-3.5 w-3.5" strokeWidth={3} />
+        </span>
+      ) : null}
     </button>
   )
 }

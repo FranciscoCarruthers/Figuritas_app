@@ -35,6 +35,41 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+@keyframes sticker-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes sticker-check-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sticker-pop {
+  animation: sticker-pop 320ms ease-out;
+}
+
+.sticker-check-pop {
+  animation: sticker-check-pop 320ms ease-out;
+}
+
 .app-scroll {
   min-height: 100dvh;
   padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
