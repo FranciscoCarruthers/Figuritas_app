@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Camera, Check, Keyboard, Loader2, Plus, ScanLine, X } from 'lucide-react'
+import { Camera, Check, Keyboard, Loader2, ScanLine, X } from 'lucide-react'
 import StickerResultButton from '@/components/StickerResultButton'
 import { useAlbum } from '@/context/AlbumContext'
 import { findStickerCandidates, parseStickerCode } from '@/lib/sticker-search'
@@ -20,7 +20,7 @@ export default function ScanPage() {
   const [selected, setSelected] = useState<Sticker | null>(null)
   const [scanning, setScanning] = useState(false)
   const [saving, setSaving] = useState(false)
-  const { albumState, updateQuantity, incrementQuantity } = useAlbum()
+  const { updateQuantity } = useAlbum()
 
   async function startCamera() {
     setCameraError(null)
@@ -104,16 +104,11 @@ export default function ScanPage() {
     setCandidates(code ? [STICKERS_MAP[code]] : findStickerCandidates(value))
   }
 
-  async function saveSelected(kind: 'owned' | 'duplicate') {
+  async function saveSelected() {
     if (!selected) return
     setSaving(true)
     try {
-      const current = albumState[selected.code]?.quantity ?? 0
-      if (kind === 'owned') {
-        await updateQuantity(selected.code, Math.max(1, current))
-      } else {
-        await incrementQuantity(selected.code, 1)
-      }
+      await updateQuantity(selected.code, 1)
       setManual('')
       setOcrText('')
       setCandidates([])
@@ -126,7 +121,7 @@ export default function ScanPage() {
   return (
     <main className="px-4 pb-5 pt-5">
       <header className="safe-top">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-sky-700">Camara</p>
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Camara</p>
         <h1 className="mt-1 text-3xl font-black text-slate-950">Escanear</h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">Lee el codigo del dorso y confirma antes de guardar.</p>
       </header>
@@ -137,12 +132,12 @@ export default function ScanPage() {
           {!cameraReady ? (
             <div className="absolute inset-0 grid place-items-center px-8 text-center text-white">
               <div>
-                <ScanLine className="mx-auto h-12 w-12 text-sky-300" />
+                <ScanLine className="mx-auto h-12 w-12 text-red-200" />
                 <p className="mt-3 text-sm font-semibold text-slate-300">Apunta al numero y abreviacion del pais.</p>
               </div>
             </div>
           ) : null}
-          <div className="pointer-events-none absolute inset-x-8 top-1/2 h-24 -translate-y-1/2 rounded-lg border-2 border-sky-300/90" />
+          <div className="pointer-events-none absolute inset-x-8 top-1/2 h-24 -translate-y-1/2 rounded-lg border-2 border-red-200/90" />
         </div>
         <div className="grid grid-cols-2 gap-2 bg-white p-3">
           <button
@@ -157,7 +152,7 @@ export default function ScanPage() {
             type="button"
             disabled={!cameraReady || scanning}
             onClick={() => void scanFrame()}
-            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-sky-600 text-sm font-black text-white active:bg-sky-700 disabled:opacity-50"
+            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white active:bg-red-800 disabled:opacity-50"
           >
             {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
             Leer
@@ -199,29 +194,20 @@ export default function ScanPage() {
       ) : null}
 
       {selected ? (
-        <section className="mt-4 rounded-lg border border-sky-200 bg-sky-50 p-4 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-wide text-sky-700">Confirmar figurita</p>
+        <section className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-wide text-red-700">Confirmar figurita</p>
           <h2 className="mt-1 text-2xl font-black text-slate-950">{selected.code}</h2>
           <p className="font-semibold text-slate-700">{selected.name}</p>
           <p className="text-sm font-medium text-slate-500">{selected.team}</p>
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-4">
             <button
               type="button"
               disabled={saving}
-              onClick={() => void saveSelected('owned')}
-              className="flex h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 text-sm font-black text-white active:bg-emerald-700 disabled:opacity-50"
+              onClick={() => void saveSelected()}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white active:bg-red-800 disabled:opacity-50"
             >
               <Check className="h-4 w-4" />
               La tengo
-            </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void saveSelected('duplicate')}
-              className="flex h-11 items-center justify-center gap-2 rounded-lg bg-amber-500 text-sm font-black text-amber-950 active:bg-amber-400 disabled:opacity-50"
-            >
-              <Plus className="h-4 w-4" />
-              Repetida
             </button>
           </div>
         </section>

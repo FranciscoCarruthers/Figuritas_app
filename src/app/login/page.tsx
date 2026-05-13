@@ -43,10 +43,10 @@ export default function LoginPage() {
     <main className="min-h-dvh bg-slate-950 text-white">
       <div className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-8 pt-8">
         <div className="safe-top">
-          <p className="text-sm font-black uppercase tracking-[0.16em] text-sky-300">Mundial 2026</p>
+            <p className="text-sm font-black uppercase tracking-[0.16em] text-red-200">Mundial 2026</p>
           <h1 className="mt-3 text-4xl font-black leading-tight">Figuritas</h1>
           <p className="mt-3 max-w-xs text-sm font-medium leading-6 text-slate-300">
-            Un album compartido para marcar las que tienen y ordenar repetidas desde el iPhone.
+            Un album compartido para marcar las figuritas que ya tienen desde el iPhone.
           </p>
         </div>
 
@@ -112,7 +112,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting || isLoading}
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-3 text-base font-black text-white shadow-lg shadow-sky-600/20 active:bg-sky-700 disabled:opacity-60"
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-lg bg-red-700 px-4 py-3 text-base font-black text-white shadow-lg shadow-red-700/20 active:bg-red-800 disabled:opacity-60"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {mode === 'create' ? 'Crear y entrar' : 'Entrar al album'}

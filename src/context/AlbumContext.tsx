@@ -18,7 +18,6 @@ type AlbumContextValue = {
   albumState: AlbumState
   isLoading: boolean
   updateQuantity: (code: string, quantity: number) => Promise<void>
-  incrementQuantity: (code: string, delta: number) => Promise<void>
 }
 
 const AlbumContext = createContext<AlbumContextValue | null>(null)
@@ -117,17 +116,11 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }, [profile])
 
-  const incrementQuantity = useCallback(async (code: string, delta: number) => {
-    const current = albumState[code]?.quantity ?? 0
-    await updateQuantity(code, current + delta)
-  }, [albumState, updateQuantity])
-
   const value = useMemo<AlbumContextValue>(() => ({
     albumState,
     isLoading,
     updateQuantity,
-    incrementQuantity,
-  }), [albumState, incrementQuantity, isLoading, updateQuantity])
+  }), [albumState, isLoading, updateQuantity])
 
   return <AlbumContext.Provider value={value}>{children}</AlbumContext.Provider>
 }
