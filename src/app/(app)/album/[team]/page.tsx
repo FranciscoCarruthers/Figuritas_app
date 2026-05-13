@@ -9,6 +9,7 @@ import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
 import { useAlbum } from '@/context/AlbumContext'
 import { getProgress, isOwned } from '@/lib/album'
+import { getTeamFlag } from '@/lib/team-flags'
 import { getTeamByCode, getTeamStickers } from '@/data/sticker-data'
 import type { Sticker } from '@/lib/types'
 
@@ -57,7 +58,9 @@ export default function TeamPage() {
           </button>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">{teamCode}</p>
-            <h1 className="truncate text-2xl font-black text-slate-950">{team.name}</h1>
+            <h1 className="truncate text-2xl font-black text-slate-950">
+              {team.name} {getTeamFlag(teamCode)}
+            </h1>
           </div>
           <div className="text-right">
             <p className="text-sm font-black text-slate-950">{progress.owned}/{progress.total}</p>

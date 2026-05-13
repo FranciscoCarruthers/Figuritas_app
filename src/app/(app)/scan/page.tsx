@@ -4,9 +4,16 @@ import { useEffect, useRef, useState } from 'react'
 import { Camera, Check, Keyboard, Loader2, ScanLine, X } from 'lucide-react'
 import StickerResultButton from '@/components/StickerResultButton'
 import { useAlbum } from '@/context/AlbumContext'
-import { findStickerCandidates, parseStickerCode } from '@/lib/sticker-search'
+import { findStickerCandidates, parseStickerCode, parseStickerCodeFromText } from '@/lib/sticker-search'
 import { STICKERS_MAP } from '@/data/sticker-data'
 import type { Sticker } from '@/lib/types'
+
+const CODE_CROP = {
+  top: 0.07,
+  right: 0.06,
+  width: 0.42,
+  height: 0.16,
+}
 
 export default function ScanPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -57,39 +64,87 @@ export default function ScanPage() {
     }
   }, [])
 
-  function captureCanvas(): HTMLCanvasElement | null {
+  function captureCodeCanvas(): HTMLCanvasElement | null {
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas || video.videoWidth === 0) return null
 
     const width = video.videoWidth
     const height = video.videoHeight
-    canvas.width = width
-    canvas.height = height
+    const displayWidth = video.clientWidth || width
+    const displayHeight = video.clientHeight || height
+    const coverScale = Math.max(displayWidth / width, displayHeight / height)
+    const renderedWidth = width * coverScale
+    const renderedHeight = height * coverScale
+    const offsetX = (renderedWidth - displayWidth) / 2
+    const offsetY = (renderedHeight - displayHeight) / 2
+    const targetWidth = displayWidth * CODE_CROP.width
+    const targetHeight = displayHeight * CODE_CROP.height
+    const targetX = displayWidth * (1 - CODE_CROP.right - CODE_CROP.width)
+    const targetY = displayHeight * CODE_CROP.top
+    const sourceWidth = Math.max(1, Math.round(targetWidth / coverScale))
+    const sourceHeight = Math.max(1, Math.round(targetHeight / coverScale))
+    const sourceX = Math.round(Math.max(0, Math.min(width - sourceWidth, (targetX + offsetX) / coverScale)))
+    const sourceY = Math.round(Math.max(0, Math.min(height - sourceHeight, (targetY + offsetY) / coverScale)))
+    const scale = 4
+
+    canvas.width = sourceWidth * scale
+    canvas.height = sourceHeight * scale
     const context = canvas.getContext('2d')
     if (!context) return null
-    context.drawImage(video, 0, 0, width, height)
+
+    context.imageSmoothingEnabled = true
+    context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height)
+
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+    const { data } = imageData
+    for (let index = 0; index < data.length; index += 4) {
+      const gray = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114
+      const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.7 + 128))
+      const value = contrasted > 150 ? 0 : 255
+      data[index] = value
+      data[index + 1] = value
+      data[index + 2] = value
+      data[index + 3] = 255
+    }
+    context.putImageData(imageData, 0, 0)
+
     return canvas
   }
 
   async function scanFrame() {
-    const canvas = captureCanvas()
+    const canvas = captureCodeCanvas()
     if (!canvas) return
 
     setScanning(true)
     setSelected(null)
     setCandidates([])
     setOcrText('')
+    setCameraError(null)
 
     try {
-      const { createWorker } = await import('tesseract.js')
+      const { createWorker, PSM } = await import('tesseract.js')
       const worker = await createWorker('eng')
-      const { data } = await worker.recognize(canvas)
-      await worker.terminate()
-      setOcrText(data.text)
-      const found = findStickerCandidates(data.text)
+      let detectedText = ''
+      try {
+        await worker.setParameters({
+          tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
+          tessedit_pageseg_mode: PSM.SINGLE_LINE,
+        })
+        const result = await worker.recognize(canvas)
+        detectedText = result.data.text
+      } finally {
+        await worker.terminate()
+      }
+      setOcrText(detectedText)
+      const code = parseStickerCodeFromText(detectedText)
+      const found = code ? [STICKERS_MAP[code]] : []
       setCandidates(found)
-      if (found.length === 1) setSelected(found[0])
+      if (found.length === 1) {
+        setSelected(found[0])
+      } else {
+        setCameraError('No encontre el codigo. Alinea solo el recuadro superior derecho, por ejemplo PAR 19.')
+      }
     } catch {
       setCameraError('El OCR no pudo leer la imagen. Proba acercar la camara o usa carga manual.')
     } finally {
@@ -123,7 +178,7 @@ export default function ScanPage() {
       <header className="safe-top">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Camara</p>
         <h1 className="mt-1 text-3xl font-black text-slate-950">Escanear</h1>
-        <p className="mt-1 text-sm font-semibold text-slate-500">Lee el codigo del dorso y confirma antes de guardar.</p>
+        <p className="mt-1 text-sm font-semibold text-slate-500">Lee el codigo superior derecho y confirma antes de guardar.</p>
       </header>
 
       <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm">
@@ -133,11 +188,11 @@ export default function ScanPage() {
             <div className="absolute inset-0 grid place-items-center px-8 text-center text-white">
               <div>
                 <ScanLine className="mx-auto h-12 w-12 text-red-200" />
-                <p className="mt-3 text-sm font-semibold text-slate-300">Apunta al numero y abreviacion del pais.</p>
+                <p className="mt-3 text-sm font-semibold text-slate-300">Alinea el recuadro con el codigo tipo PAR 19.</p>
               </div>
             </div>
           ) : null}
-          <div className="pointer-events-none absolute inset-x-8 top-1/2 h-24 -translate-y-1/2 rounded-lg border-2 border-red-200/90" />
+          <div className="pointer-events-none absolute right-[6%] top-[7%] h-[16%] w-[42%] rounded-xl border-2 border-red-200/90 bg-white/5 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
         </div>
         <div className="grid grid-cols-2 gap-2 bg-white p-3">
           <button

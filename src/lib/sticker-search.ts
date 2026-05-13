@@ -28,6 +28,14 @@ function normalizeText(value: string): string {
     .toUpperCase()
 }
 
+function getNumberedStickerCode(prefix: string, rawNumber: string): string | null {
+  const normalizedNumber = normalizeNumber(rawNumber)
+  if (!normalizedNumber) return null
+
+  const code = `${prefix}${Number(normalizedNumber)}`
+  return STICKERS_MAP[code] ? code : null
+}
+
 export function parseStickerCode(value: string): string | null {
   const text = normalizeText(value)
   const compact = text.replace(/[^A-Z0-9]/g, '')
@@ -37,47 +45,60 @@ export function parseStickerCode(value: string): string | null {
 
   const fwcMatch = compact.match(/^FWC([0-9OQDISZIL|]{1,2})$/)
   if (fwcMatch) {
-    const code = `FWC${Number(normalizeNumber(fwcMatch[1]))}`
-    if (STICKERS_MAP[code]) return code
+    const code = getNumberedStickerCode('FWC', fwcMatch[1])
+    if (code) return code
   }
 
   const teamMatch = compact.match(/^([A-Z]{3})([0-9OQDISZIL|]{1,2})$/)
   if (teamMatch) {
-    const code = `${teamMatch[1]}${Number(normalizeNumber(teamMatch[2]))}`
-    if (STICKERS_MAP[code]) return code
+    const code = getNumberedStickerCode(teamMatch[1], teamMatch[2])
+    if (code) return code
   }
 
   return null
 }
 
-export function findStickerCandidates(value: string): Sticker[] {
-  const hits = new Map<string, Sticker>()
+function collectStickerCodesFromText(value: string): string[] {
+  const hits = new Set<string>()
   const direct = parseStickerCode(value)
 
-  if (direct) hits.set(direct, STICKERS_MAP[direct])
+  if (direct) hits.add(direct)
 
   const text = normalizeText(value)
   const codes = ['FWC', ...TEAMS.map(team => team.code)]
 
   for (const teamCode of codes) {
-    const pattern = new RegExp(`${teamCode}\\s*[-:.]?\\s*([0-9OQDISZIL|]{1,2})`, 'g')
+    const pattern = new RegExp(`(?:^|[^A-Z0-9])${teamCode}\\s*[-:.]?\\s*([0-9OQDISZIL|]{1,2})(?=$|[^A-Z0-9])`, 'g')
     let match = pattern.exec(text)
 
     while (match) {
-      const number = Number(normalizeNumber(match[1]))
-      const code = `${teamCode}${number}`
-      if (STICKERS_MAP[code]) hits.set(code, STICKERS_MAP[code])
+      const code = getNumberedStickerCode(teamCode, match[1])
+      if (code) hits.add(code)
       match = pattern.exec(text)
     }
   }
 
-  for (const sticker of STICKERS) {
-    if (text.includes(normalizeText(sticker.code))) {
-      hits.set(sticker.code, sticker)
+  const compact = text.replace(/[^A-Z0-9]/g, '')
+  for (const teamCode of codes) {
+    const pattern = new RegExp(`${teamCode}([0-9OQDISZIL|]{1,2})`, 'g')
+    let match = pattern.exec(compact)
+
+    while (match) {
+      const code = getNumberedStickerCode(teamCode, match[1])
+      if (code) hits.add(code)
+      match = pattern.exec(compact)
     }
   }
 
-  return [...hits.values()].slice(0, 6)
+  return [...hits].slice(0, 6)
+}
+
+export function parseStickerCodeFromText(value: string): string | null {
+  return collectStickerCodesFromText(value)[0] ?? null
+}
+
+export function findStickerCandidates(value: string): Sticker[] {
+  return collectStickerCodesFromText(value).map(code => STICKERS_MAP[code])
 }
 
 export function searchStickers(query: string): Sticker[] {

@@ -38,6 +38,14 @@ export default function StickerCircle({
     holdTimerRef.current = null
   }
 
+  const stateClass = sticker.isFoil
+    ? owned
+      ? 'border-2 border-amber-500 bg-amber-100 text-amber-950 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.65),0_0_0_1px_rgba(180,83,9,0.18)]'
+      : 'border border-amber-200 bg-amber-50 text-amber-800'
+    : owned
+      ? 'border-2 border-red-700 bg-red-50 text-red-900 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.75)]'
+      : 'border border-slate-100 bg-slate-100 text-slate-500'
+
   return (
     <button
       type="button"
@@ -56,11 +64,7 @@ export default function StickerCircle({
       }}
       aria-pressed={owned}
       aria-label={`${owned ? 'Desmarcar' : 'Marcar'} ${sticker.code} ${sticker.name}`}
-      className={`grid aspect-square w-full min-w-0 touch-manipulation select-none place-items-center rounded-full text-base font-semibold transition active:scale-95 ${
-        owned
-          ? 'border-2 border-red-700 bg-red-50 text-red-900 shadow-[inset_0_0_0_4px_rgba(255,255,255,0.75)]'
-          : 'border border-slate-100 bg-slate-100 text-slate-500'
-      }`}
+      className={`grid aspect-square w-full min-w-0 touch-manipulation select-none place-items-center rounded-full text-base font-semibold transition active:scale-95 ${stateClass}`}
     >
       {getStickerLabel(sticker)}
     </button>

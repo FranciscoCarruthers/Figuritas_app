@@ -71,7 +71,7 @@ export default function EstadisticasPage() {
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-28">
       <header className="safe-top pb-5 pt-4">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">figuritasapp</p>
+        <p className="text-xs font-black tracking-[0.08em] text-red-700">FiguritasApp</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Estadisticas</h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">Resumen de como viene el album.</p>
       </header>

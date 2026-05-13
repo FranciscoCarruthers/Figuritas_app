@@ -9,6 +9,7 @@ import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
+import { getTeamFlag } from '@/lib/team-flags'
 import type { Sticker } from '@/lib/types'
 
 type FilterMode = 'all' | 'missing' | 'owned'
@@ -55,7 +56,7 @@ function makeBlocks(): StickerBlock[] {
       if (team.code === 'FWC') continue
       blocks.push({
         id: team.code,
-        title: `${team.code} - ${team.name}`,
+        title: `${team.code} - ${team.name} ${getTeamFlag(team.code)}`,
         section: group.label,
         stickers: getTeamStickers(team.code),
       })
@@ -120,7 +121,7 @@ export default function AlbumPage() {
       <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-3 backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-black leading-tight text-slate-950">figuritasapp</h1>
+            <h1 className="truncate text-2xl font-black leading-tight text-slate-950">FiguritasApp</h1>
             <p className="text-xs font-black tracking-[0.14em] text-red-700">by Carru</p>
           </div>
           <button
