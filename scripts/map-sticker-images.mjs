@@ -136,19 +136,33 @@ function makeScorer(stickers) {
 
 async function ocrCandidate(worker, candidate) {
   const metadata = await sharp(candidate.path).metadata()
-  const left = Math.max(0, Math.round((metadata.width ?? 1) * 0.02))
-  const top = Math.max(0, Math.round((metadata.height ?? 1) * 0.61))
-  const width = Math.max(1, Math.min((metadata.width ?? 1) - left, Math.round((metadata.width ?? 1) * 0.96)))
-  const height = Math.max(1, Math.min((metadata.height ?? 1) - top, Math.round((metadata.height ?? 1) * 0.33)))
-  const crop = await sharp(candidate.path)
-    .extract({ left, top, width, height })
-    .resize({ width: 1000 })
-    .grayscale()
-    .normalise()
-    .sharpen()
-    .toBuffer()
-  const result = await worker.recognize(crop)
-  return result.data.text.trim().replace(/\s+/g, ' ')
+  const imageWidth = metadata.width ?? 1
+  const imageHeight = metadata.height ?? 1
+  const regions = [
+    { left: 0.04, top: 0.7, width: 0.92, height: 0.16, mode: PSM.SINGLE_BLOCK },
+    { left: 0.02, top: 0.61, width: 0.96, height: 0.33, mode: PSM.SINGLE_BLOCK },
+  ]
+  const texts = []
+
+  for (const region of regions) {
+    const left = Math.max(0, Math.round(imageWidth * region.left))
+    const top = Math.max(0, Math.round(imageHeight * region.top))
+    const width = Math.max(1, Math.min(imageWidth - left, Math.round(imageWidth * region.width)))
+    const height = Math.max(1, Math.min(imageHeight - top, Math.round(imageHeight * region.height)))
+    const crop = await sharp(candidate.path)
+      .extract({ left, top, width, height })
+      .resize({ width: 1000 })
+      .grayscale()
+      .normalise()
+      .sharpen()
+      .toBuffer()
+    await worker.setParameters({ tessedit_pageseg_mode: region.mode })
+    const result = await worker.recognize(crop)
+    const text = result.data.text.trim().replace(/\s+/g, ' ')
+    if (text) texts.push(text)
+  }
+
+  return texts.join(' ')
 }
 
 async function main() {

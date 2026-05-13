@@ -6,5 +6,7 @@ out
 dist
 coverage
 .vercel
+tmp
+.tmp-pydeps
 *.tsbuildinfo
 Thumbs.db
