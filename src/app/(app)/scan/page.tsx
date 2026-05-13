@@ -16,19 +16,21 @@ type ScanRegion = {
   height: number
 }
 
-type ProcessMode = 'contrast' | 'invert' | 'threshold' | 'invert-threshold'
+type ProcessMode = 'original' | 'contrast' | 'invert' | 'threshold' | 'invert-threshold'
 
 const SCAN_REGIONS: ScanRegion[] = [
-  { id: 'recuadro', left: 0.18, top: 0.24, width: 0.64, height: 0.18 },
-  { id: 'arriba-derecha', left: 0.48, top: 0.06, width: 0.46, height: 0.18 },
-  { id: 'arriba-ancho', left: 0.12, top: 0.05, width: 0.78, height: 0.22 },
-  { id: 'centro-ancho', left: 0.10, top: 0.20, width: 0.80, height: 0.26 },
+  { id: 'codigo', left: 0.56, top: 0.08, width: 0.34, height: 0.11 },
+  { id: 'codigo-arriba', left: 0.56, top: 0.05, width: 0.34, height: 0.11 },
+  { id: 'codigo-abajo', left: 0.56, top: 0.11, width: 0.34, height: 0.11 },
+  { id: 'codigo-izquierda', left: 0.50, top: 0.08, width: 0.38, height: 0.12 },
+  { id: 'codigo-ancho', left: 0.46, top: 0.06, width: 0.46, height: 0.15 },
 ]
 
-const PRIMARY_MODES: ProcessMode[] = ['invert-threshold', 'invert', 'threshold', 'contrast']
-const FALLBACK_MODES: ProcessMode[] = ['invert-threshold', 'invert', 'threshold']
+const PRIMARY_MODES: ProcessMode[] = ['original', 'contrast', 'invert-threshold', 'invert', 'threshold']
+const FALLBACK_MODES: ProcessMode[] = ['contrast', 'invert-threshold', 'invert', 'threshold']
 
 function processPixelValue(value: number, mode: ProcessMode): number {
+  if (mode === 'original') return value
   if (mode === 'threshold') return value > 145 ? 255 : 0
   if (mode === 'invert-threshold') return value > 145 ? 0 : 255
   if (mode === 'invert') return 255 - value
@@ -44,6 +46,7 @@ export default function ScanPage() {
   const [manual, setManual] = useState('')
   const [candidates, setCandidates] = useState<Sticker[]>([])
   const [selected, setSelected] = useState<Sticker | null>(null)
+  const [previewUrl, setPreviewUrl] = useState('')
   const [scanning, setScanning] = useState(false)
   const [saving, setSaving] = useState(false)
   const { updateQuantity } = useAlbum()
@@ -118,9 +121,13 @@ export default function ScanPage() {
     const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
     const { data } = imageData
     for (let index = 0; index < data.length; index += 4) {
-      const gray = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114
-      const contrasted = Math.max(0, Math.min(255, (gray - 128) * 2 + 128))
-      const value = processPixelValue(contrasted, mode)
+      const value =
+        mode === 'original'
+          ? data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114
+          : processPixelValue(
+            Math.max(0, Math.min(255, (data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114 - 128) * 2 + 128)),
+            mode,
+          )
       data[index] = value
       data[index + 1] = value
       data[index + 2] = value
@@ -143,6 +150,7 @@ export default function ScanPage() {
     setCandidates([])
     setOcrText('')
     setCameraError(null)
+    setPreviewUrl(attempts[0]?.canvas.toDataURL('image/png') ?? '')
 
     try {
       const { createWorker, PSM } = await import('tesseract.js')
@@ -159,7 +167,10 @@ export default function ScanPage() {
           const text = result.data.text.trim()
           detectedParts.push(`${attempt.region.id}/${attempt.mode}: ${text || 'sin texto'}`)
           detectedCode = parseStickerCodeFromText(text)
-          if (detectedCode) break
+          if (detectedCode) {
+            setPreviewUrl(attempt.canvas.toDataURL('image/png'))
+            break
+          }
         }
       } finally {
         await worker.terminate()
@@ -194,6 +205,7 @@ export default function ScanPage() {
       await updateQuantity(selected.code, 1)
       setManual('')
       setOcrText('')
+      setPreviewUrl('')
       setCandidates([])
       setSelected(null)
     } finally {
@@ -206,7 +218,7 @@ export default function ScanPage() {
       <header className="safe-top">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Camara</p>
         <h1 className="mt-1 text-3xl font-black text-slate-950">Escanear</h1>
-        <p className="mt-1 text-sm font-semibold text-slate-500">Lee el codigo superior derecho y confirma antes de guardar.</p>
+        <p className="mt-1 text-sm font-semibold text-slate-500">Acerca la figurita y alinea solo el codigo superior derecho.</p>
       </header>
 
       <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm">
@@ -216,12 +228,12 @@ export default function ScanPage() {
             <div className="absolute inset-0 grid place-items-center px-8 text-center text-white">
               <div>
                 <ScanLine className="mx-auto h-12 w-12 text-red-200" />
-                <p className="mt-3 text-sm font-semibold text-slate-300">Pone solo el codigo tipo PAR 19 dentro del recuadro.</p>
+                <p className="mt-3 text-sm font-semibold text-slate-300">Pone el ovalo PAR 19 dentro del recuadro chico.</p>
               </div>
             </div>
           ) : null}
-          <div className="pointer-events-none absolute left-[18%] top-[24%] h-[18%] w-[64%] rounded-xl border-2 border-red-200/90 bg-white/5 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
-          <div className="pointer-events-none absolute left-[18%] top-[43%] w-[64%] text-center text-xs font-black uppercase tracking-[0.12em] text-white/85">
+          <div className="pointer-events-none absolute left-[56%] top-[8%] h-[11%] w-[34%] rounded-lg border-2 border-red-200/90 bg-white/5 shadow-[0_0_0_999px_rgba(15,23,42,0.45)]" />
+          <div className="pointer-events-none absolute left-[56%] top-[20%] w-[34%] text-center text-[10px] font-black uppercase tracking-[0.12em] text-white/85">
             PAR 19
           </div>
         </div>
@@ -248,6 +260,26 @@ export default function ScanPage() {
 
       {cameraError ? <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{cameraError}</p> : null}
 
+      {previewUrl || ocrText ? (
+        <section className="mt-4 rounded-lg bg-slate-100 p-3">
+          <div className="flex items-start gap-3">
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="Recorte usado para OCR"
+                className="h-16 w-28 shrink-0 rounded-md border border-slate-200 bg-white object-contain"
+              />
+            ) : null}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-black uppercase tracking-wide text-slate-500">Texto detectado</p>
+              <p className="mt-1 max-h-24 overflow-auto whitespace-pre-wrap text-xs font-semibold text-slate-700">
+                {ocrText || 'Todavia no hay lectura.'}
+              </p>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="mt-5 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
         <label className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
           <Keyboard className="h-4 w-4" />
@@ -261,13 +293,6 @@ export default function ScanPage() {
           className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-base font-black text-slate-950 outline-none"
         />
       </section>
-
-      {ocrText ? (
-        <section className="mt-4 rounded-lg bg-slate-100 p-3">
-          <p className="text-xs font-black uppercase tracking-wide text-slate-500">Texto detectado</p>
-          <p className="mt-1 max-h-24 overflow-auto whitespace-pre-wrap text-xs font-semibold text-slate-700">{ocrText}</p>
-        </section>
-      ) : null}
 
       {candidates.length > 0 && !selected ? (
         <section className="mt-4 space-y-2">

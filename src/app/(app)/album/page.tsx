@@ -6,10 +6,10 @@ import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
 import ProgressBar from '@/components/ProgressBar'
+import TeamFlag from '@/components/TeamFlag'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
-import { getTeamFlag } from '@/lib/team-flags'
 import type { Sticker } from '@/lib/types'
 
 type FilterMode = 'all' | 'missing' | 'owned'
@@ -19,6 +19,7 @@ type StickerBlock = {
   title: string
   section: string
   stickers: Sticker[]
+  teamCode?: string
 }
 
 const FILTERS: Array<{ value: FilterMode; label: string }> = [
@@ -44,24 +45,26 @@ function makeBlocks(): StickerBlock[] {
     section: introSection,
     stickers: fwc.filter(sticker => sticker.position >= 5 && sticker.position <= 8),
   })
-  blocks.push({
-    id: 'fwc-history',
-    title: 'FWC - Historia',
-    section: introSection,
-    stickers: fwc.filter(sticker => sticker.position >= 9),
-  })
 
   for (const group of ALBUM_GROUPS) {
     for (const team of group.teams) {
       if (team.code === 'FWC') continue
       blocks.push({
         id: team.code,
-        title: `${team.code} - ${team.name} ${getTeamFlag(team.code)}`,
+        title: `${team.code} - ${team.name}`,
         section: group.label,
         stickers: getTeamStickers(team.code),
+        teamCode: team.code,
       })
     }
   }
+
+  blocks.push({
+    id: 'fwc-history',
+    title: 'FWC - Historia',
+    section: introSection,
+    stickers: fwc.filter(sticker => sticker.position >= 9),
+  })
 
   return blocks
 }
@@ -220,6 +223,7 @@ export default function AlbumPage() {
                   <h2 className="min-w-0 flex-1 truncate text-2xl font-black tracking-tight text-slate-950">
                     {block.title}
                   </h2>
+                  {block.teamCode ? <TeamFlag teamCode={block.teamCode} className="shrink-0" /> : null}
                 </button>
                 <div className="grid grid-cols-5 gap-x-6 gap-y-6">
                   {block.stickers.map(sticker => (
