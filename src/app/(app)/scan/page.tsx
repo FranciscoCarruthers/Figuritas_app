@@ -182,7 +182,7 @@ export default function ScanPage() {
       if (found.length === 1) {
         setSelected(found[0])
       } else {
-        setCameraError('No encontre el codigo. Pone solo la etiqueta PAR 19 dentro del recuadro rojo.')
+        setCameraError('No encontre el codigo. Hace coincidir el recuadro con el numero de figurita.')
       }
     } catch {
       setCameraError('El OCR no pudo leer la imagen. Proba acercar la camara o usa carga manual.')
@@ -229,13 +229,13 @@ export default function ScanPage() {
             <div className="absolute inset-0 grid place-items-center px-8 text-center text-white">
               <div>
                 <ScanLine className="mx-auto h-12 w-12 text-red-200" />
-                <p className="mt-3 text-sm font-semibold text-slate-300">Pone el ovalo PAR 19 dentro del recuadro chico.</p>
+                <p className="mt-3 text-sm font-semibold text-slate-300">Hace coincidir el recuadro con el numero de figurita.</p>
               </div>
             </div>
           ) : null}
           <div className="pointer-events-none absolute left-[56%] top-[8%] h-[11%] w-[34%] rounded-lg border-2 border-red-200/90 bg-white/5 shadow-[0_0_0_999px_rgba(15,23,42,0.45)]" />
           <div className="pointer-events-none absolute left-[56%] top-[20%] w-[34%] text-center text-[10px] font-black uppercase tracking-[0.12em] text-white/85">
-            PAR 19
+            ABC 12
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 bg-white p-3">
@@ -290,7 +290,7 @@ export default function ScanPage() {
         <input
           value={manual}
           onChange={event => handleManualLookup(event.target.value)}
-          placeholder="Ej: ARG15, ARG 15, FWC10"
+          placeholder="Ej: ARG15, FWC10, 00"
           autoCapitalize="characters"
           className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-base font-black text-slate-950 outline-none"
         />
