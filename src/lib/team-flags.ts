@@ -16,6 +16,7 @@ export const TEAM_FLAG_EMOJIS: Record<string, string> = {
   CZE: '🇨🇿',
   ECU: '🇪🇨',
   EGY: '🇪🇬',
+  ENG: '🏴',
   ESP: '🇪🇸',
   FRA: '🇫🇷',
   GER: '🇩🇪',
@@ -37,6 +38,7 @@ export const TEAM_FLAG_EMOJIS: Record<string, string> = {
   POR: '🇵🇹',
   QAT: '🇶🇦',
   RSA: '🇿🇦',
+  SCO: '🏴',
   SEN: '🇸🇳',
   SUI: '🇨🇭',
   SWE: '🇸🇪',
@@ -49,6 +51,5 @@ export const TEAM_FLAG_EMOJIS: Record<string, string> = {
 
 export function getTeamFlagEmoji(teamCode: string): string {
   const code = teamCode.toUpperCase()
-  if (code === 'ENG' || code === 'SCO') return '🏴'
   return TEAM_FLAG_EMOJIS[code] ?? ''
 }

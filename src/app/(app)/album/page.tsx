@@ -280,10 +280,10 @@ export default function AlbumPage() {
                   className="mb-5 flex w-full items-center gap-2 text-left"
                   onClick={() => setSectionFilter(block.section)}
                 >
-                  <h2 className="min-w-0 flex-1 truncate text-2xl font-black tracking-tight text-slate-950">
+                  <h2 className="min-w-0 truncate text-2xl font-black tracking-tight text-slate-950">
                     {block.title}
                   </h2>
-                  {block.teamCode ? <TeamFlag teamCode={block.teamCode} className="shrink-0" /> : null}
+                  {block.teamCode ? <TeamFlag teamCode={block.teamCode} className="shrink-0 text-2xl" /> : null}
                 </button>
                 <div className="grid grid-cols-5 gap-x-6 gap-y-6 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
                   {block.stickers.map(sticker => (
