@@ -110,7 +110,7 @@ export default function AlbumPage() {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-black leading-tight text-slate-950">figuritasapp</h1>
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-red-700">by Carru</p>
+            <p className="text-xs font-black tracking-[0.14em] text-red-700">by Carru</p>
           </div>
           <button
             type="button"
