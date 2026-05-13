@@ -8,16 +8,35 @@ import { findStickerCandidates, parseStickerCode, parseStickerCodeFromText } fro
 import { STICKERS_MAP } from '@/data/sticker-data'
 import type { Sticker } from '@/lib/types'
 
-const CODE_CROP = {
-  top: 0.07,
-  right: 0.06,
-  width: 0.42,
-  height: 0.16,
+type ScanRegion = {
+  id: string
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+type ProcessMode = 'contrast' | 'invert' | 'threshold' | 'invert-threshold'
+
+const SCAN_REGIONS: ScanRegion[] = [
+  { id: 'recuadro', left: 0.18, top: 0.24, width: 0.64, height: 0.18 },
+  { id: 'arriba-derecha', left: 0.48, top: 0.06, width: 0.46, height: 0.18 },
+  { id: 'arriba-ancho', left: 0.12, top: 0.05, width: 0.78, height: 0.22 },
+  { id: 'centro-ancho', left: 0.10, top: 0.20, width: 0.80, height: 0.26 },
+]
+
+const PRIMARY_MODES: ProcessMode[] = ['invert-threshold', 'invert', 'threshold', 'contrast']
+const FALLBACK_MODES: ProcessMode[] = ['invert-threshold', 'invert', 'threshold']
+
+function processPixelValue(value: number, mode: ProcessMode): number {
+  if (mode === 'threshold') return value > 145 ? 255 : 0
+  if (mode === 'invert-threshold') return value > 145 ? 0 : 255
+  if (mode === 'invert') return 255 - value
+  return value
 }
 
 export default function ScanPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
@@ -64,10 +83,9 @@ export default function ScanPage() {
     }
   }, [])
 
-  function captureCodeCanvas(): HTMLCanvasElement | null {
+  function captureCodeCanvas(region: ScanRegion, mode: ProcessMode): HTMLCanvasElement | null {
     const video = videoRef.current
-    const canvas = canvasRef.current
-    if (!video || !canvas || video.videoWidth === 0) return null
+    if (!video || video.videoWidth === 0) return null
 
     const width = video.videoWidth
     const height = video.videoHeight
@@ -78,16 +96,17 @@ export default function ScanPage() {
     const renderedHeight = height * coverScale
     const offsetX = (renderedWidth - displayWidth) / 2
     const offsetY = (renderedHeight - displayHeight) / 2
-    const targetWidth = displayWidth * CODE_CROP.width
-    const targetHeight = displayHeight * CODE_CROP.height
-    const targetX = displayWidth * (1 - CODE_CROP.right - CODE_CROP.width)
-    const targetY = displayHeight * CODE_CROP.top
+    const targetWidth = displayWidth * region.width
+    const targetHeight = displayHeight * region.height
+    const targetX = displayWidth * region.left
+    const targetY = displayHeight * region.top
     const sourceWidth = Math.max(1, Math.round(targetWidth / coverScale))
     const sourceHeight = Math.max(1, Math.round(targetHeight / coverScale))
     const sourceX = Math.round(Math.max(0, Math.min(width - sourceWidth, (targetX + offsetX) / coverScale)))
     const sourceY = Math.round(Math.max(0, Math.min(height - sourceHeight, (targetY + offsetY) / coverScale)))
     const scale = 4
 
+    const canvas = document.createElement('canvas')
     canvas.width = sourceWidth * scale
     canvas.height = sourceHeight * scale
     const context = canvas.getContext('2d')
@@ -100,8 +119,8 @@ export default function ScanPage() {
     const { data } = imageData
     for (let index = 0; index < data.length; index += 4) {
       const gray = data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114
-      const contrasted = Math.max(0, Math.min(255, (gray - 128) * 1.7 + 128))
-      const value = contrasted > 150 ? 0 : 255
+      const contrasted = Math.max(0, Math.min(255, (gray - 128) * 2 + 128))
+      const value = processPixelValue(contrasted, mode)
       data[index] = value
       data[index + 1] = value
       data[index + 2] = value
@@ -113,8 +132,11 @@ export default function ScanPage() {
   }
 
   async function scanFrame() {
-    const canvas = captureCodeCanvas()
-    if (!canvas) return
+    const attempts = SCAN_REGIONS.flatMap((region, index) => {
+      const modes = index === 0 ? PRIMARY_MODES : FALLBACK_MODES
+      return modes.map(mode => ({ region, mode, canvas: captureCodeCanvas(region, mode) }))
+    }).filter((attempt): attempt is { region: ScanRegion; mode: ProcessMode; canvas: HTMLCanvasElement } => Boolean(attempt.canvas))
+    if (attempts.length === 0) return
 
     setScanning(true)
     setSelected(null)
@@ -125,25 +147,31 @@ export default function ScanPage() {
     try {
       const { createWorker, PSM } = await import('tesseract.js')
       const worker = await createWorker('eng')
-      let detectedText = ''
+      const detectedParts: string[] = []
+      let detectedCode: string | null = null
       try {
         await worker.setParameters({
           tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
           tessedit_pageseg_mode: PSM.SINGLE_LINE,
         })
-        const result = await worker.recognize(canvas)
-        detectedText = result.data.text
+        for (const attempt of attempts) {
+          const result = await worker.recognize(attempt.canvas)
+          const text = result.data.text.trim()
+          detectedParts.push(`${attempt.region.id}/${attempt.mode}: ${text || 'sin texto'}`)
+          detectedCode = parseStickerCodeFromText(text)
+          if (detectedCode) break
+        }
       } finally {
         await worker.terminate()
       }
+      const detectedText = detectedParts.join('\n')
       setOcrText(detectedText)
-      const code = parseStickerCodeFromText(detectedText)
-      const found = code ? [STICKERS_MAP[code]] : []
+      const found = detectedCode ? [STICKERS_MAP[detectedCode]] : []
       setCandidates(found)
       if (found.length === 1) {
         setSelected(found[0])
       } else {
-        setCameraError('No encontre el codigo. Alinea solo el recuadro superior derecho, por ejemplo PAR 19.')
+        setCameraError('No encontre el codigo. Pone solo la etiqueta PAR 19 dentro del recuadro rojo.')
       }
     } catch {
       setCameraError('El OCR no pudo leer la imagen. Proba acercar la camara o usa carga manual.')
@@ -188,11 +216,14 @@ export default function ScanPage() {
             <div className="absolute inset-0 grid place-items-center px-8 text-center text-white">
               <div>
                 <ScanLine className="mx-auto h-12 w-12 text-red-200" />
-                <p className="mt-3 text-sm font-semibold text-slate-300">Alinea el recuadro con el codigo tipo PAR 19.</p>
+                <p className="mt-3 text-sm font-semibold text-slate-300">Pone solo el codigo tipo PAR 19 dentro del recuadro.</p>
               </div>
             </div>
           ) : null}
-          <div className="pointer-events-none absolute right-[6%] top-[7%] h-[16%] w-[42%] rounded-xl border-2 border-red-200/90 bg-white/5 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
+          <div className="pointer-events-none absolute left-[18%] top-[24%] h-[18%] w-[64%] rounded-xl border-2 border-red-200/90 bg-white/5 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]" />
+          <div className="pointer-events-none absolute left-[18%] top-[43%] w-[64%] text-center text-xs font-black uppercase tracking-[0.12em] text-white/85">
+            PAR 19
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2 bg-white p-3">
           <button
@@ -214,8 +245,6 @@ export default function ScanPage() {
           </button>
         </div>
       </section>
-
-      <canvas ref={canvasRef} className="hidden" />
 
       {cameraError ? <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{cameraError}</p> : null}
 

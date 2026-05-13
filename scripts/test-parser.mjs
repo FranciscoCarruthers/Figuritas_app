@@ -3,7 +3,7 @@ import fs from 'node:fs'
 const seed = fs.readFileSync('supabase/seed.sql', 'utf8')
 const codes = new Set([...seed.matchAll(/\('([^']+)', 'fifa-world-cup-2026', 'section-/g)].map(match => match[1]))
 
-const numberTranslation = { I: '1', L: '1', '|': '1', O: '0', Q: '0', D: '0', S: '5', Z: '2' }
+const numberTranslation = { B: '8', G: '9', I: '1', L: '1', '|': '1', O: '0', Q: '0', D: '0', S: '5', T: '7', Z: '2' }
 
 function normalizeNumber(value) {
   return value
@@ -29,13 +29,13 @@ function parseStickerCode(value) {
   if (compact === '00' || normalizeNumber(compact) === '00') return '00'
   if (codes.has(compact)) return compact
 
-  const fwcMatch = compact.match(/^FWC([0-9OQDISZIL|]{1,2})$/)
+  const fwcMatch = compact.match(/^FWC([0-9OQDGISZIL|BT]{1,2})$/)
   if (fwcMatch) {
     const code = getNumberedStickerCode('FWC', fwcMatch[1])
     if (code) return code
   }
 
-  const teamMatch = compact.match(/^([A-Z]{3})([0-9OQDISZIL|]{1,2})$/)
+  const teamMatch = compact.match(/^([A-Z]{3})([0-9OQDGISZIL|BT]{1,2})$/)
   if (teamMatch) {
     const code = getNumberedStickerCode(teamMatch[1], teamMatch[2])
     if (code) return code
@@ -54,7 +54,7 @@ function collectStickerCodesFromText(value) {
   const prefixes = ['FWC', ...new Set([...codes].map(code => code.match(/^[A-Z]+/)?.[0]).filter(Boolean))]
 
   for (const prefix of prefixes) {
-    const spacedPattern = new RegExp(`(?:^|[^A-Z0-9])${prefix}\\s*[-:.]?\\s*([0-9OQDISZIL|]{1,2})(?=$|[^A-Z0-9])`, 'g')
+    const spacedPattern = new RegExp(`(?:^|[^A-Z0-9])${prefix}\\s*[-:.]?\\s*([0-9OQDGISZIL|BT]{1,2})(?=$|[^A-Z0-9])`, 'g')
     let match = spacedPattern.exec(text)
     while (match) {
       const code = getNumberedStickerCode(prefix, match[1])
@@ -62,7 +62,7 @@ function collectStickerCodesFromText(value) {
       match = spacedPattern.exec(text)
     }
 
-    const compactPattern = new RegExp(`${prefix}([0-9OQDISZIL|]{1,2})`, 'g')
+    const compactPattern = new RegExp(`${prefix}([0-9OQDGISZIL|BT]{1,2})`, 'g')
     match = compactPattern.exec(compact)
     while (match) {
       const code = getNumberedStickerCode(prefix, match[1])
@@ -90,6 +90,7 @@ const cases = new Map([
   ['PAR 19', ['parseStickerCodeFromText', 'PAR19']],
   ['PAR19', ['parseStickerCodeFromText', 'PAR19']],
   ['PAR I9', ['parseStickerCodeFromText', 'PAR19']],
+  ['PAR IG', ['parseStickerCodeFromText', 'PAR19']],
   ['FIFA WORLD CUP 2026 PAR 19', ['parseStickerCodeFromText', 'PAR19']],
   ['FWC 10', ['parseStickerCodeFromText', 'FWC10']],
   ['ARG 1', ['parseStickerCodeFromText', 'ARG1']],
