@@ -1,10 +1,10 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronDown, LogOut, Search, SlidersHorizontal } from 'lucide-react'
+import { LogOut, Search, SlidersHorizontal } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
-import StickerDetailSheet from '@/components/StickerDetailSheet'
+import StickerInfoBubble from '@/components/StickerInfoBubble'
 import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
@@ -74,7 +74,7 @@ export default function AlbumPage() {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
   const [sectionFilter, setSectionFilter] = useState('Todas')
-  const [selectedSticker, setSelectedSticker] = useState<Sticker | null>(null)
+  const [infoSticker, setInfoSticker] = useState<Sticker | null>(null)
   const progress = getProgress(albumState, STICKERS)
 
   const matchedCodes = useMemo(() => {
@@ -99,29 +99,19 @@ export default function AlbumPage() {
 
   async function toggleSticker(sticker: Sticker) {
     const owned = isOwned(albumState, sticker.code)
-    setSelectedSticker(sticker)
     await updateQuantity(sticker.code, owned ? 0 : 1)
   }
 
-  async function setStickerOwned(sticker: Sticker, owned: boolean) {
-    setSelectedSticker(sticker)
-    await updateQuantity(sticker.code, owned ? 1 : 0)
-  }
-
-  const selectedOwned = selectedSticker ? isOwned(albumState, selectedSticker.code) : false
+  const infoOwned = infoSticker ? isOwned(albumState, infoSticker.code) : false
 
   return (
     <main className="bg-white pb-5">
       <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-3 backdrop-blur">
         <div className="flex items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => setSectionFilter('Todas')}
-            className="flex min-w-0 items-center gap-1 text-left"
-          >
-            <span className="truncate text-xl font-black text-slate-950">USA Mex Can 26</span>
-            <ChevronDown className="h-4 w-4 shrink-0 text-slate-600" />
-          </button>
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl font-black leading-tight text-slate-950">figuritasapp</h1>
+            <p className="text-xs font-black uppercase tracking-[0.14em] text-red-700">by Carru</p>
+          </div>
           <button
             type="button"
             onClick={() => void signOut()}
@@ -218,7 +208,6 @@ export default function AlbumPage() {
                   <h2 className="min-w-0 flex-1 truncate text-2xl font-black tracking-tight text-slate-950">
                     {block.title}
                   </h2>
-                  <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />
                 </button>
                 <div className="grid grid-cols-5 gap-x-6 gap-y-6">
                   {block.stickers.map(sticker => (
@@ -227,6 +216,7 @@ export default function AlbumPage() {
                       sticker={sticker}
                       owned={isOwned(albumState, sticker.code)}
                       onToggle={() => void toggleSticker(sticker)}
+                      onHold={() => setInfoSticker(sticker)}
                     />
                   ))}
                 </div>
@@ -236,12 +226,11 @@ export default function AlbumPage() {
         )}
       </section>
 
-      {selectedSticker ? (
-        <StickerDetailSheet
-          sticker={selectedSticker}
-          owned={selectedOwned}
-          onClose={() => setSelectedSticker(null)}
-          onSetOwned={owned => void setStickerOwned(selectedSticker, owned)}
+      {infoSticker ? (
+        <StickerInfoBubble
+          sticker={infoSticker}
+          owned={infoOwned}
+          onClose={() => setInfoSticker(null)}
         />
       ) : null}
     </main>

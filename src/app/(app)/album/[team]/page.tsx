@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
 import StickerCircle from '@/components/StickerCircle'
-import StickerDetailSheet from '@/components/StickerDetailSheet'
+import StickerInfoBubble from '@/components/StickerInfoBubble'
 import { useAlbum } from '@/context/AlbumContext'
 import { getProgress, isOwned } from '@/lib/album'
 import { getTeamByCode, getTeamStickers } from '@/data/sticker-data'
@@ -19,7 +19,7 @@ export default function TeamPage() {
   const team = getTeamByCode(teamCode)
   const stickers = useMemo(() => getTeamStickers(teamCode), [teamCode])
   const { albumState, updateQuantity } = useAlbum()
-  const [selectedSticker, setSelectedSticker] = useState<Sticker | null>(null)
+  const [infoSticker, setInfoSticker] = useState<Sticker | null>(null)
 
   if (!team) {
     return (
@@ -36,17 +36,11 @@ export default function TeamPage() {
   }
 
   const progress = getProgress(albumState, stickers)
-  const selectedOwned = selectedSticker ? isOwned(albumState, selectedSticker.code) : false
+  const infoOwned = infoSticker ? isOwned(albumState, infoSticker.code) : false
 
   async function toggleSticker(sticker: Sticker) {
     const owned = isOwned(albumState, sticker.code)
-    setSelectedSticker(sticker)
     await updateQuantity(sticker.code, owned ? 0 : 1)
-  }
-
-  async function setStickerOwned(sticker: Sticker, owned: boolean) {
-    setSelectedSticker(sticker)
-    await updateQuantity(sticker.code, owned ? 1 : 0)
   }
 
   return (
@@ -83,17 +77,17 @@ export default function TeamPage() {
               sticker={sticker}
               owned={isOwned(albumState, sticker.code)}
               onToggle={() => void toggleSticker(sticker)}
+              onHold={() => setInfoSticker(sticker)}
             />
           ))}
         </div>
       </section>
 
-      {selectedSticker ? (
-        <StickerDetailSheet
-          sticker={selectedSticker}
-          owned={selectedOwned}
-          onClose={() => setSelectedSticker(null)}
-          onSetOwned={owned => void setStickerOwned(selectedSticker, owned)}
+      {infoSticker ? (
+        <StickerInfoBubble
+          sticker={infoSticker}
+          owned={infoOwned}
+          onClose={() => setInfoSticker(null)}
         />
       ) : null}
     </main>
