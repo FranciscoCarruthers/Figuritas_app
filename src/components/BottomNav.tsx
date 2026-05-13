@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, BookOpen, ScanLine } from 'lucide-react'
+import { Activity, BarChart3, BookOpen, ScanLine } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/album', label: 'Album', Icon: BookOpen },
+  { href: '/estadisticas', label: 'Estadisticas', Icon: BarChart3 },
   { href: '/scan', label: 'Escanear', Icon: ScanLine },
   { href: '/actividad', label: 'Actividad', Icon: Activity },
 ]
@@ -15,7 +16,7 @@ export default function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 pb-[max(env(safe-area-inset-bottom),0.5rem)] shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur">
-      <div className="mx-auto grid max-w-md grid-cols-3 px-2 pt-2">
+      <div className="mx-auto grid max-w-md grid-cols-4 px-2 pt-2">
         {NAV_ITEMS.map(({ href, label, Icon }) => {
           const active = pathname === href || (href === '/album' && pathname.startsWith('/album'))
 

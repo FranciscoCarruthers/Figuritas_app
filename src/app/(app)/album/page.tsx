@@ -9,7 +9,6 @@ import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
-import { searchStickers } from '@/lib/sticker-search'
 import type { Sticker } from '@/lib/types'
 
 type FilterMode = 'all' | 'missing' | 'owned'
@@ -68,6 +67,22 @@ function makeBlocks(): StickerBlock[] {
 
 const ALL_BLOCKS = makeBlocks()
 
+function normalizeSearch(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+}
+
+function blockMatchesQuery(block: StickerBlock, query: string) {
+  const normalizedQuery = normalizeSearch(query)
+  if (!normalizedQuery) return true
+
+  const searchableBlockText = normalizeSearch(`${block.title} ${block.section} ${block.id}`)
+  return searchableBlockText.includes(normalizedQuery)
+}
+
 export default function AlbumPage() {
   const { albumState, updateQuantity } = useAlbum()
   const { profile, signOut } = useAuth()
@@ -77,16 +92,12 @@ export default function AlbumPage() {
   const [infoSticker, setInfoSticker] = useState<Sticker | null>(null)
   const progress = getProgress(albumState, STICKERS)
 
-  const matchedCodes = useMemo(() => {
-    if (!query.trim()) return null
-    return new Set(searchStickers(query).map(sticker => sticker.code))
-  }, [query])
-
   const visibleBlocks = useMemo(() => {
     return ALL_BLOCKS.map(block => {
+      if (!blockMatchesQuery(block, query)) return { ...block, stickers: [] }
+
       const stickers = block.stickers.filter(sticker => {
         if (sectionFilter !== 'Todas' && block.section !== sectionFilter) return false
-        if (matchedCodes && !matchedCodes.has(sticker.code)) return false
         const owned = isOwned(albumState, sticker.code)
         if (filter === 'missing') return !owned
         if (filter === 'owned') return owned
@@ -95,7 +106,7 @@ export default function AlbumPage() {
 
       return { ...block, stickers }
     }).filter(block => block.stickers.length > 0)
-  }, [albumState, filter, matchedCodes, sectionFilter])
+  }, [albumState, filter, query, sectionFilter])
 
   async function toggleSticker(sticker: Sticker) {
     const owned = isOwned(albumState, sticker.code)
@@ -148,7 +159,7 @@ export default function AlbumPage() {
             <input
               value={query}
               onChange={event => setQuery(event.target.value)}
-              placeholder="Buscar"
+              placeholder="Buscar pais o seccion"
               className="min-w-0 flex-1 bg-transparent text-lg font-medium text-slate-950 outline-none placeholder:text-slate-400"
             />
           </label>
