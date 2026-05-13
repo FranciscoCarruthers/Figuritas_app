@@ -7,9 +7,11 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
     <AuthGate>
       <AlbumProvider>
-        <div className="app-scroll mx-auto max-w-md bg-slate-50">
-          {children}
+        <div className="app-scroll min-h-dvh bg-slate-50">
           <BottomNav />
+          <div className="mx-auto min-h-dvh w-full max-w-6xl bg-white lg:bg-slate-50">
+            {children}
+          </div>
         </div>
       </AlbumProvider>
     </AuthGate>

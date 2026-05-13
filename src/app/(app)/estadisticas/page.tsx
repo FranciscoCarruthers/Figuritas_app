@@ -69,14 +69,14 @@ export default function EstadisticasPage() {
   const completedGroups = stats.groupStats.filter(item => item.progress.percent === 100).length
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 pb-28">
+    <main className="min-h-screen bg-slate-50 px-4 pb-28 lg:px-8 lg:pb-8">
       <header className="safe-top pb-5 pt-4">
         <p className="text-xs font-black tracking-[0.08em] text-red-700">FiguritasApp</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">Estadisticas</h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">Resumen de como viene el album.</p>
       </header>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:p-6">
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="text-sm font-bold text-slate-500">Album completo</p>
@@ -95,7 +95,7 @@ export default function EstadisticasPage() {
         </div>
       </section>
 
-      <section className="mt-4 grid grid-cols-2 gap-3">
+      <section className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label="Tengo"
           value={String(stats.overall.owned)}
@@ -129,7 +129,7 @@ export default function EstadisticasPage() {
             {stats.intro.owned}/{stats.intro.total} intro
           </p>
         </div>
-        <div className="space-y-3">
+        <div className="grid gap-3 lg:grid-cols-2">
           {stats.groupStats.map(item => (
             <article key={item.label} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-center justify-between gap-3">
@@ -148,7 +148,7 @@ export default function EstadisticasPage() {
 
       <section className="mt-6">
         <h2 className="text-xl font-black tracking-tight text-slate-950">Mas cerca</h2>
-        <div className="mt-3 space-y-3">
+        <div className="mt-3 grid gap-3 lg:grid-cols-2">
           {stats.closestTeams.length === 0 ? (
             <article className="rounded-xl border border-slate-200 bg-white p-5 text-center shadow-sm">
               <p className="text-sm font-bold text-slate-500">Todavia no hay equipos empezados.</p>

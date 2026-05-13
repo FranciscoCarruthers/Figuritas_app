@@ -120,9 +120,9 @@ export default function AlbumPage() {
   const infoOwned = infoSticker ? isOwned(albumState, infoSticker.code) : false
 
   return (
-    <main className="bg-white pb-5">
-      <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-3 backdrop-blur">
-        <div className="flex items-center justify-between gap-3">
+    <main className="bg-white pb-5 lg:bg-slate-50 lg:px-6 lg:pb-8">
+      <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-3 backdrop-blur lg:top-0 lg:rounded-b-xl lg:border lg:border-t-0 lg:px-6">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-black leading-tight text-slate-950">FiguritasApp</h1>
             <p className="text-xs font-black tracking-[0.14em] text-red-700">by Carru</p>
@@ -137,7 +137,7 @@ export default function AlbumPage() {
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 text-center">
+        <div className="mx-auto mt-4 grid max-w-3xl grid-cols-3 text-center">
           {FILTERS.map(item => (
             <button
               type="button"
@@ -156,7 +156,7 @@ export default function AlbumPage() {
         </div>
       </header>
 
-      <section className="px-4 pt-4">
+      <section className="mx-auto max-w-6xl px-4 pt-4 lg:px-0">
         <div className="flex items-center gap-3">
           <label className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
             <Search className="h-5 w-5 shrink-0 text-slate-500" />
@@ -196,7 +196,7 @@ export default function AlbumPage() {
           ))}
         </div>
 
-        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3">
+        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 lg:p-4">
           <div className="mb-2 flex items-center justify-between text-sm font-bold text-slate-600">
             <span>{progress.owned}/{progress.total}</span>
             <span>{progress.percent}% completo</span>
@@ -206,7 +206,7 @@ export default function AlbumPage() {
         </div>
       </section>
 
-      <section className="px-4 pt-6">
+      <section className="mx-auto max-w-6xl px-4 pt-6 lg:px-0">
         {visibleBlocks.length === 0 ? (
           <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
             <p className="text-sm font-bold text-slate-500">No hay figuritas con ese filtro.</p>
@@ -225,7 +225,7 @@ export default function AlbumPage() {
                   </h2>
                   {block.teamCode ? <TeamFlag teamCode={block.teamCode} className="shrink-0" /> : null}
                 </button>
-                <div className="grid grid-cols-5 gap-x-6 gap-y-6">
+                <div className="grid grid-cols-5 gap-x-6 gap-y-6 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
                   {block.stickers.map(sticker => (
                     <StickerCircle
                       key={sticker.code}

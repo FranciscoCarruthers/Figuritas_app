@@ -45,9 +45,9 @@ export default function TeamPage() {
   }
 
   return (
-    <main className="bg-white">
-      <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-4 pt-5 backdrop-blur">
-        <div className="flex items-center gap-3">
+    <main className="bg-white lg:bg-slate-50 lg:px-6 lg:pb-8">
+      <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-4 pt-5 backdrop-blur lg:rounded-b-xl lg:border lg:border-t-0 lg:px-6">
+        <div className="mx-auto flex max-w-6xl items-center gap-3">
           <button
             type="button"
             onClick={() => router.back()}
@@ -68,13 +68,13 @@ export default function TeamPage() {
             <p className="text-xs font-bold text-slate-500">{progress.percent}%</p>
           </div>
         </div>
-        <div className="mt-4">
+        <div className="mx-auto mt-4 max-w-6xl">
           <ProgressBar value={progress.percent} color="#b91c1c" />
         </div>
       </header>
 
-      <section className="px-4 py-6">
-        <div className="grid grid-cols-5 gap-x-6 gap-y-6">
+      <section className="mx-auto max-w-6xl px-4 py-6 lg:px-0">
+        <div className="grid grid-cols-5 gap-x-6 gap-y-6 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
           {stickers.map(sticker => (
             <StickerCircle
               key={sticker.code}

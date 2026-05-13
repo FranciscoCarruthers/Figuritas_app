@@ -43,3 +43,14 @@ button {
 .safe-top {
   padding-top: max(env(safe-area-inset-top), 1rem);
 }
+
+@media (min-width: 1024px) {
+  .app-scroll {
+    padding-bottom: 0;
+    padding-left: 16rem;
+  }
+
+  .safe-top {
+    padding-top: 1.5rem;
+  }
+}

@@ -214,15 +214,16 @@ export default function ScanPage() {
   }
 
   return (
-    <main className="px-4 pb-5 pt-5">
+    <main className="mx-auto max-w-5xl px-4 pb-5 pt-5 lg:px-8 lg:pb-8">
       <header className="safe-top">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Camara</p>
         <h1 className="mt-1 text-3xl font-black text-slate-950">Escanear</h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">Acerca la figurita y alinea solo el codigo superior derecho.</p>
       </header>
 
-      <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm">
-        <div className="relative aspect-[3/4] bg-slate-900">
+      <div className="lg:grid lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:gap-6">
+      <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm lg:self-start">
+        <div className="relative aspect-[3/4] bg-slate-900 lg:aspect-[9/14]">
           <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
           {!cameraReady ? (
             <div className="absolute inset-0 grid place-items-center px-8 text-center text-white">
@@ -258,6 +259,7 @@ export default function ScanPage() {
         </div>
       </section>
 
+      <div>
       {cameraError ? <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{cameraError}</p> : null}
 
       {previewUrl || ocrText ? (
@@ -321,6 +323,8 @@ export default function ScanPage() {
           </div>
         </section>
       ) : null}
+      </div>
+      </div>
     </main>
   )
 }

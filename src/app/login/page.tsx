@@ -41,16 +41,17 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-dvh bg-slate-950 text-white">
-      <div className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-8 pt-8">
-        <div className="safe-top">
+      <div className="mx-auto flex min-h-dvh max-w-md flex-col px-5 pb-8 pt-8 lg:grid lg:max-w-5xl lg:grid-cols-[1fr_420px] lg:items-center lg:gap-12 lg:px-8">
+        <div className="safe-top lg:pb-20">
             <p className="text-sm font-black uppercase tracking-[0.16em] text-red-200">Mundial 2026</p>
-          <h1 className="mt-3 text-4xl font-black leading-tight">Figuritas</h1>
-          <p className="mt-3 max-w-xs text-sm font-medium leading-6 text-slate-300">
+          <h1 className="mt-3 text-4xl font-black leading-tight lg:text-6xl">Figuritas</h1>
+          <p className="mt-3 max-w-xs text-sm font-medium leading-6 text-slate-300 lg:max-w-md lg:text-base">
             Un album compartido para marcar las figuritas que ya tienen desde el iPhone.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-8 rounded-lg bg-white p-4 text-slate-950 shadow-2xl">
+        <div>
+        <form onSubmit={handleSubmit} className="mt-8 rounded-lg bg-white p-4 text-slate-950 shadow-2xl lg:mt-0 lg:p-5">
           <div className="mb-4 grid grid-cols-2 rounded-lg bg-slate-100 p-1">
             <button
               type="button"
@@ -121,6 +122,7 @@ export default function LoginPage() {
 
         <div className="mt-auto pt-6 text-slate-950">
           <InstallHint />
+        </div>
         </div>
       </div>
     </main>

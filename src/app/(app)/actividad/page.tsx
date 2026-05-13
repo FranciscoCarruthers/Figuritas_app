@@ -58,7 +58,7 @@ export default function ActividadPage() {
   }, [profile])
 
   return (
-    <main className="px-4 pb-5 pt-5">
+    <main className="mx-auto max-w-4xl px-4 pb-5 pt-5 lg:px-8 lg:pb-8">
       <header className="safe-top">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Historial</p>
         <h1 className="mt-1 text-3xl font-black text-slate-950">Actividad</h1>
@@ -79,7 +79,7 @@ export default function ActividadPage() {
       ) : (
         <section className="mt-6 divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white shadow-sm">
           {entries.map(entry => (
-            <article key={entry.id} className="flex items-start gap-3 p-3">
+            <article key={entry.id} className="flex items-start gap-3 p-3 lg:p-4">
               <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-red-50 text-xs font-black text-red-700">
                 {entry.user_name.slice(0, 2).toUpperCase()}
               </span>
