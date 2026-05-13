@@ -1,3 +1,25 @@
+const flagFromCodePoints = (...points: number[]) => String.fromCodePoint(...points)
+
+const ENGLAND_FLAG = flagFromCodePoints(
+  0x1f3f4,
+  0xe0067,
+  0xe0062,
+  0xe0065,
+  0xe006e,
+  0xe0067,
+  0xe007f,
+)
+
+const SCOTLAND_FLAG = flagFromCodePoints(
+  0x1f3f4,
+  0xe0067,
+  0xe0062,
+  0xe0073,
+  0xe0063,
+  0xe0074,
+  0xe007f,
+)
+
 export const TEAM_FLAG_EMOJIS: Record<string, string> = {
   ALG: '🇩🇿',
   ARG: '🇦🇷',
@@ -16,7 +38,7 @@ export const TEAM_FLAG_EMOJIS: Record<string, string> = {
   CZE: '🇨🇿',
   ECU: '🇪🇨',
   EGY: '🇪🇬',
-  ENG: '🏴',
+  ENG: ENGLAND_FLAG,
   ESP: '🇪🇸',
   FRA: '🇫🇷',
   GER: '🇩🇪',
@@ -38,7 +60,7 @@ export const TEAM_FLAG_EMOJIS: Record<string, string> = {
   POR: '🇵🇹',
   QAT: '🇶🇦',
   RSA: '🇿🇦',
-  SCO: '🏴',
+  SCO: SCOTLAND_FLAG,
   SEN: '🇸🇳',
   SUI: '🇨🇭',
   SWE: '🇸🇪',

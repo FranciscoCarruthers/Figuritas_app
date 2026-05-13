@@ -7,7 +7,7 @@ export default function TeamFlag({ teamCode, className = '' }: { teamCode: strin
   if (!emoji) return null
 
   return (
-    <span role="img" aria-label={title} className={`inline-flex text-[0.9em] leading-none ${className}`}>
+    <span role="img" aria-label={title} className={`inline-flex text-[1.35rem] leading-none ${className}`}>
       {emoji}
     </span>
   )
