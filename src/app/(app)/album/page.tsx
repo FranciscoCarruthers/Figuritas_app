@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { LogOut, Search, SlidersHorizontal } from 'lucide-react'
+import { LogOut, Search, Share, SlidersHorizontal } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
@@ -10,6 +10,7 @@ import TeamFlag from '@/components/TeamFlag'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
+import { buildMissingStickersShareText } from '@/lib/share-list'
 import type { Sticker } from '@/lib/types'
 
 type FilterMode = 'all' | 'missing' | 'owned'
@@ -87,6 +88,27 @@ function blockMatchesQuery(block: StickerBlock, query: string) {
   return searchableBlockText.includes(normalizedQuery)
 }
 
+async function copyTextToClipboard(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.top = '-999px'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+
+  const copied = document.execCommand('copy')
+  document.body.removeChild(textarea)
+
+  if (!copied) throw new Error('No se pudo copiar')
+}
+
 export default function AlbumPage() {
   const { albumState, updateQuantity } = useAlbum()
   const { profile, signOut } = useAuth()
@@ -94,6 +116,7 @@ export default function AlbumPage() {
   const [filter, setFilter] = useState<FilterMode>('all')
   const [sectionFilter, setSectionFilter] = useState('Todas')
   const [infoSticker, setInfoSticker] = useState<Sticker | null>(null)
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle')
   const progress = getProgress(albumState, STICKERS)
 
   const visibleBlocks = useMemo(() => {
@@ -117,6 +140,17 @@ export default function AlbumPage() {
     await updateQuantity(sticker.code, owned ? 0 : 1)
   }
 
+  async function copyMissingStickers() {
+    try {
+      await copyTextToClipboard(buildMissingStickersShareText(albumState))
+      setShareStatus('copied')
+    } catch {
+      setShareStatus('error')
+    }
+
+    window.setTimeout(() => setShareStatus('idle'), 2400)
+  }
+
   const infoOwned = infoSticker ? isOwned(albumState, infoSticker.code) : false
 
   return (
@@ -127,15 +161,41 @@ export default function AlbumPage() {
             <h1 className="truncate text-2xl font-black leading-tight text-slate-950">FiguritasApp</h1>
             <p className="text-xs font-black tracking-[0.14em] text-red-700">by Carru</p>
           </div>
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            aria-label="Cerrar sesion"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-slate-950 active:bg-slate-100"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={() => void copyMissingStickers()}
+              aria-label="Copiar figuritas faltantes"
+              className="grid h-10 w-10 place-items-center rounded-full text-slate-950 active:bg-slate-100"
+            >
+              <Share className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              aria-label="Cerrar sesion"
+              className="grid h-10 w-10 place-items-center rounded-full text-slate-950 active:bg-slate-100"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
         </div>
+        <p
+          aria-live="polite"
+          className={`mx-auto mt-2 max-w-6xl text-right text-xs font-bold ${
+            shareStatus === 'copied'
+              ? 'text-red-700'
+              : shareStatus === 'error'
+                ? 'text-slate-500'
+                : 'text-transparent'
+          }`}
+        >
+          {shareStatus === 'copied'
+            ? 'Lista copiada'
+            : shareStatus === 'error'
+              ? 'No se pudo copiar'
+              : 'Listo'}
+        </p>
 
         <div className="mx-auto mt-4 grid max-w-3xl grid-cols-3 text-center">
           {FILTERS.map(item => (
