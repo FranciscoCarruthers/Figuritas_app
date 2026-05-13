@@ -74,7 +74,7 @@ export default function StickerCircle({
       }}
       aria-pressed={owned}
       aria-label={`${owned ? 'Desmarcar' : 'Marcar'} ${sticker.code} ${sticker.name}`}
-      className={`relative grid aspect-square w-full min-w-0 touch-manipulation select-none place-items-center overflow-hidden rounded-full text-base font-semibold transition active:scale-95 ${isPopping ? 'sticker-pop' : ''} ${stateClass}`}
+      className={`no-ios-selection relative grid aspect-square w-full min-w-0 touch-manipulation select-none place-items-center overflow-hidden rounded-full text-base font-semibold transition active:scale-95 ${isPopping ? 'sticker-pop' : ''} ${stateClass}`}
     >
       <span className={owned ? 'translate-y-0 transition' : 'transition'}>{getStickerLabel(sticker)}</span>
     </button>

@@ -35,6 +35,13 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+.no-ios-selection,
+.no-ios-selection * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 @keyframes sticker-pop {
   0% {
     transform: scale(1);

@@ -23,8 +23,10 @@ export default function StickerInfoBubble({
     <button
       type="button"
       onClick={onClose}
+      onContextMenu={event => event.preventDefault()}
+      onDragStart={event => event.preventDefault()}
       aria-label="Cerrar informacion de figurita"
-      className="fixed inset-0 z-50 bg-slate-950/10"
+      className="no-ios-selection fixed inset-0 z-50 bg-slate-950/10"
     >
       <span className="pointer-events-none fixed inset-x-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] mx-auto block max-w-sm overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-2xl shadow-slate-950/20 lg:bottom-6">
         {!imageFailed ? (
@@ -32,6 +34,7 @@ export default function StickerInfoBubble({
             <img
               src={imageSrc}
               alt={`Figurita ${sticker.code} ${sticker.name}`}
+              draggable={false}
               onError={() => setImageFailed(true)}
               className="mx-auto max-h-[52dvh] w-full rounded-lg object-contain"
             />
