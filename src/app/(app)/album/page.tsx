@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { LogOut, Search, Share, SlidersHorizontal, Upload, X } from 'lucide-react'
+import { Import as ImportIcon, LogOut, Search, Share, SlidersHorizontal, X } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
@@ -206,7 +206,7 @@ export default function AlbumPage() {
               title="Importar faltantes"
               className="inline-flex h-10 w-10 items-center justify-center gap-1.5 rounded-full bg-slate-100 text-xs font-black text-slate-950 active:bg-slate-200 sm:w-auto sm:px-3"
             >
-              <Upload className="h-4 w-4" />
+              <ImportIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Importar faltantes</span>
             </button>
             <button
