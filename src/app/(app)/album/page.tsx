@@ -122,7 +122,11 @@ export default function AlbumPage() {
   const [importText, setImportText] = useState('')
   const [importStatus, setImportStatus] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
+  const [importProgress, setImportProgress] = useState<{ completed: number; total: number } | null>(null)
   const progress = getProgress(albumState, STICKERS)
+  const importProgressPercent = importProgress && importProgress.total > 0
+    ? Math.round((importProgress.completed / importProgress.total) * 100)
+    : 0
 
   const visibleBlocks = useMemo(() => {
     return ALL_BLOCKS.map(block => {
@@ -165,16 +169,20 @@ export default function AlbumPage() {
 
     setImporting(true)
     setImportStatus(null)
+    setImportProgress({ completed: 0, total: 0 })
     try {
-      const changed = await importMissingCodes(parsed.missingCodes)
+      const changed = await importMissingCodes(parsed.missingCodes, setImportProgress)
       setImportStatus(`Importado: ${parsed.missingCodes.size} faltantes. Cambios aplicados: ${changed}.`)
       window.setTimeout(() => {
         setImportOpen(false)
         setImportText('')
         setImportStatus(null)
+        setImportProgress(null)
       }, 1400)
     } catch (error) {
-      setImportStatus(error instanceof Error ? error.message : 'No se pudo importar la lista.')
+      setImportStatus(error instanceof Error
+        ? `No se pudo terminar la importacion: ${error.message}`
+        : 'No se pudo terminar la importacion. Proba de nuevo.')
     } finally {
       setImporting(false)
     }
@@ -190,22 +198,26 @@ export default function AlbumPage() {
             <h1 className="truncate text-2xl font-black leading-tight text-slate-950">FiguritasApp</h1>
             <p className="text-xs font-black tracking-[0.14em] text-red-700">by Carru</p>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={() => setImportOpen(true)}
-              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-xs font-black text-slate-950 active:bg-slate-200"
+              aria-label="Importar faltantes"
+              title="Importar faltantes"
+              className="inline-flex h-10 w-10 items-center justify-center gap-1.5 rounded-full bg-slate-100 text-xs font-black text-slate-950 active:bg-slate-200 sm:w-auto sm:px-3"
             >
               <Upload className="h-4 w-4" />
-              <span>Importar faltantes</span>
+              <span className="hidden sm:inline">Importar faltantes</span>
             </button>
             <button
               type="button"
               onClick={() => void copyMissingStickers()}
-              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-red-700 px-3 text-xs font-black text-white active:bg-red-800"
+              aria-label="Compartir faltantes"
+              title="Compartir faltantes"
+              className="inline-flex h-10 w-10 items-center justify-center gap-1.5 rounded-full bg-red-700 text-xs font-black text-white active:bg-red-800 sm:w-auto sm:px-3"
             >
               <Share className="h-4 w-4" />
-              <span>Compartir faltantes</span>
+              <span className="hidden sm:inline">Compartir faltantes</span>
             </button>
             <button
               type="button"
@@ -348,8 +360,14 @@ export default function AlbumPage() {
       ) : null}
 
       {importOpen ? (
-        <div className="fixed inset-0 z-50 bg-slate-950/30 px-4 py-6 backdrop-blur-sm">
-          <div className="mx-auto flex max-h-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-slate-950/30 px-4 backdrop-blur-sm"
+          style={{
+            paddingTop: 'max(env(safe-area-inset-top), 1rem)',
+            paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)',
+          }}
+        >
+          <div className="mx-auto flex max-h-full w-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
             <div className="flex items-start justify-between gap-3 border-b border-slate-200 p-4">
               <div>
                 <h3 className="text-xl font-black text-slate-950">Importar faltantes</h3>
@@ -360,8 +378,9 @@ export default function AlbumPage() {
               <button
                 type="button"
                 onClick={() => setImportOpen(false)}
+                disabled={importing}
                 aria-label="Cerrar importar"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-700"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-700 disabled:opacity-50"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -370,12 +389,22 @@ export default function AlbumPage() {
               <textarea
                 value={importText}
                 onChange={event => setImportText(event.target.value)}
+                disabled={importing}
                 placeholder={`FiguritasApp - Lista\nMe faltan\nFWC: 00, 1, 2\nARG: 4, 10, 13\nMEX: 1, 5, 20`}
-                className="min-h-64 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-950 outline-none focus:border-red-700"
+                className="min-h-64 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-950 outline-none focus:border-red-700 disabled:opacity-70"
               />
               <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-800">
                 Importante: esto reemplaza el estado actual del album segun la lista pegada.
               </p>
+              {importing && importProgress ? (
+                <div className="mt-3 rounded-lg bg-slate-100 px-3 py-3">
+                  <div className="mb-2 flex items-center justify-between text-xs font-black text-slate-600">
+                    <span>Importando...</span>
+                    <span>{importProgress.completed}/{importProgress.total} cambios</span>
+                  </div>
+                  <ProgressBar value={importProgressPercent} color="#b91c1c" />
+                </div>
+              ) : null}
               {importStatus ? (
                 <p className="mt-3 rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">{importStatus}</p>
               ) : null}
@@ -384,7 +413,8 @@ export default function AlbumPage() {
               <button
                 type="button"
                 onClick={() => setImportOpen(false)}
-                className="rounded-lg bg-slate-100 px-4 py-3 text-sm font-black text-slate-700"
+                disabled={importing}
+                className="rounded-lg bg-slate-100 px-4 py-3 text-sm font-black text-slate-700 disabled:opacity-50"
               >
                 Cancelar
               </button>

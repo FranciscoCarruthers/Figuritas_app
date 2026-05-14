@@ -12,7 +12,7 @@ export default function InstallHint() {
         <div>
           <p className="font-bold text-slate-950">Instalar en iPhone</p>
           <p className="mt-1 leading-snug text-slate-600">
-            En Safari: Compartir, Agregar a inicio. Vercel usa HTTPS, asi que la camara funciona.
+            En Safari: Compartir, Agregar a inicio.
           </p>
         </div>
       </div>

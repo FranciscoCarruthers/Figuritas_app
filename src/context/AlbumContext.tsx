@@ -19,10 +19,13 @@ type AlbumContextValue = {
   albumState: AlbumState
   isLoading: boolean
   updateQuantity: (code: string, quantity: number) => Promise<void>
-  importMissingCodes: (missingCodes: Set<string>) => Promise<number>
+  importMissingCodes: (missingCodes: Set<string>, onProgress?: ImportProgressCallback) => Promise<number>
 }
 
 const AlbumContext = createContext<AlbumContextValue | null>(null)
+const IMPORT_BATCH_SIZE = 20
+
+type ImportProgressCallback = (progress: { completed: number; total: number }) => void
 
 export function AlbumProvider({ children }: { children: ReactNode }) {
   const { profile } = useAuth()
@@ -118,7 +121,10 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }, [profile])
 
-  const importMissingCodes = useCallback(async (missingCodes: Set<string>) => {
+  const importMissingCodes = useCallback(async (
+    missingCodes: Set<string>,
+    onProgress?: ImportProgressCallback,
+  ) => {
     if (!profile) throw new Error('No hay album activo.')
     const supabase = getSupabaseBrowserClient()
     const changes = STICKERS.map(sticker => {
@@ -128,6 +134,8 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
       const nextOwned = nextQuantity > 0
       return currentOwned === nextOwned ? null : { code: sticker.code, quantity: nextQuantity }
     }).filter((item): item is { code: string; quantity: number } => item !== null)
+
+    onProgress?.({ completed: 0, total: changes.length })
 
     setAlbumState(prev => {
       const next = { ...prev }
@@ -146,12 +154,18 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
       return next
     })
 
-    for (const change of changes) {
-      const { error } = await supabase.rpc('set_sticker_quantity', {
+    let completed = 0
+    for (let index = 0; index < changes.length; index += IMPORT_BATCH_SIZE) {
+      const batch = changes.slice(index, index + IMPORT_BATCH_SIZE)
+      const results = await Promise.all(batch.map(change => supabase.rpc('set_sticker_quantity', {
         p_sticker_code: change.code,
         p_quantity: change.quantity,
-      })
-      if (error) throw error
+      })))
+      const failed = results.find(result => result.error)
+      if (failed?.error) throw failed.error
+
+      completed += batch.length
+      onProgress?.({ completed, total: changes.length })
     }
 
     return changes.length
