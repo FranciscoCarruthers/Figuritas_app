@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { LogOut, Search, Share, SlidersHorizontal } from 'lucide-react'
+import { LogOut, Search, Share, SlidersHorizontal, Upload, X } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
@@ -10,6 +10,7 @@ import TeamFlag from '@/components/TeamFlag'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
+import { parseMissingStickersList } from '@/lib/import-list'
 import { buildMissingStickersShareText } from '@/lib/share-list'
 import type { Sticker } from '@/lib/types'
 
@@ -110,13 +111,17 @@ async function copyTextToClipboard(text: string) {
 }
 
 export default function AlbumPage() {
-  const { albumState, updateQuantity } = useAlbum()
+  const { albumState, updateQuantity, importMissingCodes } = useAlbum()
   const { profile, signOut } = useAuth()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
   const [sectionFilter, setSectionFilter] = useState('Todas')
   const [infoSticker, setInfoSticker] = useState<Sticker | null>(null)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle')
+  const [importOpen, setImportOpen] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importStatus, setImportStatus] = useState<string | null>(null)
+  const [importing, setImporting] = useState(false)
   const progress = getProgress(albumState, STICKERS)
 
   const visibleBlocks = useMemo(() => {
@@ -151,6 +156,30 @@ export default function AlbumPage() {
     window.setTimeout(() => setShareStatus('idle'), 2400)
   }
 
+  async function handleImportMissing() {
+    const parsed = parseMissingStickersList(importText)
+    if (parsed.missingCodes.size === 0 || parsed.lineCount === 0) {
+      setImportStatus('No encontre figuritas en ese texto.')
+      return
+    }
+
+    setImporting(true)
+    setImportStatus(null)
+    try {
+      const changed = await importMissingCodes(parsed.missingCodes)
+      setImportStatus(`Importado: ${parsed.missingCodes.size} faltantes. Cambios aplicados: ${changed}.`)
+      window.setTimeout(() => {
+        setImportOpen(false)
+        setImportText('')
+        setImportStatus(null)
+      }, 1400)
+    } catch (error) {
+      setImportStatus(error instanceof Error ? error.message : 'No se pudo importar la lista.')
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const infoOwned = infoSticker ? isOwned(albumState, infoSticker.code) : false
 
   return (
@@ -161,14 +190,22 @@ export default function AlbumPage() {
             <h1 className="truncate text-2xl font-black leading-tight text-slate-950">FiguritasApp</h1>
             <p className="text-xs font-black tracking-[0.14em] text-red-700">by Carru</p>
           </div>
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setImportOpen(true)}
+              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-slate-100 px-3 text-xs font-black text-slate-950 active:bg-slate-200"
+            >
+              <Upload className="h-4 w-4" />
+              <span>Importar faltantes</span>
+            </button>
             <button
               type="button"
               onClick={() => void copyMissingStickers()}
-              aria-label="Copiar figuritas faltantes"
-              className="grid h-10 w-10 place-items-center rounded-full text-slate-950 active:bg-slate-100"
+              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-red-700 px-3 text-xs font-black text-white active:bg-red-800"
             >
-              <Share className="h-5 w-5" />
+              <Share className="h-4 w-4" />
+              <span>Compartir faltantes</span>
             </button>
             <button
               type="button"
@@ -308,6 +345,60 @@ export default function AlbumPage() {
           owned={infoOwned}
           onClose={() => setInfoSticker(null)}
         />
+      ) : null}
+
+      {importOpen ? (
+        <div className="fixed inset-0 z-50 bg-slate-950/30 px-4 py-6 backdrop-blur-sm">
+          <div className="mx-auto flex max-h-full max-w-lg flex-col overflow-hidden rounded-xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 p-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-950">Importar faltantes</h3>
+                <p className="mt-1 text-sm font-semibold leading-5 text-slate-500">
+                  Pega una lista exportada desde otra app. La app marcara como faltantes esos numeros y como tengo todos los demas.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setImportOpen(false)}
+                aria-label="Cerrar importar"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-700"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
+              <textarea
+                value={importText}
+                onChange={event => setImportText(event.target.value)}
+                placeholder={`FiguritasApp - Lista\nMe faltan\nFWC: 00, 1, 2\nARG: 4, 10, 13\nMEX: 1, 5, 20`}
+                className="min-h-64 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-950 outline-none focus:border-red-700"
+              />
+              <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-800">
+                Importante: esto reemplaza el estado actual del album segun la lista pegada.
+              </p>
+              {importStatus ? (
+                <p className="mt-3 rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700">{importStatus}</p>
+              ) : null}
+            </div>
+            <div className="grid grid-cols-2 gap-3 border-t border-slate-200 p-4">
+              <button
+                type="button"
+                onClick={() => setImportOpen(false)}
+                className="rounded-lg bg-slate-100 px-4 py-3 text-sm font-black text-slate-700"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={importing}
+                onClick={() => void handleImportMissing()}
+                className="rounded-lg bg-red-700 px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+              >
+                {importing ? 'Importando...' : 'Importar faltantes'}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </main>
   )

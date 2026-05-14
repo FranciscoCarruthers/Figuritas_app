@@ -1,18 +1,28 @@
 import { NextResponse } from 'next/server'
-import { normalizeUsername, usernameToEmail, validatePassword, validateUsername } from '@/lib/auth'
+import {
+  normalizeEmail,
+  normalizeUsername,
+  usernameToEmail,
+  validatePassword,
+  validateRecoveryEmail,
+  validateUsername,
+} from '@/lib/auth'
 import { getSupabaseAdminClient } from '@/lib/supabase-admin'
 
 export async function POST(request: Request) {
-  const { username: rawUsername, password } = await request.json().catch(() => ({
+  const { username: rawUsername, password, email: rawEmail } = await request.json().catch(() => ({
     username: '',
     password: '',
+    email: '',
   }))
   const username = normalizeUsername(String(rawUsername ?? ''))
+  const recoveryEmail = normalizeEmail(String(rawEmail ?? ''))
   const usernameError = validateUsername(username)
   const passwordError = validatePassword(String(password ?? ''))
+  const emailError = validateRecoveryEmail(recoveryEmail)
 
-  if (usernameError || passwordError) {
-    return NextResponse.json({ error: usernameError ?? passwordError }, { status: 400 })
+  if (usernameError || passwordError || emailError) {
+    return NextResponse.json({ error: usernameError ?? passwordError ?? emailError }, { status: 400 })
   }
 
   let supabase
@@ -24,12 +34,26 @@ export async function POST(request: Request) {
     }, { status: 501 })
   }
 
-  const email = usernameToEmail(username)
+  const { data: existingProfile, error: existingProfileError } = await supabase
+    .from('profiles')
+    .select('user_id')
+    .eq('username', username)
+    .maybeSingle()
+
+  if (existingProfileError) {
+    return NextResponse.json({ error: existingProfileError.message }, { status: 500 })
+  }
+
+  if (existingProfile) {
+    return NextResponse.json({ error: 'Ese usuario ya existe.' }, { status: 409 })
+  }
+
+  const email = recoveryEmail || usernameToEmail(username)
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
-    user_metadata: { username },
+    user_metadata: { username, recovery_email: recoveryEmail || null },
   })
 
   if (error) {

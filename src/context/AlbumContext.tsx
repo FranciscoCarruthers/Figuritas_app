@@ -10,6 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { STICKERS } from '@/data/sticker-data'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { AlbumState, AlbumSticker } from '@/lib/types'
 import { useAuth } from '@/context/AuthContext'
@@ -18,6 +19,7 @@ type AlbumContextValue = {
   albumState: AlbumState
   isLoading: boolean
   updateQuantity: (code: string, quantity: number) => Promise<void>
+  importMissingCodes: (missingCodes: Set<string>) => Promise<number>
 }
 
 const AlbumContext = createContext<AlbumContextValue | null>(null)
@@ -116,11 +118,51 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     if (error) throw error
   }, [profile])
 
+  const importMissingCodes = useCallback(async (missingCodes: Set<string>) => {
+    if (!profile) throw new Error('No hay album activo.')
+    const supabase = getSupabaseBrowserClient()
+    const changes = STICKERS.map(sticker => {
+      const nextQuantity = missingCodes.has(sticker.code) ? 0 : 1
+      const currentQuantity = albumState[sticker.code]?.quantity ?? 0
+      const currentOwned = currentQuantity > 0
+      const nextOwned = nextQuantity > 0
+      return currentOwned === nextOwned ? null : { code: sticker.code, quantity: nextQuantity }
+    }).filter((item): item is { code: string; quantity: number } => item !== null)
+
+    setAlbumState(prev => {
+      const next = { ...prev }
+      for (const sticker of STICKERS) {
+        if (missingCodes.has(sticker.code)) {
+          delete next[sticker.code]
+        } else {
+          next[sticker.code] = {
+            sticker_code: sticker.code,
+            quantity: 1,
+            updated_by: null,
+            updated_at: new Date().toISOString(),
+          }
+        }
+      }
+      return next
+    })
+
+    for (const change of changes) {
+      const { error } = await supabase.rpc('set_sticker_quantity', {
+        p_sticker_code: change.code,
+        p_quantity: change.quantity,
+      })
+      if (error) throw error
+    }
+
+    return changes.length
+  }, [albumState, profile])
+
   const value = useMemo<AlbumContextValue>(() => ({
     albumState,
     isLoading,
     updateQuantity,
-  }), [albumState, isLoading, updateQuantity])
+    importMissingCodes,
+  }), [albumState, importMissingCodes, isLoading, updateQuantity])
 
   return <AlbumContext.Provider value={value}>{children}</AlbumContext.Provider>
 }

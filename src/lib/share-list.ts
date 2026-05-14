@@ -4,6 +4,9 @@ import { getTeamFlagEmoji } from '@/lib/team-flags'
 import type { AlbumState, Sticker } from '@/lib/types'
 
 const APP_URL = 'https://figuritasappcarru.vercel.app'
+const TROPHY = String.fromCodePoint(0x1f3c6)
+const GLOBE = String.fromCodePoint(0x1f30e)
+const SCROLL = String.fromCodePoint(0x1f4dc)
 
 function stickerNumber(sticker: Sticker): string {
   return sticker.code === '00' ? '00' : String(sticker.position)
@@ -31,13 +34,13 @@ export function buildMissingStickersShareText(albumState: AlbumState): string {
   appendMissingLine(
     lines,
     albumState,
-    'FWC 🏆',
+    `FWC ${TROPHY}`,
     fwcStickers.filter(sticker => sticker.position <= 4),
   )
   appendMissingLine(
     lines,
     albumState,
-    'FWC 🌎',
+    `FWC ${GLOBE}`,
     fwcStickers.filter(sticker => sticker.position >= 5 && sticker.position <= 8),
   )
 
@@ -52,7 +55,7 @@ export function buildMissingStickersShareText(albumState: AlbumState): string {
   appendMissingLine(
     lines,
     albumState,
-    'FWC 📜',
+    `FWC ${SCROLL}`,
     fwcStickers.filter(sticker => sticker.position >= 9),
   )
 

@@ -10,7 +10,15 @@ import {
   type ReactNode,
 } from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { normalizeUsername, usernameToEmail, validatePassword, validateUsername } from '@/lib/auth'
+import {
+  isEmailIdentifier,
+  normalizeEmail,
+  normalizeUsername,
+  usernameToEmail,
+  validatePassword,
+  validateRecoveryEmail,
+  validateUsername,
+} from '@/lib/auth'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { UserProfile } from '@/lib/types'
 
@@ -18,8 +26,10 @@ type AuthContextValue = {
   session: Session | null
   profile: UserProfile | null
   isLoading: boolean
-  signIn: (username: string, password: string) => Promise<void>
-  signUp: (username: string, password: string) => Promise<void>
+  signIn: (identifier: string, password: string) => Promise<void>
+  signUp: (username: string, password: string, email?: string) => Promise<void>
+  requestPasswordReset: (identifier: string) => Promise<void>
+  updatePassword: (password: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -32,6 +42,27 @@ function getUsernameFromSession(session: Session): string {
   }
 
   return normalizeUsername(session.user.email?.split('@')[0] ?? 'album')
+}
+
+async function resolveLoginEmail(identifierValue: string): Promise<string> {
+  const identifier = identifierValue.trim()
+  if (isEmailIdentifier(identifier)) return normalizeEmail(identifier)
+
+  const username = normalizeUsername(identifier)
+  const response = await fetch('/api/auth/resolve-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identifier: username }),
+  })
+
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({ error: 'No se pudo encontrar ese usuario.' }))
+    throw new Error(payload.error ?? 'No se pudo encontrar ese usuario.')
+  }
+
+  const payload = await response.json() as { email?: string }
+  if (!payload.email) throw new Error('No se pudo encontrar ese usuario.')
+  return payload.email
 }
 
 async function ensureProfile(session: Session): Promise<UserProfile> {
@@ -85,17 +116,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [applySession])
 
-  const signIn = useCallback(async (usernameValue: string, password: string) => {
-    const username = normalizeUsername(usernameValue)
-    const usernameError = validateUsername(username)
+  const signIn = useCallback(async (identifierValue: string, password: string) => {
+    const identifier = identifierValue.trim()
+    const usernameError = isEmailIdentifier(identifier) ? null : validateUsername(identifier)
     const passwordError = validatePassword(password)
     if (usernameError) throw new Error(usernameError)
     if (passwordError) throw new Error(passwordError)
 
     setIsLoading(true)
     const supabase = getSupabaseBrowserClient()
+    let email: string
+    try {
+      email = await resolveLoginEmail(identifier)
+    } catch (error) {
+      setIsLoading(false)
+      throw error
+    }
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: usernameToEmail(username),
+      email,
       password,
     })
 
@@ -107,26 +145,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await applySession(data.session)
   }, [applySession])
 
-  const signUp = useCallback(async (usernameValue: string, password: string) => {
+  const signUp = useCallback(async (usernameValue: string, password: string, emailValue = '') => {
     const username = normalizeUsername(usernameValue)
+    const email = normalizeEmail(emailValue)
     const usernameError = validateUsername(username)
     const passwordError = validatePassword(password)
+    const emailError = validateRecoveryEmail(email)
     if (usernameError) throw new Error(usernameError)
     if (passwordError) throw new Error(passwordError)
+    if (emailError) throw new Error(emailError)
 
     setIsLoading(true)
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, email }),
     })
 
     if (response.status === 501) {
       const supabase = getSupabaseBrowserClient()
       const { error } = await supabase.auth.signUp({
-        email: usernameToEmail(username),
+        email: email || usernameToEmail(username),
         password,
-        options: { data: { username } },
+        options: { data: { username, recovery_email: email || null } },
       })
       if (error) {
         setIsLoading(false)
@@ -138,8 +179,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(payload.error ?? 'No se pudo crear el album.')
     }
 
-    await signIn(username, password)
+    await signIn(email || username, password)
   }, [signIn])
+
+  const requestPasswordReset = useCallback(async (identifierValue: string) => {
+    const identifier = identifierValue.trim()
+    const usernameError = isEmailIdentifier(identifier) ? null : validateUsername(identifier)
+    if (usernameError) throw new Error(usernameError)
+
+    const response = await fetch('/api/auth/password-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier }),
+    })
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({ error: 'No se pudo enviar el mail.' }))
+      throw new Error(payload.error ?? 'No se pudo enviar el mail.')
+    }
+  }, [])
+
+  const updatePassword = useCallback(async (password: string) => {
+    const passwordError = validatePassword(password)
+    if (passwordError) throw new Error(passwordError)
+
+    setIsLoading(true)
+    const supabase = getSupabaseBrowserClient()
+    const { data, error } = await supabase.auth.updateUser({ password })
+    if (error) {
+      setIsLoading(false)
+      throw error
+    }
+    await applySession(data.user ? (await supabase.auth.getSession()).data.session : null)
+  }, [applySession])
 
   const signOut = useCallback(async () => {
     setIsLoading(true)
@@ -154,8 +226,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     signIn,
     signUp,
+    requestPasswordReset,
+    updatePassword,
     signOut,
-  }), [isLoading, profile, session, signIn, signOut, signUp])
+  }), [isLoading, profile, requestPasswordReset, session, signIn, signOut, signUp, updatePassword])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
