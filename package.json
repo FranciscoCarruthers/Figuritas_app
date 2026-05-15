@@ -8,10 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "validate:stickers": "node scripts/generate-supabase-seed.mjs --check",
-    "test:parser": "node scripts/test-parser.mjs"
+    "test:parser": "node scripts/test-parser.mjs",
+    "test:scan": "node scripts/test-scan-helpers.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
+    "@techstark/opencv-js": "^4.11.0-release.1",
     "lucide-react": "^0.468.0",
     "next": "^15.1.0",
     "react": "^19.0.0",

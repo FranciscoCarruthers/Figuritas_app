@@ -3,62 +3,63 @@
 import { useEffect, useRef, useState } from 'react'
 import { Camera, Check, Keyboard, Loader2, ScanLine, X } from 'lucide-react'
 import StickerResultButton from '@/components/StickerResultButton'
-import { useAlbum } from '@/context/AlbumContext'
-import { findStickerCandidates, parseStickerCode, parseStickerCodeFromText } from '@/lib/sticker-search'
 import { STICKERS_MAP } from '@/data/sticker-data'
+import { useAlbum } from '@/context/AlbumContext'
+import { getQuantity, isOwned } from '@/lib/album'
+import {
+  appendScanReading,
+  getStableScanCode,
+  type ScanPoint,
+  type ScanReading,
+} from '@/lib/scan-detection'
+import { disposeOcrWorker, recognizeStickerCode } from '@/lib/scan-ocr'
+import { extractStickerCodeCanvases } from '@/lib/scan-vision'
+import { findStickerCandidates, parseStickerCode } from '@/lib/sticker-search'
 import type { Sticker } from '@/lib/types'
 
-type ScanRegion = {
-  id: string
-  left: number
-  top: number
-  width: number
-  height: number
-}
+const SCAN_INTERVAL_MS = 250
 
-type ProcessMode = 'original' | 'contrast' | 'invert' | 'threshold' | 'invert-threshold'
-
-const SCAN_REGIONS: ScanRegion[] = [
-  { id: 'codigo', left: 0.56, top: 0.08, width: 0.34, height: 0.11 },
-  { id: 'codigo-arriba', left: 0.56, top: 0.05, width: 0.34, height: 0.11 },
-  { id: 'codigo-abajo', left: 0.56, top: 0.11, width: 0.34, height: 0.11 },
-  { id: 'codigo-izquierda', left: 0.50, top: 0.08, width: 0.38, height: 0.12 },
-  { id: 'codigo-ancho', left: 0.46, top: 0.06, width: 0.46, height: 0.15 },
-]
-
-const PRIMARY_MODES: ProcessMode[] = ['original', 'contrast', 'invert-threshold', 'invert', 'threshold']
-const FALLBACK_MODES: ProcessMode[] = ['contrast', 'invert-threshold', 'invert', 'threshold']
-
-function processPixelValue(value: number, mode: ProcessMode): number {
-  if (mode === 'original') return value
-  if (mode === 'threshold') return value > 145 ? 255 : 0
-  if (mode === 'invert-threshold') return value > 145 ? 0 : 255
-  if (mode === 'invert') return 255 - value
-  return value
+function svgPoints(points: [ScanPoint, ScanPoint, ScanPoint, ScanPoint] | null): string {
+  if (!points) return ''
+  return points.map(point => `${point.x * 100},${point.y * 100}`).join(' ')
 }
 
 export default function ScanPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const historyRef = useRef<ScanReading[]>([])
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
-  const [ocrText, setOcrText] = useState('')
+  const [scanStatus, setScanStatus] = useState('Abri la camara para empezar.')
   const [manual, setManual] = useState('')
   const [candidates, setCandidates] = useState<Sticker[]>([])
   const [selected, setSelected] = useState<Sticker | null>(null)
-  const [previewUrl, setPreviewUrl] = useState('')
+  const [cardPoints, setCardPoints] = useState<[ScanPoint, ScanPoint, ScanPoint, ScanPoint] | null>(null)
+  const [codeBoxPoints, setCodeBoxPoints] = useState<[ScanPoint, ScanPoint, ScanPoint, ScanPoint] | null>(null)
+  const [lastRead, setLastRead] = useState('')
   const [scanning, setScanning] = useState(false)
   const [saving, setSaving] = useState(false)
-  const { updateQuantity } = useAlbum()
+  const { albumState, updateQuantity } = useAlbum()
+  const selectedOwned = selected ? isOwned(albumState, selected.code) : false
+  const selectedQuantity = selected ? getQuantity(albumState, selected.code) : 0
+
+  function resetDetection() {
+    historyRef.current = []
+    setCardPoints(null)
+    setCodeBoxPoints(null)
+    setLastRead('')
+  }
 
   async function startCamera() {
     setCameraError(null)
+    setScanStatus('Preparando camara...')
+    resetDetection()
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
         },
         audio: false,
       })
@@ -68,8 +69,10 @@ export default function ScanPage() {
         await videoRef.current.play()
       }
       setCameraReady(true)
+      setScanStatus('Buscando figurita...')
     } catch {
       setCameraError('No pude abrir la camara. Revisa permisos de Safari y que la app este en HTTPS.')
+      setScanStatus('Camara no disponible.')
     }
   }
 
@@ -77,125 +80,101 @@ export default function ScanPage() {
     streamRef.current?.getTracks().forEach(track => track.stop())
     streamRef.current = null
     setCameraReady(false)
+    setSelected(null)
+    setCandidates([])
+    setScanStatus('Abri la camara para empezar.')
+    resetDetection()
+  }
+
+  function closeDetection() {
+    setSelected(null)
+    setCandidates([])
+    setManual('')
+    resetDetection()
+    setScanStatus(cameraReady ? 'Buscando figurita...' : 'Abri la camara para empezar.')
   }
 
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach(track => track.stop())
       streamRef.current = null
+      void disposeOcrWorker()
     }
   }, [])
 
-  function captureCodeCanvas(region: ScanRegion, mode: ProcessMode): HTMLCanvasElement | null {
-    const video = videoRef.current
-    if (!video || video.videoWidth === 0) return null
+  useEffect(() => {
+    if (!cameraReady || selected) return
 
-    const width = video.videoWidth
-    const height = video.videoHeight
-    const displayWidth = video.clientWidth || width
-    const displayHeight = video.clientHeight || height
-    const coverScale = Math.max(displayWidth / width, displayHeight / height)
-    const renderedWidth = width * coverScale
-    const renderedHeight = height * coverScale
-    const offsetX = (renderedWidth - displayWidth) / 2
-    const offsetY = (renderedHeight - displayHeight) / 2
-    const targetWidth = displayWidth * region.width
-    const targetHeight = displayHeight * region.height
-    const targetX = displayWidth * region.left
-    const targetY = displayHeight * region.top
-    const sourceWidth = Math.max(1, Math.round(targetWidth / coverScale))
-    const sourceHeight = Math.max(1, Math.round(targetHeight / coverScale))
-    const sourceX = Math.round(Math.max(0, Math.min(width - sourceWidth, (targetX + offsetX) / coverScale)))
-    const sourceY = Math.round(Math.max(0, Math.min(height - sourceHeight, (targetY + offsetY) / coverScale)))
-    const scale = 4
+    let cancelled = false
+    let timer: number | null = null
 
-    const canvas = document.createElement('canvas')
-    canvas.width = sourceWidth * scale
-    canvas.height = sourceHeight * scale
-    const context = canvas.getContext('2d')
-    if (!context) return null
+    async function tick() {
+      if (cancelled) return
 
-    context.imageSmoothingEnabled = true
-    context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height)
-
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
-    const { data } = imageData
-    for (let index = 0; index < data.length; index += 4) {
-      const value =
-        mode === 'original'
-          ? data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114
-          : processPixelValue(
-            Math.max(0, Math.min(255, (data[index] * 0.299 + data[index + 1] * 0.587 + data[index + 2] * 0.114 - 128) * 2 + 128)),
-            mode,
-          )
-      data[index] = value
-      data[index + 1] = value
-      data[index + 2] = value
-      data[index + 3] = 255
-    }
-    context.putImageData(imageData, 0, 0)
-
-    return canvas
-  }
-
-  async function scanFrame() {
-    const attempts = SCAN_REGIONS.flatMap((region, index) => {
-      const modes = index === 0 ? PRIMARY_MODES : FALLBACK_MODES
-      return modes.map(mode => ({ region, mode, canvas: captureCodeCanvas(region, mode) }))
-    }).filter((attempt): attempt is { region: ScanRegion; mode: ProcessMode; canvas: HTMLCanvasElement } => Boolean(attempt.canvas))
-    if (attempts.length === 0) return
-
-    setScanning(true)
-    setSelected(null)
-    setCandidates([])
-    setOcrText('')
-    setCameraError(null)
-    setPreviewUrl(attempts[0]?.canvas.toDataURL('image/png') ?? '')
-
-    try {
-      const { createWorker, PSM } = await import('tesseract.js')
-      const worker = await createWorker('eng')
-      const detectedParts: string[] = []
-      let detectedCode: string | null = null
+      setScanning(true)
       try {
-        await worker.setParameters({
-          tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ',
-          tessedit_pageseg_mode: PSM.SINGLE_LINE,
-        })
-        for (const attempt of attempts) {
-          const result = await worker.recognize(attempt.canvas)
-          const text = result.data.text.trim()
-          detectedParts.push(`${attempt.region.id}/${attempt.mode}: ${text || 'sin texto'}`)
-          detectedCode = parseStickerCodeFromText(text)
-          if (detectedCode) {
-            setPreviewUrl(attempt.canvas.toDataURL('image/png'))
-            break
-          }
+        const vision = await extractStickerCodeCanvases(videoRef.current)
+        if (cancelled) return
+
+        setCardPoints(vision.cardPoints)
+        setCodeBoxPoints(vision.codeBoxPoints)
+
+        if (vision.status !== 'card-found') {
+          historyRef.current = appendScanReading(historyRef.current, { code: null, confidence: 0, text: '' })
+          setScanStatus(vision.message)
+          return
         }
+
+        setScanStatus('Leyendo codigo...')
+        const result = await recognizeStickerCode(vision.codeCanvases)
+        if (cancelled) return
+
+        const reading: ScanReading = {
+          code: result.code,
+          confidence: result.confidence,
+          text: result.text,
+        }
+        historyRef.current = appendScanReading(historyRef.current, reading)
+        setLastRead(result.code ? `${result.code} (${result.confidence})` : 'Sin lectura clara')
+
+        const stableCode = getStableScanCode(historyRef.current)
+        if (stableCode && STICKERS_MAP[stableCode]) {
+          setSelected(STICKERS_MAP[stableCode])
+          setScanStatus('Figurita detectada.')
+          return
+        }
+
+        setScanStatus(result.code ? 'Confirmando codigo...' : 'Ajusta luz o acerca un poco.')
+      } catch {
+        setScanStatus('Preparando scanner...')
       } finally {
-        await worker.terminate()
+        setScanning(false)
+        if (!cancelled) {
+          timer = window.setTimeout(tick, SCAN_INTERVAL_MS)
+        }
       }
-      const detectedText = detectedParts.join('\n')
-      setOcrText(detectedText)
-      const found = detectedCode ? [STICKERS_MAP[detectedCode]] : []
-      setCandidates(found)
-      if (found.length === 1) {
-        setSelected(found[0])
-      } else {
-        setCameraError('No encontre el codigo. Hace coincidir el recuadro con el numero de figurita.')
-      }
-    } catch {
-      setCameraError('El OCR no pudo leer la imagen. Proba acercar la camara o usa carga manual.')
-    } finally {
-      setScanning(false)
     }
-  }
+
+    timer = window.setTimeout(tick, 200)
+
+    return () => {
+      cancelled = true
+      if (timer) window.clearTimeout(timer)
+    }
+  }, [cameraReady, selected])
 
   function handleManualLookup(value: string) {
     setManual(value)
     const code = parseStickerCode(value)
-    setSelected(code ? STICKERS_MAP[code] : null)
-    setCandidates(code ? [STICKERS_MAP[code]] : findStickerCandidates(value))
+    if (code && STICKERS_MAP[code]) {
+      setCandidates([])
+      setSelected(STICKERS_MAP[code])
+      setScanStatus('Figurita cargada manualmente.')
+      return
+    }
+
+    setSelected(null)
+    setCandidates(findStickerCandidates(value))
   }
 
   async function saveSelected() {
@@ -203,11 +182,6 @@ export default function ScanPage() {
     setSaving(true)
     try {
       await updateQuantity(selected.code, 1)
-      setManual('')
-      setOcrText('')
-      setPreviewUrl('')
-      setCandidates([])
-      setSelected(null)
     } finally {
       setSaving(false)
     }
@@ -218,69 +192,119 @@ export default function ScanPage() {
       <header className="safe-top">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Camara</p>
         <h1 className="mt-1 text-3xl font-black text-slate-950">Escanear</h1>
-        <p className="mt-1 text-sm font-semibold text-slate-500">Acerca la figurita y alinea solo el codigo superior derecho.</p>
+        <p className="mt-1 text-sm font-semibold text-slate-500">
+          Apunta a la figurita. La app busca el codigo superior derecho automaticamente.
+        </p>
       </header>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)] lg:gap-6">
-      <section className="mt-5 overflow-hidden rounded-lg border border-slate-200 bg-slate-950 shadow-sm lg:self-start">
-        <div className="relative aspect-[3/4] bg-slate-900 lg:aspect-[9/14]">
+      <section className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-sm">
+        <div className="relative aspect-[9/16] bg-slate-900 lg:aspect-[16/10]">
           <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
+
+          <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {cardPoints ? (
+              <polygon
+                points={svgPoints(cardPoints)}
+                fill="rgba(255,255,255,0.06)"
+                stroke="#dc2626"
+                strokeWidth="0.65"
+                vectorEffect="non-scaling-stroke"
+              />
+            ) : null}
+            {codeBoxPoints ? (
+              <polygon
+                points={svgPoints(codeBoxPoints)}
+                fill="rgba(254,242,242,0.22)"
+                stroke="#fef2f2"
+                strokeWidth="0.55"
+                vectorEffect="non-scaling-stroke"
+              />
+            ) : null}
+          </svg>
+
+          <div className="pointer-events-none absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-full bg-slate-950/70 px-3 py-2 text-xs font-black text-white shadow-lg">
+            {scanning && cameraReady && !selected ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ScanLine className="h-3.5 w-3.5" />}
+            <span className="truncate">{scanStatus}</span>
+          </div>
+
           {!cameraReady ? (
             <div className="absolute inset-0 grid place-items-center px-8 text-center text-white">
               <div>
                 <ScanLine className="mx-auto h-12 w-12 text-red-200" />
-                <p className="mt-3 text-sm font-semibold text-slate-300">Hace coincidir el recuadro con el numero de figurita.</p>
+                <p className="mt-3 text-sm font-semibold text-slate-300">
+                  La deteccion arranca sola cuando activas la camara.
+                </p>
               </div>
             </div>
           ) : null}
-          <div className="pointer-events-none absolute left-[56%] top-[8%] h-[11%] w-[34%] rounded-lg border-2 border-red-200/90 bg-white/5 shadow-[0_0_0_999px_rgba(15,23,42,0.45)]" />
-          <div className="pointer-events-none absolute left-[56%] top-[20%] w-[34%] text-center text-[10px] font-black uppercase tracking-[0.12em] text-white/85">
-            ABC 12
-          </div>
+
+          {selected ? (
+            <div className="absolute inset-x-3 bottom-3 rounded-xl border border-slate-200 bg-white p-4 text-slate-950 shadow-2xl">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-red-700">{selected.code}</p>
+                  <h2 className="mt-1 truncate text-2xl font-black leading-tight">{selected.name}</h2>
+                  <p className="text-sm font-semibold text-slate-500">{selected.team}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeDetection}
+                  aria-label="Cerrar deteccion"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-700"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className={`rounded-full px-3 py-1 text-xs font-black ${selectedOwned ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
+                  {selectedOwned ? `La tengo${selectedQuantity > 1 ? ` x${selectedQuantity}` : ''}` : 'Me falta'}
+                </span>
+                {lastRead ? (
+                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
+                    Lectura {lastRead}
+                  </span>
+                ) : null}
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {!selectedOwned ? (
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => void saveSelected()}
+                    className="flex h-11 items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white active:bg-red-800 disabled:opacity-50"
+                  >
+                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                    Agregar
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={closeDetection}
+                  className={`${selectedOwned ? 'col-span-2' : ''} h-11 rounded-lg bg-slate-100 px-3 text-sm font-black text-slate-700 active:bg-slate-200`}
+                >
+                  Seguir escaneando
+                </button>
+              </div>
+            </div>
+          ) : null}
         </div>
-        <div className="grid grid-cols-2 gap-2 bg-white p-3">
+
+        <div className="grid gap-2 bg-white p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <button
             type="button"
             onClick={cameraReady ? stopCamera : startCamera}
             className="flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 text-sm font-black text-white active:bg-slate-700"
           >
             {cameraReady ? <X className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
-            {cameraReady ? 'Cerrar' : 'Camara'}
+            {cameraReady ? 'Cerrar camara' : 'Abrir camara'}
           </button>
-          <button
-            type="button"
-            disabled={!cameraReady || scanning}
-            onClick={() => void scanFrame()}
-            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white active:bg-red-800 disabled:opacity-50"
-          >
-            {scanning ? <Loader2 className="h-4 w-4 animate-spin" /> : <ScanLine className="h-4 w-4" />}
-            Leer
-          </button>
+          <p className="text-center text-xs font-bold text-slate-500 sm:text-right">
+            {cameraReady ? 'Reconocimiento en vivo' : 'Gratis y local'}
+          </p>
         </div>
       </section>
 
-      <div>
       {cameraError ? <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{cameraError}</p> : null}
-
-      {previewUrl || ocrText ? (
-        <section className="mt-4 rounded-lg bg-slate-100 p-3">
-          <div className="flex items-start gap-3">
-            {previewUrl ? (
-              <img
-                src={previewUrl}
-                alt="Recorte usado para OCR"
-                className="h-16 w-28 shrink-0 rounded-md border border-slate-200 bg-white object-contain"
-              />
-            ) : null}
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-black uppercase tracking-wide text-slate-500">Texto detectado</p>
-              <p className="mt-1 max-h-24 overflow-auto whitespace-pre-wrap text-xs font-semibold text-slate-700">
-                {ocrText || 'Todavia no hay lectura.'}
-              </p>
-            </div>
-          </div>
-        </section>
-      ) : null}
 
       <section className="mt-5 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
         <label className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
@@ -290,9 +314,9 @@ export default function ScanPage() {
         <input
           value={manual}
           onChange={event => handleManualLookup(event.target.value)}
-          placeholder="Ej: ARG15, FWC10, 00"
+          placeholder="Ej: COL16, GHA19, PAN19"
           autoCapitalize="characters"
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-base font-black text-slate-950 outline-none"
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-base font-black text-slate-950 outline-none focus:border-red-700"
         />
       </section>
 
@@ -303,28 +327,6 @@ export default function ScanPage() {
           ))}
         </section>
       ) : null}
-
-      {selected ? (
-        <section className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 shadow-sm">
-          <p className="text-xs font-black uppercase tracking-wide text-red-700">Confirmar figurita</p>
-          <h2 className="mt-1 text-2xl font-black text-slate-950">{selected.code}</h2>
-          <p className="font-semibold text-slate-700">{selected.name}</p>
-          <p className="text-sm font-medium text-slate-500">{selected.team}</p>
-          <div className="mt-4">
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void saveSelected()}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white active:bg-red-800 disabled:opacity-50"
-            >
-              <Check className="h-4 w-4" />
-              La tengo
-            </button>
-          </div>
-        </section>
-      ) : null}
-      </div>
-      </div>
     </main>
   )
 }

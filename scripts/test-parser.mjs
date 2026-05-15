@@ -4,6 +4,7 @@ const seed = fs.readFileSync('supabase/seed.sql', 'utf8')
 const codes = new Set([...seed.matchAll(/\('([^']+)', 'fifa-world-cup-2026', 'section-/g)].map(match => match[1]))
 
 const numberTranslation = { B: '8', G: '9', I: '1', L: '1', '|': '1', O: '0', Q: '0', D: '0', S: '5', T: '7', Z: '2' }
+const prefixTranslation = { 0: 'O', 1: 'I', 5: 'S', 6: 'G', 8: 'B' }
 
 function normalizeNumber(value) {
   return value
@@ -22,6 +23,15 @@ function getNumberedStickerCode(prefix, rawNumber) {
   return codes.has(code) ? code : null
 }
 
+function normalizePrefix(value) {
+  return value
+    .toUpperCase()
+    .split('')
+    .map(char => prefixTranslation[char] ?? char)
+    .join('')
+    .replace(/[^A-Z]/g, '')
+}
+
 function parseStickerCode(value) {
   const text = value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
   const compact = text.replace(/[^A-Z0-9]/g, '')
@@ -38,6 +48,12 @@ function parseStickerCode(value) {
   const teamMatch = compact.match(/^([A-Z]{3})([0-9OQDGISZIL|BT]{1,2})$/)
   if (teamMatch) {
     const code = getNumberedStickerCode(teamMatch[1], teamMatch[2])
+    if (code) return code
+  }
+
+  const noisyTeamMatch = compact.match(/^([A-Z0-9]{3})([0-9OQDGISZIL|BT]{1,2})$/)
+  if (noisyTeamMatch) {
+    const code = getNumberedStickerCode(normalizePrefix(noisyTeamMatch[1]), noisyTeamMatch[2])
     if (code) return code
   }
 
@@ -71,6 +87,14 @@ function collectStickerCodesFromText(value) {
     }
   }
 
+  const noisyPattern = /([A-Z0-9]{3})([0-9OQDGISZIL|BT]{1,2})/g
+  let noisyMatch = noisyPattern.exec(compact)
+  while (noisyMatch) {
+    const code = getNumberedStickerCode(normalizePrefix(noisyMatch[1]), noisyMatch[2])
+    if (code) hits.add(code)
+    noisyMatch = noisyPattern.exec(compact)
+  }
+
   return [...hits]
 }
 
@@ -94,6 +118,13 @@ const cases = new Map([
   ['FIFA WORLD CUP 2026 PAR 19', ['parseStickerCodeFromText', 'PAR19']],
   ['FWC 10', ['parseStickerCodeFromText', 'FWC10']],
   ['ARG 1', ['parseStickerCodeFromText', 'ARG1']],
+  ['COL 16', ['parseStickerCodeFromText', 'COL16']],
+  ['COL16', ['parseStickerCodeFromText', 'COL16']],
+  ['GHA 19', ['parseStickerCodeFromText', 'GHA19']],
+  ['GHA I9', ['parseStickerCodeFromText', 'GHA19']],
+  ['PAN 19', ['parseStickerCodeFromText', 'PAN19']],
+  ['K0R 19', ['parseStickerCodeFromText', 'KOR19']],
+  ['GHA 7', ['parseStickerCodeFromText', 'GHA7']],
   ['FIFA Official Licensed Product Industria Argentina 005460', ['parseStickerCodeFromText', null]],
 ])
 

@@ -15,6 +15,14 @@ const NUMBER_TRANSLATION: Record<string, string> = {
   Z: '2',
 }
 
+const PREFIX_TRANSLATION: Record<string, string> = {
+  '0': 'O',
+  '1': 'I',
+  '5': 'S',
+  '6': 'G',
+  '8': 'B',
+}
+
 function normalizeNumber(value: string): string {
   return value
     .toUpperCase()
@@ -29,6 +37,15 @@ function normalizeText(value: string): string {
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toUpperCase()
+}
+
+function normalizePrefix(value: string): string {
+  return value
+    .toUpperCase()
+    .split('')
+    .map(char => PREFIX_TRANSLATION[char] ?? char)
+    .join('')
+    .replace(/[^A-Z]/g, '')
 }
 
 function getNumberedStickerCode(prefix: string, rawNumber: string): string | null {
@@ -55,6 +72,12 @@ export function parseStickerCode(value: string): string | null {
   const teamMatch = compact.match(/^([A-Z]{3})([0-9OQDGISZIL|BT]{1,2})$/)
   if (teamMatch) {
     const code = getNumberedStickerCode(teamMatch[1], teamMatch[2])
+    if (code) return code
+  }
+
+  const noisyTeamMatch = compact.match(/^([A-Z0-9]{3})([0-9OQDGISZIL|BT]{1,2})$/)
+  if (noisyTeamMatch) {
+    const code = getNumberedStickerCode(normalizePrefix(noisyTeamMatch[1]), noisyTeamMatch[2])
     if (code) return code
   }
 
@@ -91,6 +114,14 @@ function collectStickerCodesFromText(value: string): string[] {
       if (code) hits.add(code)
       match = pattern.exec(compact)
     }
+  }
+
+  const noisyPattern = /([A-Z0-9]{3})([0-9OQDGISZIL|BT]{1,2})/g
+  let noisyMatch = noisyPattern.exec(compact)
+  while (noisyMatch) {
+    const code = getNumberedStickerCode(normalizePrefix(noisyMatch[1]), noisyMatch[2])
+    if (code) hits.add(code)
+    noisyMatch = noisyPattern.exec(compact)
   }
 
   return [...hits].slice(0, 6)
