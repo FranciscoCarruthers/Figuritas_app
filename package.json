@@ -14,6 +14,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
     "@techstark/opencv-js": "^4.11.0-release.1",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "lucide-react": "^0.468.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
@@ -28,8 +30,8 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.1.0",
-    "tailwindcss": "^4.0.0",
     "sharp": "^0.34.5",
+    "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0"
   },
   "engines": {
