@@ -10,3 +10,4 @@ tmp
 .tmp-pydeps
 *.tsbuildinfo
 Thumbs.db
+*.traineddata

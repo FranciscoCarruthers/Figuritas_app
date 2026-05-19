@@ -21,10 +21,6 @@ def save_candidate(image: Image.Image, rows: list[dict], out_dir: Path, source: 
     if image.width < 150 or image.height < 150 or is_blank(image):
         return
 
-    if abs(image.width - 511) <= 8 and abs(image.height - 385) <= 8:
-        image = image.rotate(90, expand=True)
-        source = {**source, "rotated": True}
-
     image.thumbnail((520, 700))
     index = len(rows)
     out_path = out_dir / f"candidate-{index:04d}.webp"

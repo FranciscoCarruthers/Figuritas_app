@@ -10,6 +10,7 @@
     "validate:stickers": "node scripts/generate-supabase-seed.mjs --check",
     "test:parser": "node scripts/test-parser.mjs",
     "test:scan": "node scripts/test-scan-helpers.mjs",
+    "test:image-mapping": "node scripts/test-image-mapping.mjs",
     "test:app": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types scripts/test-app-helpers.mjs"
   },
   "dependencies": {
