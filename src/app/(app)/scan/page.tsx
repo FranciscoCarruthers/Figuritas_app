@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Camera, Check, Keyboard, Loader2, ScanLine, X } from 'lucide-react'
 import StickerResultButton from '@/components/StickerResultButton'
 import { STICKERS_MAP } from '@/data/sticker-data'
 import { useAlbum } from '@/context/AlbumContext'
 import { getQuantity, isOwned } from '@/lib/album'
+import { trackAppEvent } from '@/lib/app-analytics'
 import {
   appendScanReading,
   getStableScanCode,
@@ -37,8 +38,11 @@ export default function ScanPage() {
   const [cardPoints, setCardPoints] = useState<[ScanPoint, ScanPoint, ScanPoint, ScanPoint] | null>(null)
   const [codeBoxPoints, setCodeBoxPoints] = useState<[ScanPoint, ScanPoint, ScanPoint, ScanPoint] | null>(null)
   const [lastRead, setLastRead] = useState('')
+  const [lastConfidence, setLastConfidence] = useState<number | null>(null)
+  const [diagnostic, setDiagnostic] = useState('Esperando camara.')
   const [scanning, setScanning] = useState(false)
   const [saving, setSaving] = useState(false)
+  const lastTrackedStatusRef = useRef('')
   const { albumState, updateQuantity } = useAlbum()
   const selectedOwned = selected ? isOwned(albumState, selected.code) : false
   const selectedQuantity = selected ? getQuantity(albumState, selected.code) : 0
@@ -48,11 +52,21 @@ export default function ScanPage() {
     setCardPoints(null)
     setCodeBoxPoints(null)
     setLastRead('')
+    setLastConfidence(null)
+    setDiagnostic(cameraReady ? 'Buscando figurita.' : 'Esperando camara.')
   }
+
+  const updateScanStatus = useCallback((message: string, eventStatus?: string) => {
+    setScanStatus(message)
+    if (eventStatus && lastTrackedStatusRef.current !== eventStatus) {
+      lastTrackedStatusRef.current = eventStatus
+      trackAppEvent('scanner_card_status', { status: eventStatus })
+    }
+  }, [])
 
   async function startCamera() {
     setCameraError(null)
-    setScanStatus('Preparando camara...')
+    updateScanStatus('Preparando camara...', 'opening')
     resetDetection()
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -69,10 +83,13 @@ export default function ScanPage() {
         await videoRef.current.play()
       }
       setCameraReady(true)
-      setScanStatus('Buscando figurita...')
+      setDiagnostic('Camara activa. Buscando bordes de la figurita.')
+      trackAppEvent('scanner_opened', { mode: 'live' })
+      updateScanStatus('Buscando figurita...', 'searching_card')
     } catch {
       setCameraError('No pude abrir la camara. Revisa permisos de Safari y que la app este en HTTPS.')
-      setScanStatus('Camara no disponible.')
+      setDiagnostic('No se pudo abrir la camara.')
+      updateScanStatus('Camara no disponible.', 'camera_error')
     }
   }
 
@@ -82,7 +99,8 @@ export default function ScanPage() {
     setCameraReady(false)
     setSelected(null)
     setCandidates([])
-    setScanStatus('Abri la camara para empezar.')
+    updateScanStatus('Abri la camara para empezar.', 'idle')
+    setDiagnostic('Esperando camara.')
     resetDetection()
   }
 
@@ -91,7 +109,7 @@ export default function ScanPage() {
     setCandidates([])
     setManual('')
     resetDetection()
-    setScanStatus(cameraReady ? 'Buscando figurita...' : 'Abri la camara para empezar.')
+    updateScanStatus(cameraReady ? 'Buscando figurita...' : 'Abri la camara para empezar.', cameraReady ? 'searching_card' : 'idle')
   }
 
   useEffect(() => {
@@ -121,11 +139,14 @@ export default function ScanPage() {
 
         if (vision.status !== 'card-found') {
           historyRef.current = appendScanReading(historyRef.current, { code: null, confidence: 0, text: '' })
-          setScanStatus(vision.message)
+          setLastConfidence(null)
+          setDiagnostic('No veo una figurita rectangular clara. Acercala o enderezala un poco.')
+          updateScanStatus(vision.message, vision.status)
           return
         }
 
-        setScanStatus('Leyendo codigo...')
+        setDiagnostic('Figurita detectada. Recortando la esquina superior derecha.')
+        updateScanStatus('Leyendo codigo...', 'reading_code')
         const result = await recognizeStickerCode(vision.codeCanvases)
         if (cancelled) return
 
@@ -136,17 +157,28 @@ export default function ScanPage() {
         }
         historyRef.current = appendScanReading(historyRef.current, reading)
         setLastRead(result.code ? `${result.code} (${result.confidence})` : 'Sin lectura clara')
+        setLastConfidence(result.confidence)
 
         const stableCode = getStableScanCode(historyRef.current)
         if (stableCode && STICKERS_MAP[stableCode]) {
           setSelected(STICKERS_MAP[stableCode])
-          setScanStatus('Figurita detectada.')
+          trackAppEvent('scanner_code_detected', {
+            code: stableCode,
+            confidence: result.confidence,
+            owned: isOwned(albumState, stableCode),
+          })
+          setDiagnostic('Codigo estable. Revisa la figurita antes de agregarla.')
+          updateScanStatus('Figurita detectada.', 'code_stable')
           return
         }
 
-        setScanStatus(result.code ? 'Confirmando codigo...' : 'Ajusta luz o acerca un poco.')
+        setDiagnostic(result.code
+          ? 'Lectura posible. Mantene la camara quieta para confirmar.'
+          : 'No pude leer el codigo. Mejora la luz o apunta al ovalo superior derecho.')
+        updateScanStatus(result.code ? 'Confirmando codigo...' : 'Ajusta luz o acerca un poco.', result.code ? 'confirming_code' : 'code_unclear')
       } catch {
-        setScanStatus('Preparando scanner...')
+        setDiagnostic('El scanner se esta preparando. Probando de nuevo.')
+        updateScanStatus('Preparando scanner...', 'scanner_loading')
       } finally {
         setScanning(false)
         if (!cancelled) {
@@ -161,7 +193,7 @@ export default function ScanPage() {
       cancelled = true
       if (timer) window.clearTimeout(timer)
     }
-  }, [cameraReady, selected])
+  }, [albumState, cameraReady, selected, updateScanStatus])
 
   function handleManualLookup(value: string) {
     setManual(value)
@@ -182,6 +214,11 @@ export default function ScanPage() {
     setSaving(true)
     try {
       await updateQuantity(selected.code, 1)
+      trackAppEvent('scanner_added_to_album', {
+        code: selected.code,
+        team: selected.teamCode,
+        source: 'scanner_popup',
+      })
     } finally {
       setSaving(false)
     }
@@ -289,18 +326,34 @@ export default function ScanPage() {
           ) : null}
         </div>
 
-        <div className="grid gap-2 bg-white p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-          <button
-            type="button"
-            onClick={cameraReady ? stopCamera : startCamera}
-            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 text-sm font-black text-white active:bg-slate-700"
-          >
-            {cameraReady ? <X className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
-            {cameraReady ? 'Cerrar camara' : 'Abrir camara'}
-          </button>
-          <p className="text-center text-xs font-bold text-slate-500 sm:text-right">
-            {cameraReady ? 'Reconocimiento en vivo' : 'Gratis y local'}
-          </p>
+        <div className="grid gap-3 bg-white p-3">
+          <div className="grid gap-2 rounded-lg bg-slate-50 p-3 text-xs font-bold text-slate-600 sm:grid-cols-3">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Figurita</p>
+              <p className="mt-1 text-slate-900">{cardPoints ? 'Detectada' : 'Buscando'}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Codigo</p>
+              <p className="mt-1 text-slate-900">{lastRead || 'Sin lectura'}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-slate-400">Diagnostico</p>
+              <p className="mt-1 text-slate-900">{lastConfidence === null ? diagnostic : `${diagnostic} Confianza ${lastConfidence}.`}</p>
+            </div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <button
+              type="button"
+              onClick={cameraReady ? stopCamera : startCamera}
+              className="flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-900 text-sm font-black text-white active:bg-slate-700"
+            >
+              {cameraReady ? <X className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
+              {cameraReady ? 'Cerrar camara' : 'Abrir camara'}
+            </button>
+            <p className="text-center text-xs font-bold text-slate-500 sm:text-right">
+              {cameraReady ? 'Reconocimiento en vivo' : 'Gratis y local'}
+            </p>
+          </div>
         </div>
       </section>
 

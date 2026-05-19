@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Import as ImportIcon, LogOut, Search, Share, SlidersHorizontal, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronDown, ChevronUp, Import as ImportIcon, LogOut, Search, Share, SlidersHorizontal, Sparkles, X } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
@@ -10,9 +10,11 @@ import TeamFlag from '@/components/TeamFlag'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
+import { trackAppEvent } from '@/lib/app-analytics'
+import { buildImportPreview } from '@/lib/import-preview'
 import { parseMissingStickersList } from '@/lib/import-list'
 import { buildMissingStickersShareText } from '@/lib/share-list'
-import type { Sticker } from '@/lib/types'
+import type { AlbumState, Sticker } from '@/lib/types'
 
 type FilterMode = 'all' | 'missing' | 'owned'
 
@@ -72,6 +74,7 @@ function makeBlocks(): StickerBlock[] {
 }
 
 const ALL_BLOCKS = makeBlocks()
+const LAST_SECTION_STORAGE_KEY = 'figuritasapp:last-section'
 
 function normalizeSearch(value: string) {
   return value
@@ -116,6 +119,9 @@ export default function AlbumPage() {
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
   const [sectionFilter, setSectionFilter] = useState('Todas')
+  const [collapseCompleted, setCollapseCompleted] = useState(false)
+  const [foilsMissingOnly, setFoilsMissingOnly] = useState(false)
+  const [lastSection, setLastSection] = useState<string | null>(null)
   const [infoSticker, setInfoSticker] = useState<Sticker | null>(null)
   const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'error'>('idle')
   const [importOpen, setImportOpen] = useState(false)
@@ -123,18 +129,50 @@ export default function AlbumPage() {
   const [importStatus, setImportStatus] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
   const [importProgress, setImportProgress] = useState<{ completed: number; total: number } | null>(null)
+  const searchTrackedRef = useRef(false)
   const progress = getProgress(albumState, STICKERS)
+  const parsedImport = useMemo(() => parseMissingStickersList(importText), [importText])
+  const importPreview = useMemo(() => (
+    parsedImport.missingCodes.size > 0
+      ? buildImportPreview(STICKERS, albumState, parsedImport.missingCodes)
+      : null
+  ), [albumState, parsedImport])
   const importProgressPercent = importProgress && importProgress.total > 0
     ? Math.round((importProgress.completed / importProgress.total) * 100)
     : 0
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(LAST_SECTION_STORAGE_KEY)
+    if (stored) setLastSection(stored)
+  }, [])
+
+  useEffect(() => {
+    if (sectionFilter === 'Todas') return
+    setLastSection(sectionFilter)
+    window.localStorage.setItem(LAST_SECTION_STORAGE_KEY, sectionFilter)
+  }, [sectionFilter])
+
+  useEffect(() => {
+    if (query.trim().length >= 2 && !searchTrackedRef.current) {
+      searchTrackedRef.current = true
+      trackAppEvent('album_search_used', { length: query.trim().length })
+    }
+
+    if (query.trim().length === 0) searchTrackedRef.current = false
+  }, [query])
 
   const visibleBlocks = useMemo(() => {
     return ALL_BLOCKS.map(block => {
       if (!blockMatchesQuery(block, query)) return { ...block, stickers: [] }
 
+      if (collapseCompleted && getBlockOwnedCount(block, albumState) === block.stickers.length) {
+        return { ...block, stickers: [] }
+      }
+
       const stickers = block.stickers.filter(sticker => {
         if (sectionFilter !== 'Todas' && block.section !== sectionFilter) return false
         const owned = isOwned(albumState, sticker.code)
+        if (foilsMissingOnly) return sticker.isFoil && !owned
         if (filter === 'missing') return !owned
         if (filter === 'owned') return owned
         return true
@@ -142,16 +180,23 @@ export default function AlbumPage() {
 
       return { ...block, stickers }
     }).filter(block => block.stickers.length > 0)
-  }, [albumState, filter, query, sectionFilter])
+  }, [albumState, collapseCompleted, filter, foilsMissingOnly, query, sectionFilter])
 
   async function toggleSticker(sticker: Sticker) {
     const owned = isOwned(albumState, sticker.code)
+    trackAppEvent('album_sticker_toggled', {
+      code: sticker.code,
+      team: sticker.teamCode,
+      nextOwned: !owned,
+      foil: sticker.isFoil,
+    })
     await updateQuantity(sticker.code, owned ? 0 : 1)
   }
 
   async function copyMissingStickers() {
     try {
       await copyTextToClipboard(buildMissingStickersShareText(albumState))
+      trackAppEvent('share_missing_copied', { missing: progress.missing })
       setShareStatus('copied')
     } catch {
       setShareStatus('error')
@@ -161,8 +206,7 @@ export default function AlbumPage() {
   }
 
   async function handleImportMissing() {
-    const parsed = parseMissingStickersList(importText)
-    if (parsed.missingCodes.size === 0 || parsed.lineCount === 0) {
+    if (parsedImport.missingCodes.size === 0 || parsedImport.lineCount === 0) {
       setImportStatus('No encontre figuritas en ese texto.')
       return
     }
@@ -171,8 +215,13 @@ export default function AlbumPage() {
     setImportStatus(null)
     setImportProgress({ completed: 0, total: 0 })
     try {
-      const changed = await importMissingCodes(parsed.missingCodes, setImportProgress)
-      setImportStatus(`Importado: ${parsed.missingCodes.size} faltantes. Cambios aplicados: ${changed}.`)
+      const changed = await importMissingCodes(parsedImport.missingCodes, setImportProgress)
+      trackAppEvent('import_completed', {
+        missing: parsedImport.missingCodes.size,
+        changed,
+        lines: parsedImport.lineCount,
+      })
+      setImportStatus(`Importado: ${parsedImport.missingCodes.size} faltantes. Cambios aplicados: ${changed}.`)
       window.setTimeout(() => {
         setImportOpen(false)
         setImportText('')
@@ -201,7 +250,10 @@ export default function AlbumPage() {
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <button
               type="button"
-              onClick={() => setImportOpen(true)}
+              onClick={() => {
+                trackAppEvent('import_preview_opened', { source: 'album_header' })
+                setImportOpen(true)
+              }}
               aria-label="Importar faltantes"
               title="Importar faltantes"
               className="inline-flex h-10 w-10 items-center justify-center gap-1.5 rounded-full bg-slate-100 text-xs font-black text-slate-950 active:bg-slate-200 sm:w-auto sm:px-3"
@@ -251,7 +303,10 @@ export default function AlbumPage() {
             <button
               type="button"
               key={item.value}
-              onClick={() => setFilter(item.value)}
+              onClick={() => {
+                trackAppEvent('album_filter_changed', { filter: item.value })
+                setFilter(item.value)
+              }}
               className={`relative h-10 text-base font-semibold ${
                 filter === item.value ? 'text-slate-950' : 'text-slate-400'
               }`}
@@ -283,6 +338,8 @@ export default function AlbumPage() {
               setFilter('all')
               setSectionFilter('Todas')
               setQuery('')
+              setFoilsMissingOnly(false)
+              setCollapseCompleted(false)
             }}
             className="grid h-12 w-12 shrink-0 place-items-center rounded-full text-slate-950 active:bg-slate-100"
           >
@@ -295,7 +352,10 @@ export default function AlbumPage() {
             <button
               type="button"
               key={label}
-              onClick={() => setSectionFilter(label)}
+              onClick={() => {
+                trackAppEvent('album_filter_changed', { section: label })
+                setSectionFilter(label)
+              }}
               className={`h-9 shrink-0 rounded-full px-4 text-sm font-bold ${
                 sectionFilter === label ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-600'
               }`}
@@ -303,6 +363,49 @@ export default function AlbumPage() {
               {label}
             </button>
           ))}
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {lastSection && sectionFilter !== lastSection ? (
+            <button
+              type="button"
+              onClick={() => {
+                trackAppEvent('album_continue_last_section', { section: lastSection })
+                setSectionFilter(lastSection)
+              }}
+              className="inline-flex h-9 items-center gap-2 rounded-full bg-slate-950 px-4 text-xs font-black text-white active:bg-slate-800"
+            >
+              Seguir: {lastSection}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => {
+              const next = !foilsMissingOnly
+              trackAppEvent('album_show_foils_missing', { active: next })
+              setFoilsMissingOnly(next)
+            }}
+            className={`inline-flex h-9 items-center gap-2 rounded-full px-4 text-xs font-black ${
+              foilsMissingOnly ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-700'
+            }`}
+          >
+            <Sparkles className="h-4 w-4" />
+            Brillantes faltantes
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !collapseCompleted
+              trackAppEvent(next ? 'album_section_collapsed' : 'album_section_expanded', { scope: 'completed' })
+              setCollapseCompleted(next)
+            }}
+            className={`inline-flex h-9 items-center gap-2 rounded-full px-4 text-xs font-black ${
+              collapseCompleted ? 'bg-red-700 text-white' : 'bg-slate-100 text-slate-700'
+            }`}
+          >
+            {collapseCompleted ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            Ocultar completos
+          </button>
         </div>
 
         <div className="mt-4 rounded-xl border border-slate-200 bg-white p-3 lg:p-4">
@@ -388,7 +491,10 @@ export default function AlbumPage() {
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <textarea
                 value={importText}
-                onChange={event => setImportText(event.target.value)}
+                onChange={event => {
+                  setImportText(event.target.value)
+                  setImportStatus(null)
+                }}
                 disabled={importing}
                 placeholder={`FiguritasApp - Lista\nMe faltan\nFWC: 00, 1, 2\nARG: 4, 10, 13\nMEX: 1, 5, 20`}
                 className="min-h-64 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-950 outline-none focus:border-red-700 disabled:opacity-70"
@@ -396,6 +502,20 @@ export default function AlbumPage() {
               <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-800">
                 Importante: esto reemplaza el estado actual del album segun la lista pegada.
               </p>
+              {importPreview ? (
+                <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
+                  <p className="text-xs font-black uppercase tracking-[0.14em] text-red-700">Preview</p>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-sm font-bold text-slate-700">
+                    <span className="rounded-lg bg-slate-50 px-3 py-2">Tengo: {importPreview.ownedAfter}</span>
+                    <span className="rounded-lg bg-slate-50 px-3 py-2">Faltan: {importPreview.missingAfter}</span>
+                    <span className="rounded-lg bg-slate-50 px-3 py-2">A tengo: {importPreview.changesToOwned}</span>
+                    <span className="rounded-lg bg-slate-50 px-3 py-2">A falta: {importPreview.changesToMissing}</span>
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-slate-500">
+                    Se aplicarian {importPreview.totalChanges} cambios reales sobre {importPreview.total} figuritas.
+                  </p>
+                </div>
+              ) : null}
               {importing && importProgress ? (
                 <div className="mt-3 rounded-lg bg-slate-100 px-3 py-3">
                   <div className="mb-2 flex items-center justify-between text-xs font-black text-slate-600">
@@ -420,7 +540,7 @@ export default function AlbumPage() {
               </button>
               <button
                 type="button"
-                disabled={importing}
+                disabled={importing || !importPreview}
                 onClick={() => void handleImportMissing()}
                 className="rounded-lg bg-red-700 px-4 py-3 text-sm font-black text-white disabled:opacity-60"
               >
@@ -432,4 +552,8 @@ export default function AlbumPage() {
       ) : null}
     </main>
   )
+}
+
+function getBlockOwnedCount(block: StickerBlock, albumState: AlbumState) {
+  return block.stickers.filter(sticker => isOwned(albumState, sticker.code)).length
 }

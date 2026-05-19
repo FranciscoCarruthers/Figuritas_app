@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { CalendarDays, CheckCircle2, CircleDashed, Flag, Percent, Sparkles, TrendingUp, Trophy } from 'lucide-react'
+import { CalendarDays, CheckCircle2, CircleDashed, Flag, Percent, Sparkles, Target, TrendingUp, Trophy } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress } from '@/lib/album'
+import { buildAlbumInsights } from '@/lib/stats-insights'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { ActivityEntry } from '@/lib/types'
 
@@ -89,9 +90,10 @@ export default function EstadisticasPage() {
     return { overall, intro, foil, groupStats, teamStats, completedTeams, bestTeam, closestTeams }
   }, [albumState])
 
-  const completedGroups = stats.groupStats.filter(item => item.progress.percent === 100).length
-  const weeklyMarked = weeklyEntries.filter(entry => entry.quantity > 0).length
-  const weeklyUnmarked = weeklyEntries.filter(entry => entry.quantity === 0).length
+  const insights = useMemo(
+    () => buildAlbumInsights(STICKERS, ALBUM_GROUPS, albumState, weeklyEntries),
+    [albumState, weeklyEntries],
+  )
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-28 lg:px-8 lg:pb-8">
@@ -141,7 +143,7 @@ export default function EstadisticasPage() {
         />
         <StatCard
           label="Secciones"
-          value={`${completedGroups}/${stats.groupStats.length}`}
+          value={`${insights.completedSections}/${stats.groupStats.length}`}
           detail="completas"
           icon={<Trophy className="h-5 w-5" />}
         />
@@ -162,10 +164,28 @@ export default function EstadisticasPage() {
         />
         <StatCard
           label="Ultimos 7 dias"
-          value={String(weeklyEntries.length)}
-          detail={`${weeklyMarked} marcadas, ${weeklyUnmarked} desmarcadas`}
+          value={String(insights.weeklyActivity.total)}
+          detail={`${insights.weeklyActivity.marked} marcadas, ${insights.weeklyActivity.unmarked} desmarcadas`}
           icon={<CalendarDays className="h-5 w-5" />}
         />
+      </section>
+
+      <section className="mt-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xl font-black tracking-tight text-slate-950">Proximos objetivos</h2>
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-400">accionable</p>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-3">
+          {insights.recommendations.map(item => (
+            <article key={`${item.kind}-${item.code ?? item.title}`} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-red-50 text-red-700">
+                <Target className="h-5 w-5" />
+              </span>
+              <h3 className="mt-3 text-base font-black text-slate-950">{item.title}</h3>
+              <p className="mt-1 text-sm font-semibold leading-5 text-slate-500">{item.detail}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="mt-6">
