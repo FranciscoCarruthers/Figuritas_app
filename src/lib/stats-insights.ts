@@ -164,7 +164,7 @@ function dayLabel(value: Date, today: Date): string {
 }
 
 export function buildDailyMarkedStats(
-  entries: StatsActivityInput[],
+  albumState: AlbumState,
   days = 7,
   now = new Date(),
 ): DailyMarkedStats[] {
@@ -180,9 +180,9 @@ export function buildDailyMarkedStats(
     })
   }
 
-  for (const entry of entries) {
-    if (entry.quantity <= 0) continue
-    const key = dayKey(new Date(entry.created_at))
+  for (const sticker of Object.values(albumState)) {
+    if (sticker.quantity <= 0) continue
+    const key = dayKey(new Date(sticker.updated_at))
     const bucket = buckets.get(key)
     if (bucket) bucket.marked += 1
   }
@@ -222,7 +222,7 @@ export function buildAlbumInsights(
       marked: weeklyEntries.filter(entry => entry.quantity > 0).length,
       unmarked: weeklyEntries.filter(entry => entry.quantity === 0).length,
     },
-    dailyMarked: buildDailyMarkedStats(weeklyEntries, 7, now),
+    dailyMarked: buildDailyMarkedStats(albumState, 7, now),
     recommendations: buildRecommendations(closestTeams, groupProgress, foils.missing),
   }
 }
