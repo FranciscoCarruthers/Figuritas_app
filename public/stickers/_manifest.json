@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-05-19T21:42:27.243Z",
-  "mapped": 777,
-  "available": 796,
+  "generatedAt": "2026-05-20T03:31:48.630Z",
+  "mapped": 790,
+  "available": 797,
   "total": 980,
   "candidates": 829,
   "missing": [
@@ -56,7 +56,6 @@
     "CRO13",
     "CRO15",
     "CRO17",
-    "CUW1",
     "CUW12",
     "CUW13",
     "CUW14",
@@ -1187,7 +1186,7 @@
       "type": "photo",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0146.webp",
+      "candidate": "tmp/sticker-candidates/candidate-0147.webp",
       "page": 10
     },
     {
@@ -1511,7 +1510,7 @@
       "type": "player",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0266.webp",
+      "candidate": "tmp/sticker-candidates/candidate-0268.webp",
       "page": 17
     },
     {
@@ -1835,8 +1834,8 @@
       "type": "photo",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0075.webp",
-      "page": 5
+      "candidate": "tmp/sticker-candidates/candidate-0225.webp",
+      "page": 15
     },
     {
       "code": "COL14",
@@ -2163,6 +2162,15 @@
       "page": 18
     },
     {
+      "code": "CUW1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0300.webp",
+      "page": 19
+    },
+    {
       "code": "CUW2",
       "name": "Eloy Room",
       "type": "player",
@@ -2460,6 +2468,15 @@
       "page": 20
     },
     {
+      "code": "ECU2",
+      "name": "Hernán Galíndez",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0306.webp",
+      "page": 20
+    },
+    {
       "code": "ECU3",
       "name": "Gonzalo Valle",
       "type": "player",
@@ -2555,8 +2572,8 @@
       "type": "photo",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0153.webp",
-      "page": 10
+      "candidate": "tmp/sticker-candidates/candidate-0305.webp",
+      "page": 20
     },
     {
       "code": "ECU14",
@@ -2673,6 +2690,15 @@
       "reason": "player",
       "score": 1011,
       "candidate": "tmp/sticker-candidates/candidate-0320.webp",
+      "page": 21
+    },
+    {
+      "code": "EGY14",
+      "name": "Mohamed Lasheen",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0327.webp",
       "page": 21
     },
     {
@@ -3375,6 +3401,15 @@
       "reason": "player",
       "score": 1011,
       "candidate": "tmp/sticker-candidates/candidate-0009.webp",
+      "page": 1
+    },
+    {
+      "code": "GER17",
+      "name": "Kai Havertz",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0002.webp",
       "page": 1
     },
     {
@@ -4269,6 +4304,15 @@
       "page": 16
     },
     {
+      "code": "KOR2",
+      "name": "Hyeon-woo Jo",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0244.webp",
+      "page": 16
+    },
+    {
       "code": "KOR3",
       "name": "Seung-Gyu Kim",
       "type": "player",
@@ -4311,6 +4355,15 @@
       "reason": "player",
       "score": 1011,
       "candidate": "tmp/sticker-candidates/candidate-0248.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR10",
+      "name": "Jae-sung Lee",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0245.webp",
       "page": 16
     },
     {
@@ -4872,6 +4925,15 @@
       "page": 39
     },
     {
+      "code": "NED7",
+      "name": "Nathan Aké",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0558.webp",
+      "page": 36
+    },
+    {
       "code": "NED8",
       "name": "Jeremie Frimpong",
       "type": "player",
@@ -4922,8 +4984,8 @@
       "type": "photo",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0560.webp",
-      "page": 36
+      "candidate": "tmp/sticker-candidates/candidate-0594.webp",
+      "page": 39
     },
     {
       "code": "NED14",
@@ -5169,6 +5231,15 @@
       "page": 38
     },
     {
+      "code": "NZL6",
+      "name": "Tim Payne",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0587.webp",
+      "page": 38
+    },
+    {
       "code": "NZL8",
       "name": "Francis de Vries",
       "type": "player",
@@ -5192,7 +5263,16 @@
       "type": "player",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0578.webp",
+      "candidate": "tmp/sticker-candidates/candidate-0579.webp",
+      "page": 38
+    },
+    {
+      "code": "NZL12",
+      "name": "Ryan Thomas",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0586.webp",
       "page": 38
     },
     {
@@ -5601,6 +5681,15 @@
       "page": 42
     },
     {
+      "code": "POR12",
+      "name": "Vitinha",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0648.webp",
+      "page": 42
+    },
+    {
       "code": "POR13",
       "name": "Team Photo",
       "type": "photo",
@@ -5651,8 +5740,8 @@
       "type": "player",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0652.webp",
-      "page": 42
+      "candidate": "tmp/sticker-candidates/candidate-0660.webp",
+      "page": 43
     },
     {
       "code": "POR19",
@@ -5769,6 +5858,15 @@
       "reason": "player",
       "score": 711,
       "candidate": "tmp/sticker-candidates/candidate-0662.webp",
+      "page": 44
+    },
+    {
+      "code": "QAT19",
+      "name": "Ahmed Al Ganehi",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0671.webp",
       "page": 44
     },
     {
@@ -5922,6 +6020,15 @@
       "reason": "player",
       "score": 1011,
       "candidate": "tmp/sticker-candidates/candidate-0347.webp",
+      "page": 22
+    },
+    {
+      "code": "SCO9",
+      "name": "Anthony Ralston",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0342.webp",
       "page": 22
     },
     {
@@ -7158,6 +7265,15 @@
       "page": 54
     },
     {
+      "code": "UZB17",
+      "name": "Oston Urunov",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0827.webp",
+      "page": 54
+    },
+    {
       "code": "UZB18",
       "name": "Jaloliddin Masharipov",
       "type": "player",
@@ -7185,12 +7301,8 @@
       "page": 54
     }
   ],
-  "rejectedCount": 20,
+  "rejectedCount": 6,
   "rejected": [
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0002.webp",
-      "page": 1
-    },
     {
       "candidate": "tmp/sticker-candidates/candidate-0159.webp",
       "page": 10
@@ -7214,58 +7326,6 @@
     {
       "candidate": "tmp/sticker-candidates/candidate-0217.webp",
       "page": 14
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0225.webp",
-      "page": 15
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0244.webp",
-      "page": 16
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0305.webp",
-      "page": 20
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0306.webp",
-      "page": 20
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0327.webp",
-      "page": 21
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0342.webp",
-      "page": 22
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0558.webp",
-      "page": 36
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0587.webp",
-      "page": 38
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0594.webp",
-      "page": 39
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0640.webp",
-      "page": 41
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0642.webp",
-      "page": 42
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0671.webp",
-      "page": 44
-    },
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0827.webp",
-      "page": 54
     }
   ]
 }
