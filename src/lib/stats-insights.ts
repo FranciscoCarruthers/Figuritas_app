@@ -26,6 +26,12 @@ export type StatsRecommendation = {
 
 export type StatsActivityInput = Pick<ActivityEntry, 'quantity' | 'created_at'>
 
+export type DailyMarkedStats = {
+  key: string
+  label: string
+  marked: number
+}
+
 export type AlbumInsights = {
   progress: {
     owned: number
@@ -48,6 +54,7 @@ export type AlbumInsights = {
     marked: number
     unmarked: number
   }
+  dailyMarked: DailyMarkedStats[]
   recommendations: StatsRecommendation[]
 }
 
@@ -134,11 +141,61 @@ function buildRecommendations(
   return recommendations.slice(0, 3)
 }
 
+function startOfLocalDay(value: Date): Date {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate())
+}
+
+function addDays(value: Date, days: number): Date {
+  const next = new Date(value)
+  next.setDate(next.getDate() + days)
+  return next
+}
+
+function dayKey(value: Date): string {
+  const year = value.getFullYear()
+  const month = String(value.getMonth() + 1).padStart(2, '0')
+  const day = String(value.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function dayLabel(value: Date, today: Date): string {
+  if (dayKey(value) === dayKey(today)) return 'Hoy'
+  return value.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
+}
+
+export function buildDailyMarkedStats(
+  entries: StatsActivityInput[],
+  days = 7,
+  now = new Date(),
+): DailyMarkedStats[] {
+  const today = startOfLocalDay(now)
+  const buckets = new Map<string, DailyMarkedStats>()
+
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const date = addDays(today, -offset)
+    buckets.set(dayKey(date), {
+      key: dayKey(date),
+      label: dayLabel(date, today),
+      marked: 0,
+    })
+  }
+
+  for (const entry of entries) {
+    if (entry.quantity <= 0) continue
+    const key = dayKey(new Date(entry.created_at))
+    const bucket = buckets.get(key)
+    if (bucket) bucket.marked += 1
+  }
+
+  return [...buckets.values()]
+}
+
 export function buildAlbumInsights(
   stickers: Sticker[],
   groups: AlbumGroupInput[],
   albumState: AlbumState,
   weeklyEntries: StatsActivityInput[] = [],
+  now = new Date(),
 ): AlbumInsights {
   const teams = groups.flatMap(group => group.teams).filter(team => team.code !== 'FWC')
   const teamProgress = getTeamProgress(stickers, teams, albumState)
@@ -165,6 +222,7 @@ export function buildAlbumInsights(
       marked: weeklyEntries.filter(entry => entry.quantity > 0).length,
       unmarked: weeklyEntries.filter(entry => entry.quantity === 0).length,
     },
+    dailyMarked: buildDailyMarkedStats(weeklyEntries, 7, now),
     recommendations: buildRecommendations(closestTeams, groupProgress, foils.missing),
   }
 }

@@ -41,8 +41,10 @@ assert.deepEqual(preview, {
 
 const insights = buildAlbumInsights(stickers, groups, state, [
   { quantity: 1, created_at: '2026-05-18T12:00:00.000Z' },
+  { quantity: 1, created_at: '2026-05-18T13:00:00.000Z' },
+  { quantity: 1, created_at: '2026-05-16T12:00:00.000Z' },
   { quantity: 0, created_at: '2026-05-17T12:00:00.000Z' },
-])
+], new Date('2026-05-20T15:00:00.000Z'))
 
 assert.equal(insights.progress.owned, 7)
 assert.equal(insights.progress.missing, 1)
@@ -51,9 +53,22 @@ assert.equal(insights.completedTeams, 1)
 assert.equal(insights.completedSections, 1)
 assert.equal(insights.closestTeams[0].code, 'ARG')
 assert.equal(insights.groupProgress.find(group => group.label === 'Grupo A')?.percent, 83)
-assert.equal(insights.weeklyActivity.total, 2)
-assert.equal(insights.weeklyActivity.marked, 1)
+assert.equal(insights.weeklyActivity.total, 4)
+assert.equal(insights.weeklyActivity.marked, 3)
 assert.equal(insights.weeklyActivity.unmarked, 1)
+assert.equal(insights.dailyMarked.length, 7)
+assert.deepEqual(
+  insights.dailyMarked.map(day => [day.key, day.marked]),
+  [
+    ['2026-05-14', 0],
+    ['2026-05-15', 0],
+    ['2026-05-16', 1],
+    ['2026-05-17', 0],
+    ['2026-05-18', 2],
+    ['2026-05-19', 0],
+    ['2026-05-20', 0],
+  ],
+)
 assert.ok(insights.recommendations.some(item => item.kind === 'almost-team' && item.code === 'ARG'))
 
 console.log('App helpers validated.')

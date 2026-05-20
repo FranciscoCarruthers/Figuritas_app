@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { CalendarDays, CheckCircle2, CircleDashed, Flag, Percent, Sparkles, Target, TrendingUp, Trophy } from 'lucide-react'
+import { BarChart3, CalendarDays, CheckCircle2, CircleDashed, Flag, Percent, Sparkles, Target, TrendingUp, Trophy } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress } from '@/lib/album'
-import { buildAlbumInsights } from '@/lib/stats-insights'
+import { buildAlbumInsights, type DailyMarkedStats } from '@/lib/stats-insights'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { ActivityEntry } from '@/lib/types'
 
@@ -29,6 +29,50 @@ function StatCard({ label, value, detail, icon }: StatCardProps) {
       </div>
       <p className="text-3xl font-black tracking-tight text-slate-950">{value}</p>
       <p className="mt-1 text-sm font-semibold text-slate-500">{detail}</p>
+    </article>
+  )
+}
+
+function DailyMarkedChart({ days }: { days: DailyMarkedStats[] }) {
+  const maxMarked = Math.max(1, ...days.map(day => day.marked))
+  const totalMarked = days.reduce((total, day) => total + day.marked, 0)
+  const bestDay = [...days].sort((a, b) => b.marked - a.marked)[0]
+
+  return (
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Anotadas por dia</p>
+          <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">{totalMarked} en 7 dias</h2>
+          <p className="mt-1 text-sm font-semibold text-slate-500">
+            {bestDay && bestDay.marked > 0 ? `Mejor dia: ${bestDay.label} con ${bestDay.marked}.` : 'Todavia sin altas esta semana.'}
+          </p>
+        </div>
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-red-50 text-red-700">
+          <BarChart3 className="h-5 w-5" />
+        </span>
+      </div>
+
+      <div className="mt-5 grid h-44 grid-cols-7 items-end gap-2 rounded-lg bg-slate-50 px-2 pb-3 pt-4 sm:gap-3 sm:px-4">
+        {days.map(day => {
+          const height = day.marked === 0 ? 6 : Math.max(18, Math.round((day.marked / maxMarked) * 112))
+
+          return (
+            <div key={day.key} className="flex h-full min-w-0 flex-col items-center justify-end gap-2">
+              <p className="text-xs font-black text-slate-700">{day.marked}</p>
+              <div
+                className={`w-full max-w-10 rounded-t-lg transition-all ${
+                  day.marked > 0 ? 'bg-red-700 shadow-sm' : 'bg-slate-200'
+                }`}
+                style={{ height }}
+                aria-label={`${day.label}: ${day.marked} figuritas anotadas`}
+                title={`${day.label}: ${day.marked} figuritas anotadas`}
+              />
+              <p className="w-full truncate text-center text-[11px] font-bold text-slate-500">{day.label}</p>
+            </div>
+          )
+        })}
+      </div>
     </article>
   )
 }
@@ -168,6 +212,10 @@ export default function EstadisticasPage() {
           detail={`${insights.weeklyActivity.marked} marcadas, ${insights.weeklyActivity.unmarked} desmarcadas`}
           icon={<CalendarDays className="h-5 w-5" />}
         />
+      </section>
+
+      <section className="mt-4">
+        <DailyMarkedChart days={insights.dailyMarked} />
       </section>
 
       <section className="mt-6">
