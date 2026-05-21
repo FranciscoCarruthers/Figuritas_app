@@ -16,6 +16,7 @@ export type AppEventName =
   | 'import_completed'
   | 'share_missing_copied'
   | 'scanner_opened'
+  | 'scanner_mode_changed'
   | 'scanner_card_status'
   | 'scanner_code_detected'
   | 'scanner_added_to_album'

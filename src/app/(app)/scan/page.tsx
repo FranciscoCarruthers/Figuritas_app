@@ -20,9 +20,83 @@ import type { Sticker } from '@/lib/types'
 
 const SCAN_INTERVAL_MS = 250
 
+type ScanMode = 'camera' | 'manual'
+
 function svgPoints(points: [ScanPoint, ScanPoint, ScanPoint, ScanPoint] | null): string {
   if (!points) return ''
   return points.map(point => `${point.x * 100},${point.y * 100}`).join(' ')
+}
+
+function DetectionPanel({
+  sticker,
+  owned,
+  quantity,
+  lastRead,
+  saving,
+  onSave,
+  onClose,
+  closeLabel,
+  className,
+}: {
+  sticker: Sticker
+  owned: boolean
+  quantity: number
+  lastRead?: string
+  saving: boolean
+  onSave: () => void
+  onClose: () => void
+  closeLabel: string
+  className?: string
+}) {
+  return (
+    <div className={`rounded-xl border border-slate-200 bg-white p-4 text-slate-950 shadow-2xl ${className ?? ''}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-red-700">{sticker.code}</p>
+          <h2 className="mt-1 truncate text-2xl font-black leading-tight">{sticker.name}</h2>
+          <p className="text-sm font-semibold text-slate-500">{sticker.team}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar deteccion"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-700"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <span className={`rounded-full px-3 py-1 text-xs font-black ${owned ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
+          {owned ? `La tengo${quantity > 1 ? ` x${quantity}` : ''}` : 'Me falta'}
+        </span>
+        {lastRead ? (
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
+            Lectura {lastRead}
+          </span>
+        ) : null}
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {!owned ? (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={onSave}
+            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white active:bg-red-800 disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            Agregar
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={onClose}
+          className={`${owned ? 'col-span-2' : ''} h-11 rounded-lg bg-slate-100 px-3 text-sm font-black text-slate-700 active:bg-slate-200`}
+        >
+          {closeLabel}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 export default function ScanPage() {
@@ -32,6 +106,7 @@ export default function ScanPage() {
   const [cameraReady, setCameraReady] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [scanStatus, setScanStatus] = useState('Abri la camara para empezar.')
+  const [mode, setMode] = useState<ScanMode>('camera')
   const [manual, setManual] = useState('')
   const [candidates, setCandidates] = useState<Sticker[]>([])
   const [selected, setSelected] = useState<Sticker | null>(null)
@@ -109,7 +184,27 @@ export default function ScanPage() {
     setCandidates([])
     setManual('')
     resetDetection()
-    updateScanStatus(cameraReady ? 'Buscando figurita...' : 'Abri la camara para empezar.', cameraReady ? 'searching_card' : 'idle')
+    if (mode === 'camera') {
+      updateScanStatus(cameraReady ? 'Buscando figurita...' : 'Abri la camara para empezar.', cameraReady ? 'searching_card' : 'idle')
+    }
+  }
+
+  function switchMode(nextMode: ScanMode) {
+    if (nextMode === mode) return
+
+    setMode(nextMode)
+    setSelected(null)
+    setCandidates([])
+    setManual('')
+    resetDetection()
+    trackAppEvent('scanner_mode_changed', { mode: nextMode })
+
+    if (nextMode === 'manual') {
+      if (cameraReady) stopCamera()
+      setScanStatus('Abri la camara para empezar.')
+    } else {
+      updateScanStatus(cameraReady ? 'Buscando figurita...' : 'Abri la camara para empezar.', cameraReady ? 'searching_card' : 'idle')
+    }
   }
 
   useEffect(() => {
@@ -121,7 +216,7 @@ export default function ScanPage() {
   }, [])
 
   useEffect(() => {
-    if (!cameraReady || selected) return
+    if (mode !== 'camera' || !cameraReady || selected) return
 
     let cancelled = false
     let timer: number | null = null
@@ -193,7 +288,7 @@ export default function ScanPage() {
       cancelled = true
       if (timer) window.clearTimeout(timer)
     }
-  }, [albumState, cameraReady, selected, updateScanStatus])
+  }, [albumState, cameraReady, mode, selected, updateScanStatus])
 
   function handleManualLookup(value: string) {
     setManual(value)
@@ -201,7 +296,7 @@ export default function ScanPage() {
     if (code && STICKERS_MAP[code]) {
       setCandidates([])
       setSelected(STICKERS_MAP[code])
-      setScanStatus('Figurita cargada manualmente.')
+      if (mode === 'camera') setScanStatus('Figurita cargada manualmente.')
       return
     }
 
@@ -217,7 +312,7 @@ export default function ScanPage() {
       trackAppEvent('scanner_added_to_album', {
         code: selected.code,
         team: selected.teamCode,
-        source: 'scanner_popup',
+        source: mode === 'manual' ? 'manual_popup' : 'scanner_popup',
       })
     } finally {
       setSaving(false)
@@ -227,13 +322,39 @@ export default function ScanPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 pb-5 pt-5 lg:px-8 lg:pb-8">
       <header className="safe-top">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Camara</p>
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-red-700">Scanner</p>
         <h1 className="mt-1 text-3xl font-black text-slate-950">Escanear</h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">
-          Apunta a la figurita. La app busca el codigo superior derecho automaticamente.
+          Usa la camara en vivo o carga el codigo a mano cuando quieras ir mas rapido.
         </p>
       </header>
 
+      <section className="mt-5 grid grid-cols-2 rounded-full bg-slate-100 p-1">
+        {([
+          { value: 'camera', label: 'Camara', icon: Camera },
+          { value: 'manual', label: 'Manual', icon: Keyboard },
+        ] as const).map(item => {
+          const Icon = item.icon
+          const active = mode === item.value
+
+          return (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => switchMode(item.value)}
+              className={`flex h-11 items-center justify-center gap-2 rounded-full text-sm font-black transition ${
+                active ? 'bg-red-700 text-white shadow-sm' : 'text-slate-500 active:bg-white'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {item.label}
+            </button>
+          )
+        })}
+      </section>
+
+      {mode === 'camera' ? (
+        <>
       <section className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-sm">
         <div className="relative aspect-[9/16] bg-slate-900 lg:aspect-[16/10]">
           <video ref={videoRef} className="h-full w-full object-cover" playsInline muted />
@@ -276,53 +397,17 @@ export default function ScanPage() {
           ) : null}
 
           {selected ? (
-            <div className="absolute inset-x-3 bottom-3 rounded-xl border border-slate-200 bg-white p-4 text-slate-950 shadow-2xl">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-xs font-black uppercase tracking-[0.14em] text-red-700">{selected.code}</p>
-                  <h2 className="mt-1 truncate text-2xl font-black leading-tight">{selected.name}</h2>
-                  <p className="text-sm font-semibold text-slate-500">{selected.team}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeDetection}
-                  aria-label="Cerrar deteccion"
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-slate-100 text-slate-700"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className={`rounded-full px-3 py-1 text-xs font-black ${selectedOwned ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-600'}`}>
-                  {selectedOwned ? `La tengo${selectedQuantity > 1 ? ` x${selectedQuantity}` : ''}` : 'Me falta'}
-                </span>
-                {lastRead ? (
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-500">
-                    Lectura {lastRead}
-                  </span>
-                ) : null}
-              </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                {!selectedOwned ? (
-                  <button
-                    type="button"
-                    disabled={saving}
-                    onClick={() => void saveSelected()}
-                    className="flex h-11 items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white active:bg-red-800 disabled:opacity-50"
-                  >
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                    Agregar
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={closeDetection}
-                  className={`${selectedOwned ? 'col-span-2' : ''} h-11 rounded-lg bg-slate-100 px-3 text-sm font-black text-slate-700 active:bg-slate-200`}
-                >
-                  Seguir escaneando
-                </button>
-              </div>
-            </div>
+            <DetectionPanel
+              sticker={selected}
+              owned={selectedOwned}
+              quantity={selectedQuantity}
+              lastRead={lastRead}
+              saving={saving}
+              onSave={() => void saveSelected()}
+              onClose={closeDetection}
+              closeLabel="Seguir escaneando"
+              className="absolute inset-x-3 bottom-3"
+            />
           ) : null}
         </div>
 
@@ -358,26 +443,43 @@ export default function ScanPage() {
       </section>
 
       {cameraError ? <p className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-700">{cameraError}</p> : null}
+      </>
+      ) : null}
 
-      <section className="mt-5 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-        <label className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
-          <Keyboard className="h-4 w-4" />
-          Carga manual
-        </label>
-        <input
-          value={manual}
-          onChange={event => handleManualLookup(event.target.value)}
-          placeholder="Ej: COL16, GHA19, PAN19"
-          autoCapitalize="characters"
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-base font-black text-slate-950 outline-none focus:border-red-700"
-        />
-      </section>
+      {mode === 'manual' ? (
+        <section className="mt-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <label className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wide text-slate-500">
+            <Keyboard className="h-4 w-4" />
+            Carga manual
+          </label>
+          <input
+            value={manual}
+            onChange={event => handleManualLookup(event.target.value)}
+            placeholder="Ej: COL16, GHA19, PAN19"
+            autoCapitalize="characters"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-base font-black text-slate-950 outline-none focus:border-red-700"
+          />
 
-      {candidates.length > 0 && !selected ? (
-        <section className="mt-4 space-y-2">
-          {candidates.map(sticker => (
-            <StickerResultButton key={sticker.code} sticker={sticker} onClick={() => setSelected(sticker)} />
-          ))}
+          {selected ? (
+            <DetectionPanel
+              sticker={selected}
+              owned={selectedOwned}
+              quantity={selectedQuantity}
+              saving={saving}
+              onSave={() => void saveSelected()}
+              onClose={closeDetection}
+              closeLabel={selectedOwned ? 'Cerrar' : 'No agregar'}
+              className="mt-4 shadow-sm"
+            />
+          ) : null}
+
+          {candidates.length > 0 && !selected ? (
+            <div className="mt-4 space-y-2">
+              {candidates.map(sticker => (
+                <StickerResultButton key={sticker.code} sticker={sticker} onClick={() => setSelected(sticker)} />
+              ))}
+            </div>
+          ) : null}
         </section>
       ) : null}
     </main>
