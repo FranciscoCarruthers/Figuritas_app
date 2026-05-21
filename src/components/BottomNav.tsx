@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Activity, BarChart3, BookOpen, ScanLine } from 'lucide-react'
+import { Activity, BarChart3, BookOpen, ScanLine, Users } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/album', label: 'Album', Icon: BookOpen },
   { href: '/estadisticas', label: 'Estadisticas', Icon: BarChart3 },
   { href: '/scan', label: 'Escanear', Icon: ScanLine },
+  { href: '/amigos', label: 'Amigos', Icon: Users },
   { href: '/actividad', label: 'Actividad', Icon: Activity },
 ]
 
@@ -20,15 +21,17 @@ export default function BottomNav() {
         <p className="text-xs font-black tracking-[0.16em] text-red-700">FiguritasApp</p>
         <p className="mt-1 text-xs font-bold text-slate-500">by Carru</p>
       </div>
-      <div className="mx-auto grid max-w-md grid-cols-4 px-2 pt-2 lg:mx-0 lg:flex lg:max-w-none lg:flex-col lg:gap-1 lg:px-3 lg:pt-0">
+      <div className="mx-auto grid max-w-md grid-cols-5 px-2 pt-2 lg:mx-0 lg:flex lg:max-w-none lg:flex-col lg:gap-1 lg:px-3 lg:pt-0">
         {NAV_ITEMS.map(({ href, label, Icon }) => {
-          const active = pathname === href || (href === '/album' && pathname.startsWith('/album'))
+          const active = pathname === href ||
+            (href === '/album' && pathname.startsWith('/album')) ||
+            (href === '/amigos' && pathname.startsWith('/amigos'))
 
           return (
             <Link
               key={href}
               href={href}
-              className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-semibold transition lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:text-sm ${
+              className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-semibold transition sm:text-[11px] lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:text-sm ${
                 active ? 'bg-red-700 text-white' : 'text-slate-500 active:bg-slate-100'
               }`}
               aria-current={active ? 'page' : undefined}

@@ -19,6 +19,11 @@ export type AppEventName =
   | 'scanner_card_status'
   | 'scanner_code_detected'
   | 'scanner_added_to_album'
+  | 'friend_request_sent'
+  | 'friend_request_accepted'
+  | 'friend_removed'
+  | 'friend_album_opened'
+  | 'friends_refreshed'
 
 export function trackAppEvent(name: AppEventName, properties: Record<string, AnalyticsValue> = {}) {
   if (typeof window === 'undefined') return

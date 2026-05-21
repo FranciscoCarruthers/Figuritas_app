@@ -1,5 +1,11 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
 import { buildImportPreview } from '../src/lib/import-preview.ts'
+import {
+  buildFriendAlbumState,
+  formatFriendLastUpdate,
+  sortFriendRanking,
+} from '../src/lib/friends.ts'
 import { buildAlbumInsights } from '../src/lib/stats-insights.ts'
 
 const stickers = [
@@ -71,5 +77,42 @@ assert.deepEqual(
   ],
 )
 assert.ok(insights.recommendations.some(item => item.kind === 'almost-team' && item.code === 'ARG'))
+
+const friendRows = [
+  { sticker_code: 'ARG1', quantity: 1, updated_at: '2026-05-18T10:00:00.000Z' },
+  { sticker_code: 'ARG2', quantity: 0, updated_at: '2026-05-18T10:00:00.000Z' },
+  { sticker_code: 'ARG3', quantity: 2, updated_at: '2026-05-18T10:00:00.000Z' },
+]
+const friendState = buildFriendAlbumState(friendRows)
+assert.equal(friendState.ARG1.quantity, 1)
+assert.equal(friendState.ARG3.quantity, 2)
+assert.equal(friendState.ARG2, undefined)
+
+assert.equal(formatFriendLastUpdate('2026-05-20T14:59:40.000Z', new Date('2026-05-20T15:00:00.000Z')), 'ahora')
+assert.equal(formatFriendLastUpdate('2026-05-20T14:30:00.000Z', new Date('2026-05-20T15:00:00.000Z')), 'hace 30 min')
+assert.equal(formatFriendLastUpdate('2026-05-20T10:00:00.000Z', new Date('2026-05-20T15:00:00.000Z')), 'hace 5 h')
+assert.equal(formatFriendLastUpdate('2026-05-18T10:00:00.000Z', new Date('2026-05-20T15:00:00.000Z')), 'hace 2 d')
+
+assert.deepEqual(
+  sortFriendRanking([
+    { username: 'nico', status: 'accepted', missing_count: 25, percent: 97 },
+    { username: 'carru', status: 'accepted', missing_count: 10, percent: 99 },
+    { username: 'pendiente', status: 'pending', missing_count: 0, percent: 0 },
+    { username: 'agus', status: 'accepted', missing_count: 10, percent: 98 },
+  ]).map(friend => friend.username),
+  ['carru', 'agus', 'nico'],
+)
+
+const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
+for (const expectedSql of [
+  'create table if not exists friendships',
+  'send_friend_request',
+  'respond_friend_request',
+  'remove_friend',
+  'get_friend_summaries',
+  'get_friend_album',
+]) {
+  assert.ok(schema.includes(expectedSql), `schema should include ${expectedSql}`)
+}
 
 console.log('App helpers validated.')
