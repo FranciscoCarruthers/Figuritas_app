@@ -11,6 +11,8 @@ import {
   type ReactNode,
 } from 'react'
 import { STICKERS } from '@/data/sticker-data'
+import { trackAppEvent } from '@/lib/app-analytics'
+import { readCachedAlbum, writeCachedAlbum } from '@/lib/local-cache'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { AlbumState, AlbumSticker } from '@/lib/types'
 import { useAuth } from '@/context/AuthContext'
@@ -18,6 +20,9 @@ import { useAuth } from '@/context/AuthContext'
 type AlbumContextValue = {
   albumState: AlbumState
   isLoading: boolean
+  isSyncing: boolean
+  lastSyncedAt: string | null
+  cacheHit: boolean
   updateQuantity: (code: string, quantity: number) => Promise<void>
   importMissingCodes: (missingCodes: Set<string>, onProgress?: ImportProgressCallback) => Promise<number>
 }
@@ -27,13 +32,25 @@ const IMPORT_BATCH_SIZE = 20
 
 type ImportProgressCallback = (progress: { completed: number; total: number }) => void
 
+function nowMs(): number {
+  return typeof performance === 'undefined' ? Date.now() : performance.now()
+}
+
+function getLocalStorage(): Storage | null {
+  return typeof window === 'undefined' ? null : window.localStorage
+}
+
 export function AlbumProvider({ children }: { children: ReactNode }) {
   const { profile } = useAuth()
   const [albumState, setAlbumState] = useState<AlbumState>({})
   const [isLoading, setIsLoading] = useState(true)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
+  const [cacheHit, setCacheHit] = useState(false)
   const channelRef = useRef<ReturnType<ReturnType<typeof getSupabaseBrowserClient>['channel']> | null>(null)
 
   useEffect(() => {
+    const startedAt = nowMs()
     const supabase = getSupabaseBrowserClient()
 
     if (channelRef.current) {
@@ -44,10 +61,28 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     if (!profile) {
       setAlbumState({})
       setIsLoading(false)
+      setIsSyncing(false)
+      setLastSyncedAt(null)
+      setCacheHit(false)
       return
     }
 
-    setIsLoading(true)
+    const storage = getLocalStorage()
+    const cached = storage ? readCachedAlbum(storage, profile.album_id) : null
+    setCacheHit(Boolean(cached))
+
+    if (cached) {
+      setAlbumState(cached.albumState)
+      setLastSyncedAt(cached.savedAt)
+      setIsLoading(false)
+      setIsSyncing(true)
+    } else {
+      setAlbumState({})
+      setLastSyncedAt(null)
+      setIsLoading(true)
+      setIsSyncing(false)
+    }
+
     supabase
       .from('album_stickers')
       .select('*')
@@ -58,9 +93,18 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
           for (const sticker of data as AlbumSticker[]) {
             nextState[sticker.sticker_code] = sticker
           }
+          const syncedAt = new Date().toISOString()
           setAlbumState(nextState)
+          setLastSyncedAt(syncedAt)
+          if (storage) writeCachedAlbum(storage, profile.album_id, nextState, syncedAt)
+          trackAppEvent('album_startup_loaded', {
+            cacheHit: Boolean(cached),
+            ms: Math.round(nowMs() - startedAt),
+            rows: data.length,
+          })
         }
         setIsLoading(false)
+        setIsSyncing(false)
       })
 
     channelRef.current = supabase
@@ -74,13 +118,20 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
             setAlbumState(prev => {
               const next = { ...prev }
               delete next[oldRow.sticker_code]
+              if (storage) writeCachedAlbum(storage, profile.album_id, next)
               return next
             })
+            setLastSyncedAt(new Date().toISOString())
             return
           }
 
           const updated = payload.new as AlbumSticker
-          setAlbumState(prev => ({ ...prev, [updated.sticker_code]: updated }))
+          setAlbumState(prev => {
+            const next = { ...prev, [updated.sticker_code]: updated }
+            if (storage) writeCachedAlbum(storage, profile.album_id, next)
+            return next
+          })
+          setLastSyncedAt(new Date().toISOString())
         },
       )
       .subscribe()
@@ -110,6 +161,8 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
           updated_at: new Date().toISOString(),
         }
       }
+      const storage = getLocalStorage()
+      if (storage) writeCachedAlbum(storage, profile.album_id, next)
       return next
     })
 
@@ -119,6 +172,7 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     })
 
     if (error) throw error
+    setLastSyncedAt(new Date().toISOString())
   }, [profile])
 
   const importMissingCodes = useCallback(async (
@@ -151,6 +205,8 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
           }
         }
       }
+      const storage = getLocalStorage()
+      if (storage) writeCachedAlbum(storage, profile.album_id, next)
       return next
     })
 
@@ -168,15 +224,19 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
       onProgress?.({ completed, total: changes.length })
     }
 
+    setLastSyncedAt(new Date().toISOString())
     return changes.length
   }, [albumState, profile])
 
   const value = useMemo<AlbumContextValue>(() => ({
     albumState,
     isLoading,
+    isSyncing,
+    lastSyncedAt,
+    cacheHit,
     updateQuantity,
     importMissingCodes,
-  }), [albumState, importMissingCodes, isLoading, updateQuantity])
+  }), [albumState, cacheHit, importMissingCodes, isLoading, isSyncing, lastSyncedAt, updateQuantity])
 
   return <AlbumContext.Provider value={value}>{children}</AlbumContext.Provider>
 }

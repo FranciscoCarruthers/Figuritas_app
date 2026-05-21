@@ -9,6 +9,22 @@ import {
 } from '../src/lib/friends.ts'
 import { buildAlbumBlocks } from '../src/lib/sticker-blocks.ts'
 import { buildAlbumInsights } from '../src/lib/stats-insights.ts'
+import {
+  getAlbumCacheKey,
+  getProfileCacheKey,
+  readCachedAlbum,
+  readCachedProfile,
+  writeCachedAlbum,
+  writeCachedProfile,
+  clearCachedAlbum,
+  clearCachedProfile,
+} from '../src/lib/local-cache.ts'
+import {
+  getNextAlbumBlockLimit,
+  getProgressiveAlbumBlocks,
+  hasActiveAlbumViewFilters,
+  INITIAL_ALBUM_BLOCK_LIMIT,
+} from '../src/lib/album-rendering.ts'
 
 const stickers = [
   { code: '00', name: 'Logo', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 0 },
@@ -118,6 +134,75 @@ assert.deepEqual(
   ['fwc-specials', 'fwc-ball-countries', 'ARG', 'BRA', 'fwc-history'],
 )
 assert.deepEqual(blocks.at(-1)?.stickers.map(sticker => sticker.code), [])
+
+class MemoryStorage {
+  data = new Map()
+  getItem(key) {
+    return this.data.has(key) ? this.data.get(key) : null
+  }
+  setItem(key, value) {
+    this.data.set(key, String(value))
+  }
+  removeItem(key) {
+    this.data.delete(key)
+  }
+}
+
+const storage = new MemoryStorage()
+const profile = { user_id: 'user-1', username: 'test', album_id: 'album-1' }
+writeCachedProfile(storage, 'user-1', profile, '2026-05-20T15:00:00.000Z')
+assert.deepEqual(readCachedProfile(storage, 'user-1'), {
+  profile,
+  savedAt: '2026-05-20T15:00:00.000Z',
+})
+assert.equal(readCachedProfile(storage, 'user-2'), null)
+storage.setItem(getProfileCacheKey('user-1'), JSON.stringify({ version: 0, userId: 'user-1', profile, savedAt: 'x' }))
+assert.equal(readCachedProfile(storage, 'user-1'), null)
+storage.setItem(getProfileCacheKey('user-1'), '{bad json')
+assert.equal(readCachedProfile(storage, 'user-1'), null)
+writeCachedProfile(storage, 'user-1', profile, '2026-05-20T15:00:00.000Z')
+clearCachedProfile(storage, 'user-1')
+assert.equal(readCachedProfile(storage, 'user-1'), null)
+
+writeCachedAlbum(storage, 'album-1', state, '2026-05-20T15:01:00.000Z')
+assert.deepEqual(readCachedAlbum(storage, 'album-1'), {
+  albumState: state,
+  savedAt: '2026-05-20T15:01:00.000Z',
+})
+assert.equal(readCachedAlbum(storage, 'album-2'), null)
+storage.setItem(getAlbumCacheKey('album-1'), JSON.stringify({ version: 0, albumId: 'album-1', albumState: state, savedAt: 'x' }))
+assert.equal(readCachedAlbum(storage, 'album-1'), null)
+storage.setItem(getAlbumCacheKey('album-1'), '{bad json')
+assert.equal(readCachedAlbum(storage, 'album-1'), null)
+writeCachedAlbum(storage, 'album-1', state, '2026-05-20T15:01:00.000Z')
+clearCachedAlbum(storage, 'album-1')
+assert.equal(readCachedAlbum(storage, 'album-1'), null)
+
+assert.equal(INITIAL_ALBUM_BLOCK_LIMIT, 8)
+assert.equal(hasActiveAlbumViewFilters({
+  query: '',
+  filter: 'all',
+  sectionFilter: 'Todas',
+  collapseCompleted: false,
+  foilsMissingOnly: false,
+}), false)
+assert.equal(hasActiveAlbumViewFilters({
+  query: 'arg',
+  filter: 'all',
+  sectionFilter: 'Todas',
+  collapseCompleted: false,
+  foilsMissingOnly: false,
+}), true)
+assert.deepEqual(
+  getProgressiveAlbumBlocks(blocks, { hasActiveFilters: false, limit: 2 }).map(block => block.id),
+  ['fwc-specials', 'fwc-ball-countries'],
+)
+assert.deepEqual(
+  getProgressiveAlbumBlocks(blocks, { hasActiveFilters: true, limit: 2 }).map(block => block.id),
+  ['fwc-specials', 'fwc-ball-countries', 'ARG', 'BRA', 'fwc-history'],
+)
+assert.equal(getNextAlbumBlockLimit(8, 18), 16)
+assert.equal(getNextAlbumBlockLimit(16, 18), 18)
 
 const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
 for (const expectedSql of [

@@ -10,6 +10,12 @@ import TeamFlag from '@/components/TeamFlag'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
+import {
+  getNextAlbumBlockLimit,
+  getProgressiveAlbumBlocks,
+  hasActiveAlbumViewFilters,
+  INITIAL_ALBUM_BLOCK_LIMIT,
+} from '@/lib/album-rendering'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { buildImportPreview } from '@/lib/import-preview'
 import { parseMissingStickersList } from '@/lib/import-list'
@@ -107,7 +113,7 @@ async function copyTextToClipboard(text: string) {
 }
 
 export default function AlbumPage() {
-  const { albumState, updateQuantity, importMissingCodes } = useAlbum()
+  const { albumState, updateQuantity, importMissingCodes, isSyncing, cacheHit, lastSyncedAt } = useAlbum()
   const { profile, signOut } = useAuth()
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<FilterMode>('all')
@@ -122,7 +128,9 @@ export default function AlbumPage() {
   const [importStatus, setImportStatus] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
   const [importProgress, setImportProgress] = useState<{ completed: number; total: number } | null>(null)
+  const [renderLimit, setRenderLimit] = useState(INITIAL_ALBUM_BLOCK_LIMIT)
   const searchTrackedRef = useRef(false)
+  const firstRenderTrackedRef = useRef(false)
   const progress = getProgress(albumState, STICKERS)
   const parsedImport = useMemo(() => parseMissingStickersList(importText), [importText])
   const importPreview = useMemo(() => (
@@ -174,6 +182,52 @@ export default function AlbumPage() {
       return { ...block, stickers }
     }).filter(block => block.stickers.length > 0)
   }, [albumState, collapseCompleted, filter, foilsMissingOnly, query, sectionFilter])
+
+  const hasActiveFilters = hasActiveAlbumViewFilters({
+    query,
+    filter,
+    sectionFilter,
+    collapseCompleted,
+    foilsMissingOnly,
+  })
+  const renderedBlocks = useMemo(() => getProgressiveAlbumBlocks(visibleBlocks, {
+    hasActiveFilters,
+    limit: renderLimit,
+  }), [hasActiveFilters, renderLimit, visibleBlocks])
+
+  useEffect(() => {
+    if (hasActiveFilters) return
+    setRenderLimit(INITIAL_ALBUM_BLOCK_LIMIT)
+  }, [hasActiveFilters])
+
+  useEffect(() => {
+    if (hasActiveFilters || renderLimit >= visibleBlocks.length) return
+
+    const loadMore = () => {
+      setRenderLimit(current => getNextAlbumBlockLimit(current, visibleBlocks.length))
+    }
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(loadMore, { timeout: 600 })
+      return () => window.cancelIdleCallback(idleId)
+    }
+
+    const timeoutId = globalThis.setTimeout(loadMore, 120)
+    return () => globalThis.clearTimeout(timeoutId)
+  }, [hasActiveFilters, renderLimit, visibleBlocks.length])
+
+  useEffect(() => {
+    if (firstRenderTrackedRef.current || renderedBlocks.length === 0) return
+    firstRenderTrackedRef.current = true
+    window.requestAnimationFrame(() => {
+      trackAppEvent('album_first_render', {
+        ms: Math.round(performance.now()),
+        blocks: renderedBlocks.length,
+        cacheHit,
+        syncing: isSyncing,
+      })
+    })
+  }, [cacheHit, isSyncing, renderedBlocks.length])
 
   async function toggleSticker(sticker: Sticker) {
     const owned = isOwned(albumState, sticker.code)
@@ -407,7 +461,18 @@ export default function AlbumPage() {
             <span>{progress.percent}% completo</span>
           </div>
           <ProgressBar value={progress.percent} color="#b91c1c" />
-          <p className="mt-2 text-xs font-semibold text-slate-500">{profile?.username}</p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold text-slate-500">{profile?.username}</p>
+            {isSyncing && cacheHit ? (
+              <p className="rounded-full bg-red-50 px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-red-700">
+                Actualizando...
+              </p>
+            ) : cacheHit && lastSyncedAt ? (
+              <p className="text-[10px] font-bold text-slate-400">
+                Actualizado
+              </p>
+            ) : null}
+          </div>
         </div>
       </section>
 
@@ -418,7 +483,7 @@ export default function AlbumPage() {
           </div>
         ) : (
           <div className="divide-y divide-slate-200">
-            {visibleBlocks.map(block => (
+            {renderedBlocks.map(block => (
               <article key={block.id} className="py-7 first:pt-0">
                 <button
                   type="button"
@@ -443,6 +508,11 @@ export default function AlbumPage() {
                 </div>
               </article>
             ))}
+            {renderedBlocks.length < visibleBlocks.length ? (
+              <div className="py-6 text-center text-xs font-black uppercase tracking-[0.12em] text-slate-400">
+                Cargando mas secciones...
+              </div>
+            ) : null}
           </div>
         )}
       </section>

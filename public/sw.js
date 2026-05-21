@@ -1,12 +1,13 @@
-const CACHE_NAME = 'figuritas-2026-v3'
+const CACHE_NAME = 'figuritas-2026-v4'
 const STATIC_ASSETS = [
-  '/',
-  '/album',
-  '/login',
   '/manifest.webmanifest',
   '/icon-192.png',
   '/icon-512.png',
   '/apple-touch-icon.png',
+]
+const CACHEABLE_PREFIXES = [
+  '/_next/static/',
+  '/stickers/',
 ]
 
 self.addEventListener('install', event => {
@@ -32,14 +33,21 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url)
   if (url.origin !== self.location.origin) return
   if (url.pathname.startsWith('/api/')) return
+  const shouldCache = STATIC_ASSETS.includes(url.pathname) ||
+    CACHEABLE_PREFIXES.some(prefix => url.pathname.startsWith(prefix))
+
+  if (!shouldCache) return
 
   event.respondWith(
-    fetch(request)
-      .then(response => {
-        const copy = response.clone()
-        caches.open(CACHE_NAME).then(cache => cache.put(request, copy))
-        return response
+    caches.match(request)
+      .then(cached => {
+        if (cached) return cached
+
+        return fetch(request).then(response => {
+          const copy = response.clone()
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy))
+          return response
+        })
       })
-      .catch(() => caches.match(request).then(cached => cached || caches.match('/album'))),
   )
 })

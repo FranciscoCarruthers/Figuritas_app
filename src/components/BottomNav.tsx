@@ -31,6 +31,7 @@ export default function BottomNav() {
             <Link
               key={href}
               href={href}
+              prefetch={false}
               className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-semibold transition sm:text-[11px] lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:text-sm ${
                 active ? 'bg-red-700 text-white' : 'text-slate-500 active:bg-slate-100'
               }`}

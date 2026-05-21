@@ -19,6 +19,13 @@ import {
   validateRecoveryEmail,
   validateUsername,
 } from '@/lib/auth'
+import { trackAppEvent } from '@/lib/app-analytics'
+import {
+  clearCachedAlbum,
+  clearCachedProfile,
+  readCachedProfile,
+  writeCachedProfile,
+} from '@/lib/local-cache'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { UserProfile } from '@/lib/types'
 
@@ -76,12 +83,21 @@ async function ensureProfile(session: Session): Promise<UserProfile> {
   return data as UserProfile
 }
 
+function nowMs(): number {
+  return typeof performance === 'undefined' ? Date.now() : performance.now()
+}
+
+function getLocalStorage(): Storage | null {
+  return typeof window === 'undefined' ? null : window.localStorage
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const applySession = useCallback(async (nextSession: Session | null) => {
+    const startedAt = nowMs()
     setSession(nextSession)
 
     if (!nextSession) {
@@ -90,9 +106,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
+    const storage = getLocalStorage()
+    const cached = storage ? readCachedProfile(storage, nextSession.user.id) : null
+    if (cached) {
+      setProfile(cached.profile)
+      setIsLoading(false)
+      trackAppEvent('app_profile_cache_used', {
+        ms: Math.round(nowMs() - startedAt),
+      })
+    } else {
+      setIsLoading(true)
+    }
+
     try {
       const nextProfile = await ensureProfile(nextSession)
       setProfile(nextProfile)
+      if (storage) writeCachedProfile(storage, nextSession.user.id, nextProfile)
+      trackAppEvent('app_profile_loaded', {
+        cacheHit: Boolean(cached),
+        ms: Math.round(nowMs() - startedAt),
+      })
+    } catch {
+      if (!cached) setProfile(null)
     } finally {
       setIsLoading(false)
     }
@@ -215,10 +250,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     setIsLoading(true)
+    const storage = getLocalStorage()
+    if (storage && session?.user.id) clearCachedProfile(storage, session.user.id)
+    if (storage && profile?.album_id) clearCachedAlbum(storage, profile.album_id)
     const supabase = getSupabaseBrowserClient()
     await supabase.auth.signOut()
     await applySession(null)
-  }, [applySession])
+  }, [applySession, profile?.album_id, session?.user.id])
 
   const value = useMemo<AuthContextValue>(() => ({
     session,
