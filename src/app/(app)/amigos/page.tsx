@@ -4,13 +4,18 @@ import Link from 'next/link'
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Check, Clock3, Loader2, RefreshCw, Trash2, Trophy, UserPlus, Users, X } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
+import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
+import { STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
+import { getProgress } from '@/lib/album'
 import {
+  buildSelfFriendSummary,
   formatFriendLastUpdate,
   getAcceptedFriends,
   getIncomingFriendRequests,
   getOutgoingFriendRequests,
+  isSelfFriendSummary,
   sortFriendRanking,
 } from '@/lib/friends'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
@@ -78,6 +83,7 @@ function FriendCard({ friend, onRemove }: { friend: FriendSummary; onRemove: (fr
 
 export default function AmigosPage() {
   const { profile } = useAuth()
+  const { albumState, isLoading: albumLoading } = useAlbum()
   const [friends, setFriends] = useState<FriendSummary[]>([])
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(true)
@@ -88,7 +94,15 @@ export default function AmigosPage() {
   const acceptedFriends = useMemo(() => getAcceptedFriends(friends), [friends])
   const incomingRequests = useMemo(() => getIncomingFriendRequests(friends), [friends])
   const outgoingRequests = useMemo(() => getOutgoingFriendRequests(friends), [friends])
-  const ranking = useMemo(() => sortFriendRanking(friends), [friends])
+  const ownProgress = useMemo(() => getProgress(albumState, STICKERS), [albumState])
+  const ownRankingEntry = useMemo(
+    () => albumLoading ? null : buildSelfFriendSummary(profile?.username, albumState, ownProgress),
+    [albumLoading, albumState, ownProgress, profile?.username],
+  )
+  const ranking = useMemo(
+    () => sortFriendRanking(ownRankingEntry ? [ownRankingEntry, ...friends] : friends),
+    [friends, ownRankingEntry],
+  )
 
   const loadFriends = useCallback(async (trackRefresh = false) => {
     const supabase = getSupabaseBrowserClient()
@@ -281,22 +295,33 @@ export default function AmigosPage() {
                 </span>
               </div>
               <div className="space-y-2">
-                {ranking.map((friend, index) => (
-                  <Link
-                    key={friend.friendship_id}
-                    href={`/amigos/${encodeURIComponent(friend.username)}`}
-                    className="flex items-center gap-3 rounded-lg bg-slate-50 p-3 active:bg-slate-100"
-                  >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-sm font-black text-red-700 shadow-sm">
-                      {index + 1}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-black text-slate-950">{friend.username}</p>
-                      <p className="text-xs font-bold text-slate-500">{metric(friend.missing_count)} faltan</p>
-                    </div>
-                    <p className="text-sm font-black text-slate-700">{metric(friend.percent)}%</p>
-                  </Link>
-                ))}
+                {ranking.map((friend, index) => {
+                  const isSelf = isSelfFriendSummary(friend)
+
+                  return (
+                    <Link
+                      key={friend.friendship_id}
+                      href={isSelf ? '/album' : `/amigos/${encodeURIComponent(friend.username)}`}
+                      className="flex items-center gap-3 rounded-lg bg-slate-50 p-3 active:bg-slate-100"
+                    >
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white text-sm font-black text-red-700 shadow-sm">
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <p className="truncate text-sm font-black text-slate-950">{friend.username}</p>
+                          {isSelf ? (
+                            <span className="shrink-0 rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-red-700">
+                              Vos
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="text-xs font-bold text-slate-500">{metric(friend.missing_count)} faltan</p>
+                      </div>
+                      <p className="text-sm font-black text-slate-700">{metric(friend.percent)}%</p>
+                    </Link>
+                  )
+                })}
               </div>
             </section>
           )}

@@ -10,12 +10,14 @@ import { ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { getProgress, isOwned } from '@/lib/album'
 import { buildFriendAlbumState, formatFriendLastUpdate } from '@/lib/friends'
+import { buildAlbumBlocks, type StickerBlock } from '@/lib/sticker-blocks'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { FriendAlbumSticker, Sticker } from '@/lib/types'
 
 type FriendFilter = 'missing' | 'owned' | 'all'
 
-const ORDERED_STICKERS = ALBUM_GROUPS.flatMap(group => group.teams.flatMap(team => getTeamStickers(team.code)))
+const ALL_BLOCKS = buildAlbumBlocks(ALBUM_GROUPS, getTeamStickers)
+const ORDERED_STICKERS = ALL_BLOCKS.flatMap(block => block.stickers)
 
 function normalize(value: string): string {
   return value
@@ -26,19 +28,14 @@ function normalize(value: string): string {
     .trim()
 }
 
-function sectionLabel(sticker: Sticker): string {
-  return ALBUM_GROUPS.find(group => group.teams.some(team => team.code === sticker.teamCode))?.label ?? sticker.team
-}
-
-function matchesSearch(sticker: Sticker, query: string): boolean {
+function matchesSearch(block: StickerBlock, sticker: Sticker, query: string): boolean {
   if (!query) return true
-  const section = sectionLabel(sticker)
-  const haystack = normalize(`${sticker.code} ${sticker.teamCode} ${sticker.team} ${section}`)
+  const haystack = normalize(`${block.title} ${block.section} ${block.id} ${sticker.code} ${sticker.teamCode} ${sticker.team}`)
   return haystack.includes(query)
 }
 
 function filterLabel(filter: FriendFilter): string {
-  if (filter === 'missing') return 'Me faltan'
+  if (filter === 'missing') return 'Le faltan'
   if (filter === 'owned') return 'Tiene'
   return 'Todas'
 }
@@ -62,13 +59,17 @@ export default function FriendAlbumPage() {
   const lastUpdatedAt = rows[0]?.last_updated_at ?? null
   const searchQuery = normalize(query)
 
-  const visibleStickers = useMemo(() => {
-    return ORDERED_STICKERS.filter(sticker => {
-      const owned = isOwned(albumState, sticker.code)
-      if (filter === 'missing' && owned) return false
-      if (filter === 'owned' && !owned) return false
-      return matchesSearch(sticker, searchQuery)
-    })
+  const visibleBlocks = useMemo(() => {
+    return ALL_BLOCKS.map(block => {
+      const stickers = block.stickers.filter(sticker => {
+        const owned = isOwned(albumState, sticker.code)
+        if (filter === 'missing' && owned) return false
+        if (filter === 'owned' && !owned) return false
+        return matchesSearch(block, sticker, searchQuery)
+      })
+
+      return { ...block, stickers }
+    }).filter(block => block.stickers.length > 0)
   }, [albumState, filter, searchQuery])
 
   const loadAlbum = useCallback(async (trackRefresh = false) => {
@@ -187,38 +188,59 @@ export default function FriendAlbumPage() {
                 <div key={index} className="h-16 animate-pulse rounded-lg bg-white shadow-sm" />
               ))}
             </section>
-          ) : visibleStickers.length === 0 ? (
+          ) : visibleBlocks.length === 0 ? (
             <section className="mt-6 grid place-items-center rounded-xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
               <CircleDashed className="h-10 w-10 text-slate-300" />
               <p className="mt-4 text-sm font-bold text-slate-500">No hay resultados para este filtro.</p>
             </section>
           ) : (
-            <section className="mt-5 grid gap-2 lg:grid-cols-2">
-              {visibleStickers.map(sticker => {
-                const owned = isOwned(albumState, sticker.code)
-                return (
-                  <article key={sticker.code} className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-                    <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-full text-sm font-black ${
-                      owned ? 'bg-red-700 text-white' : sticker.isFoil ? 'border border-amber-300 bg-amber-50 text-amber-800' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {sticker.position === 0 ? '00' : sticker.position}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-black uppercase tracking-[0.08em] text-red-700">{sticker.code}</p>
-                      <h2 className="truncate text-base font-black text-slate-950">{sticker.name}</h2>
-                      <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-                        {sticker.teamCode} - {sticker.team}
-                        <TeamFlag teamCode={sticker.teamCode} />
+            <section className="mt-5 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white px-4 shadow-sm lg:px-6">
+              {visibleBlocks.map(block => (
+                <article key={block.id} className="py-6 first:pt-5">
+                  <div className="mb-5 flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="flex min-w-0 items-center gap-2 text-2xl font-black tracking-tight text-slate-950">
+                        <span className="min-w-0 truncate">{block.title}</span>
+                        {block.teamCode ? <TeamFlag teamCode={block.teamCode} className="shrink-0" /> : null}
+                      </h2>
+                      <p className="mt-1 text-xs font-black uppercase tracking-[0.12em] text-slate-400">
+                        {block.section}
                       </p>
                     </div>
-                    <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
-                      owned ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {owned ? 'Tiene' : 'Falta'}
+                    <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+                      {block.stickers.length}
                     </span>
-                  </article>
-                )
-              })}
+                  </div>
+                  <div className="grid grid-cols-5 gap-x-4 gap-y-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
+                    {block.stickers.map(sticker => {
+                      const owned = isOwned(albumState, sticker.code)
+                      const status = owned ? 'Tiene' : 'Falta'
+
+                      return (
+                        <div key={sticker.code} className="min-w-0">
+                          <div
+                            className={`grid aspect-square w-full place-items-center rounded-full text-sm font-black transition ${
+                              owned
+                                ? 'bg-red-700 text-white shadow-sm'
+                                : sticker.isFoil
+                                  ? 'border border-amber-300 bg-amber-50 text-amber-800'
+                                  : 'bg-slate-100 text-slate-500'
+                            }`}
+                            role="img"
+                            aria-label={`${sticker.code} - ${sticker.name}. ${status}.`}
+                            title={`${sticker.code} - ${sticker.name}. ${status}.`}
+                          >
+                            {sticker.position === 0 ? '00' : sticker.position}
+                          </div>
+                          <p className="mt-1 truncate text-center text-[10px] font-black uppercase tracking-[0.04em] text-slate-400">
+                            {sticker.code}
+                          </p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </article>
+              ))}
             </section>
           )}
         </>

@@ -14,17 +14,10 @@ import { trackAppEvent } from '@/lib/app-analytics'
 import { buildImportPreview } from '@/lib/import-preview'
 import { parseMissingStickersList } from '@/lib/import-list'
 import { buildMissingStickersShareText } from '@/lib/share-list'
+import type { StickerBlock } from '@/lib/sticker-blocks'
 import type { AlbumState, Sticker } from '@/lib/types'
 
 type FilterMode = 'all' | 'missing' | 'owned'
-
-type StickerBlock = {
-  id: string
-  title: string
-  section: string
-  stickers: Sticker[]
-  teamCode?: string
-}
 
 const FILTERS: Array<{ value: FilterMode; label: string }> = [
   { value: 'all', label: 'Todas' },

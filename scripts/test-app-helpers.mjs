@@ -2,10 +2,12 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { buildImportPreview } from '../src/lib/import-preview.ts'
 import {
+  buildSelfFriendSummary,
   buildFriendAlbumState,
   formatFriendLastUpdate,
   sortFriendRanking,
 } from '../src/lib/friends.ts'
+import { buildAlbumBlocks } from '../src/lib/sticker-blocks.ts'
 import { buildAlbumInsights } from '../src/lib/stats-insights.ts'
 
 const stickers = [
@@ -95,13 +97,27 @@ assert.equal(formatFriendLastUpdate('2026-05-18T10:00:00.000Z', new Date('2026-0
 
 assert.deepEqual(
   sortFriendRanking([
+    buildSelfFriendSummary('test', state, { total: 8, owned: 7, missing: 1, percent: 88 }),
     { username: 'nico', status: 'accepted', missing_count: 25, percent: 97 },
     { username: 'carru', status: 'accepted', missing_count: 10, percent: 99 },
     { username: 'pendiente', status: 'pending', missing_count: 0, percent: 0 },
     { username: 'agus', status: 'accepted', missing_count: 10, percent: 98 },
-  ]).map(friend => friend.username),
-  ['carru', 'agus', 'nico'],
+  ].filter(Boolean)).map(friend => friend.username),
+  ['test', 'carru', 'agus', 'nico'],
 )
+
+assert.equal(buildSelfFriendSummary(null, state, { total: 8, owned: 7, missing: 1, percent: 88 }), null)
+assert.equal(
+  buildSelfFriendSummary('test', state, { total: 8, owned: 7, missing: 1, percent: 88 })?.last_updated_at,
+  '2026-05-18T10:00:00.000Z',
+)
+
+const blocks = buildAlbumBlocks(groups, teamCode => stickers.filter(sticker => sticker.teamCode === teamCode))
+assert.deepEqual(
+  blocks.map(block => block.id),
+  ['fwc-specials', 'fwc-ball-countries', 'ARG', 'BRA', 'fwc-history'],
+)
+assert.deepEqual(blocks.at(-1)?.stickers.map(sticker => sticker.code), [])
 
 const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
 for (const expectedSql of [

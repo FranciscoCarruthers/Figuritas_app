@@ -1,5 +1,12 @@
 import type { AlbumState, FriendAlbumSticker, FriendSummary } from '@/lib/types'
 
+type ProgressSummary = {
+  total: number
+  owned: number
+  missing: number
+  percent: number
+}
+
 export function buildFriendAlbumState(rows: Pick<FriendAlbumSticker, 'sticker_code' | 'quantity' | 'updated_at'>[]): AlbumState {
   const state: AlbumState = {}
 
@@ -14,6 +21,43 @@ export function buildFriendAlbumState(rows: Pick<FriendAlbumSticker, 'sticker_co
   }
 
   return state
+}
+
+export function getAlbumLastUpdatedAt(state: AlbumState): string | null {
+  return Object.values(state)
+    .map(sticker => sticker.updated_at)
+    .filter(Boolean)
+    .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] ?? null
+}
+
+export function buildSelfFriendSummary(
+  username: string | null | undefined,
+  state: AlbumState,
+  progress: ProgressSummary,
+): FriendSummary | null {
+  if (!username) return null
+
+  const lastUpdatedAt = getAlbumLastUpdatedAt(state)
+  const fallbackDate = lastUpdatedAt ?? new Date(0).toISOString()
+
+  return {
+    friendship_id: 'self',
+    username,
+    status: 'accepted',
+    direction: 'accepted',
+    owned_count: progress.owned,
+    missing_count: progress.missing,
+    total_count: progress.total,
+    percent: progress.percent,
+    last_updated_at: lastUpdatedAt,
+    requested_at: fallbackDate,
+    responded_at: null,
+    updated_at: fallbackDate,
+  }
+}
+
+export function isSelfFriendSummary(friend: Pick<FriendSummary, 'friendship_id'>): boolean {
+  return friend.friendship_id === 'self'
 }
 
 export function formatFriendLastUpdate(value: string | null, now = new Date()): string {
