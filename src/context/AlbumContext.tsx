@@ -12,6 +12,7 @@ import {
 } from 'react'
 import { STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
+import { albumRowsToState } from '@/lib/album-state'
 import { readCachedAlbum, writeCachedAlbum } from '@/lib/local-cache'
 import { notifyStickerUpdated } from '@/lib/push-client'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
@@ -24,6 +25,7 @@ type AlbumContextValue = {
   isSyncing: boolean
   lastSyncedAt: string | null
   cacheHit: boolean
+  refreshAlbum: () => Promise<void>
   updateQuantity: (code: string, quantity: number) => Promise<void>
   importMissingCodes: (missingCodes: Set<string>, onProgress?: ImportProgressCallback) => Promise<number>
 }
@@ -49,6 +51,31 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
   const [cacheHit, setCacheHit] = useState(false)
   const channelRef = useRef<ReturnType<ReturnType<typeof getSupabaseBrowserClient>['channel']> | null>(null)
+
+  const refreshAlbum = useCallback(async () => {
+    if (!profile) return
+
+    const supabase = getSupabaseBrowserClient()
+    const storage = getLocalStorage()
+    setIsSyncing(true)
+    const { data, error } = await supabase
+      .from('album_stickers')
+      .select('*')
+      .eq('album_id', profile.album_id)
+
+    if (error) {
+      setIsSyncing(false)
+      throw error
+    }
+
+    const nextState = albumRowsToState((data as AlbumSticker[]) ?? [])
+    const syncedAt = new Date().toISOString()
+    setAlbumState(nextState)
+    setLastSyncedAt(syncedAt)
+    setIsLoading(false)
+    setIsSyncing(false)
+    if (storage) writeCachedAlbum(storage, profile.album_id, nextState, syncedAt)
+  }, [profile])
 
   useEffect(() => {
     const startedAt = nowMs()
@@ -90,10 +117,7 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
       .eq('album_id', profile.album_id)
       .then(({ data, error }) => {
         if (!error && data) {
-          const nextState: AlbumState = {}
-          for (const sticker of data as AlbumSticker[]) {
-            nextState[sticker.sticker_code] = sticker
-          }
+          const nextState = albumRowsToState(data as AlbumSticker[])
           const syncedAt = new Date().toISOString()
           setAlbumState(nextState)
           setLastSyncedAt(syncedAt)
@@ -236,9 +260,10 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     isSyncing,
     lastSyncedAt,
     cacheHit,
+    refreshAlbum,
     updateQuantity,
     importMissingCodes,
-  }), [albumState, cacheHit, importMissingCodes, isLoading, isSyncing, lastSyncedAt, updateQuantity])
+  }), [albumState, cacheHit, importMissingCodes, isLoading, isSyncing, lastSyncedAt, refreshAlbum, updateQuantity])
 
   return <AlbumContext.Provider value={value}>{children}</AlbumContext.Provider>
 }

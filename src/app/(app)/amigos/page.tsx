@@ -10,6 +10,7 @@ import { STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { getProgress } from '@/lib/album'
 import { notifyTradeEvent } from '@/lib/push-client'
+import { getTradeStatusLabel } from '@/lib/trade-display'
 import {
   buildSelfFriendSummary,
   formatFriendLastUpdate,
@@ -100,15 +101,6 @@ function FriendCard({ friend, onRemove }: { friend: FriendSummary; onRemove: (fr
   )
 }
 
-function tradeStatusLabel(trade: TradeProposal): string {
-  if (trade.status === 'pending' && trade.direction === 'incoming') return 'Te propusieron'
-  if (trade.status === 'pending') return 'Esperando respuesta'
-  if (trade.status === 'accepted') return 'Intercambio exitoso'
-  if (trade.status === 'completed') return 'Completado'
-  if (trade.status === 'declined') return 'Rechazado'
-  return 'Cancelado'
-}
-
 function TradeProposalCard({
   trade,
   busy,
@@ -133,7 +125,7 @@ function TradeProposalCard({
     <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-red-700">{tradeStatusLabel(trade)}</p>
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-red-700">{getTradeStatusLabel(trade)}</p>
           <h3 className="mt-1 truncate text-xl font-black text-slate-950">{trade.friend_username}</h3>
         </div>
         <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
@@ -208,7 +200,7 @@ function TradeProposalCard({
 
 export default function AmigosPage() {
   const { profile, session } = useAuth()
-  const { albumState, isLoading: albumLoading } = useAlbum()
+  const { albumState, isLoading: albumLoading, refreshAlbum } = useAlbum()
   const [friends, setFriends] = useState<FriendSummary[]>([])
   const [trades, setTrades] = useState<TradeProposal[]>([])
   const [username, setUsername] = useState('')
@@ -377,6 +369,11 @@ export default function AmigosPage() {
     } else {
       trackAppEvent('trade_proposal_applied', { friend: trade.friend_username })
       void notifyTradeEvent(session, { proposalId: trade.id, action: 'applied' })
+      try {
+        await refreshAlbum()
+      } catch {
+        setTradeError('El intercambio se anoto, pero no pude refrescar el album. Toca refrescar o volve a abrir la app.')
+      }
       setMessage('Intercambio anotado en tu album.')
       await loadTrades()
       await loadFriends()

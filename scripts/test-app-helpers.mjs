@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { buildImportPreview } from '../src/lib/import-preview.ts'
+import { albumRowsToState } from '../src/lib/album-state.ts'
 import {
   buildSelfFriendSummary,
   buildFriendAlbumState,
@@ -35,6 +36,7 @@ import {
   isFormationSticker,
   validateTradeRules,
 } from '../src/lib/trades.ts'
+import { getTradeStatusLabel } from '../src/lib/trade-display.ts'
 import {
   buildStickerPushPayload,
   buildTradePushPayload,
@@ -122,6 +124,12 @@ const friendState = buildFriendAlbumState(friendRows)
 assert.equal(friendState.ARG1.quantity, 1)
 assert.equal(friendState.ARG3.quantity, 2)
 assert.equal(friendState.ARG2, undefined)
+
+assert.deepEqual(albumRowsToState(friendRows), {
+  ARG1: friendRows[0],
+  ARG2: friendRows[1],
+  ARG3: friendRows[2],
+})
 
 assert.equal(formatFriendLastUpdate('2026-05-20T14:59:40.000Z', new Date('2026-05-20T15:00:00.000Z')), 'ahora')
 assert.equal(formatFriendLastUpdate('2026-05-20T14:30:00.000Z', new Date('2026-05-20T15:00:00.000Z')), 'hace 30 min')
@@ -268,6 +276,10 @@ assert.deepEqual(
   ),
   { valid: true, messages: [] },
 )
+
+assert.equal(getTradeStatusLabel({ status: 'accepted', direction: 'incoming', my_applied: false, friend_applied: false }), 'Listo para anotar')
+assert.equal(getTradeStatusLabel({ status: 'accepted', direction: 'outgoing', my_applied: true, friend_applied: false }), 'Esperando que el otro lo anote')
+assert.equal(getTradeStatusLabel({ status: 'completed', direction: 'outgoing', my_applied: true, friend_applied: true }), 'Completado')
 
 assert.deepEqual(
   buildStickerPushPayload({
