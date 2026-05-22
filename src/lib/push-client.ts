@@ -143,7 +143,7 @@ export async function unsubscribeFromPush(session: Session) {
 }
 
 export async function notifyStickerUpdated(session: Session | null, input: { code: string; quantity: number }) {
-  if (!session || !isPushMarkedEnabled()) return
+  if (!session) return
   await postPushJson(session, '/api/push/events/sticker-updated', {
     deviceId: getPushDeviceId(),
     code: input.code,

@@ -38,6 +38,7 @@ import {
   filterPushRecipients,
   getPushEnvConfig,
 } from '../src/lib/push.ts'
+import { notifyStickerUpdated } from '../src/lib/push-client.ts'
 
 const stickers = [
   { code: '00', name: 'Logo', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 0 },
@@ -267,8 +268,8 @@ assert.deepEqual(
     actorName: 'Carru',
   }),
   {
-    title: 'FiguritasApp',
-    body: 'Carru marco ARG10 - Lionel Messi',
+    title: 'Figurita anotada',
+    body: 'Carru marcó ARG10 - Lionel Messi',
     url: '/actividad',
     tag: 'sticker-ARG10',
   },
@@ -281,12 +282,29 @@ assert.deepEqual(
     actorName: '',
   }),
   {
-    title: 'FiguritasApp',
-    body: 'Se desmarco PAR19 - Jugador',
+    title: 'Figurita anotada',
+    body: 'Se desmarcó PAR19 - Jugador',
     url: '/actividad',
     tag: 'sticker-PAR19',
   },
 )
+
+const originalFetch = globalThis.fetch
+const stickerPushCalls = []
+globalThis.fetch = async (url, init) => {
+  stickerPushCalls.push({ url, init })
+  return {
+    ok: true,
+    json: async () => ({ ok: true }),
+  }
+}
+await notifyStickerUpdated({ access_token: 'session-token' }, { code: 'ARG10', quantity: 1 })
+assert.equal(stickerPushCalls.length, 1)
+assert.equal(stickerPushCalls[0].url, '/api/push/events/sticker-updated')
+assert.equal(stickerPushCalls[0].init.headers.Authorization, 'Bearer session-token')
+assert.equal(JSON.parse(stickerPushCalls[0].init.body).code, 'ARG10')
+globalThis.fetch = originalFetch
+
 assert.deepEqual(
   buildTradePushPayload({
     action: 'created',

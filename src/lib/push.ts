@@ -34,11 +34,11 @@ export function buildStickerPushPayload({
   actorName?: string | null
 }): PushPayload {
   const actor = actorName?.trim()
-  const action = quantity > 0 ? 'marco' : 'desmarco'
+  const action = quantity > 0 ? 'marcó' : 'desmarcó'
   const prefix = actor ? `${actor} ${action}` : `Se ${action}`
 
   return {
-    title: 'FiguritasApp',
+    title: 'Figurita anotada',
     body: `${prefix} ${code} - ${name}`,
     url: '/actividad',
     tag: `sticker-${code}`,

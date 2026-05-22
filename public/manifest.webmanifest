@@ -1,6 +1,6 @@
 {
-  "name": "Figuritas 2026",
-  "short_name": "Figuritas",
+  "name": "FiguritasApp by Carru",
+  "short_name": "FiguritasApp",
   "description": "Album compartido de figuritas Panini FIFA World Cup 2026",
   "start_url": "/album",
   "scope": "/",

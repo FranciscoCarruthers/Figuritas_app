@@ -5,12 +5,12 @@ import AppProviders from '@/context/AppProviders'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Figuritas 2026',
+  title: 'FiguritasApp by Carru',
   description: 'Album compartido de figuritas Panini FIFA World Cup 2026',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
-    title: 'Figuritas 2026',
+    title: 'FiguritasApp',
     statusBarStyle: 'black-translucent',
   },
   icons: {
