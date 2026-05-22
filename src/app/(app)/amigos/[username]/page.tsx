@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, CheckCircle2, CircleDashed, Clock3, RefreshCw, Search, Users } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, CircleDashed, Clock3, Handshake, RefreshCw, Search, Users } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
 import TeamFlag from '@/components/TeamFlag'
 import { ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
@@ -107,15 +107,25 @@ export default function FriendAlbumPage() {
             <ArrowLeft className="h-4 w-4" />
             Amigos
           </Link>
-          <button
-            type="button"
-            onClick={() => void loadAlbum(true)}
-            className="grid h-10 w-10 place-items-center rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 active:bg-slate-100"
-            aria-label="Refrescar album del amigo"
-            title="Refrescar album del amigo"
-          >
-            <RefreshCw className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/amigos/${encodeURIComponent(friendUsername)}/intercambiar`}
+              className="grid h-10 w-10 place-items-center rounded-full bg-red-700 text-white shadow-sm active:bg-red-800"
+              aria-label="Intercambiar"
+              title="Intercambiar"
+            >
+              <Handshake className="h-5 w-5" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => void loadAlbum(true)}
+              className="grid h-10 w-10 place-items-center rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 active:bg-slate-100"
+              aria-label="Refrescar album del amigo"
+              title="Refrescar album del amigo"
+            >
+              <RefreshCw className="h-5 w-5" />
+            </button>
+          </div>
         </div>
         <p className="text-xs font-black tracking-[0.08em] text-red-700">Album de amigo</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-950">{friendUsername}</h1>

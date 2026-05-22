@@ -70,3 +70,50 @@ export interface FriendAlbumSticker {
 }
 
 export type FriendAlbumState = AlbumState
+
+export interface DuplicateSummary {
+  sticker: Sticker
+  quantity: number
+  available: number
+  isFormation: boolean
+}
+
+export interface TradeRuleSet {
+  sameQuantity: boolean
+  sameFoils: boolean
+  sameFormations: boolean
+}
+
+export interface TradeSuggestion {
+  mineUseful: DuplicateSummary[]
+  friendUseful: DuplicateSummary[]
+}
+
+export type TradeStatus = 'pending' | 'accepted' | 'declined' | 'cancelled' | 'completed'
+
+export interface TradeProposalItem {
+  sticker_code: string
+  sticker_name: string
+  sticker_team: string
+  is_foil: boolean
+  position: number
+  quantity: number
+  owner_is_me: boolean
+  receiver_is_me: boolean
+}
+
+export interface TradeProposal {
+  id: string
+  friend_username: string
+  direction: 'incoming' | 'outgoing'
+  status: TradeStatus
+  same_quantity: boolean
+  same_foils: boolean
+  same_formations: boolean
+  my_applied: boolean
+  friend_applied: boolean
+  created_at: string
+  updated_at: string
+  responded_at: string | null
+  items: TradeProposalItem[]
+}

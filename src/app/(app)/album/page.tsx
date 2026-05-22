@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Import as ImportIcon, LogOut, Search, Share, SlidersHorizontal, Sparkles, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, CopyPlus, Import as ImportIcon, LogOut, Search, Share, SlidersHorizontal, Sparkles, X } from 'lucide-react'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
@@ -295,6 +296,15 @@ export default function AlbumPage() {
             <p className="text-xs font-black tracking-[0.14em] text-red-700">by Carru</p>
           </div>
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
+            <Link
+              href="/repetidas"
+              aria-label="Repetidas"
+              title="Repetidas"
+              className="inline-flex h-10 w-10 items-center justify-center gap-1.5 rounded-full bg-slate-950 text-xs font-black text-white active:bg-slate-800 sm:w-auto sm:px-3"
+            >
+              <CopyPlus className="h-4 w-4" />
+              <span className="hidden sm:inline">Repetidas</span>
+            </Link>
             <button
               type="button"
               onClick={() => {

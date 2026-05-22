@@ -62,6 +62,33 @@ create table if not exists friendships (
   check (requester_id <> addressee_id)
 );
 
+create table if not exists trade_proposals (
+  id uuid primary key default gen_random_uuid(),
+  requester_id uuid not null references auth.users(id) on delete cascade,
+  addressee_id uuid not null references auth.users(id) on delete cascade,
+  status text not null default 'pending' check (status in ('pending', 'accepted', 'declined', 'cancelled', 'completed')),
+  same_quantity boolean not null default true,
+  same_foils boolean not null default false,
+  same_formations boolean not null default false,
+  requester_applied_at timestamptz,
+  addressee_applied_at timestamptz,
+  responded_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (requester_id <> addressee_id)
+);
+
+create table if not exists trade_items (
+  id uuid primary key default gen_random_uuid(),
+  proposal_id uuid not null references trade_proposals(id) on delete cascade,
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  receiver_id uuid not null references auth.users(id) on delete cascade,
+  sticker_code text not null references stickers(code) on delete cascade,
+  quantity integer not null check (quantity > 0 and quantity <= 99),
+  created_at timestamptz not null default now(),
+  check (owner_id <> receiver_id)
+);
+
 create table if not exists album_stickers (
   album_id uuid not null references albums(id) on delete cascade,
   sticker_code text not null references stickers(code) on delete cascade,
@@ -88,6 +115,9 @@ create index if not exists activity_log_album_created_idx on activity_log(album_
 create index if not exists stickers_search_idx on stickers(team_code, code);
 create index if not exists friendships_requester_idx on friendships(requester_id);
 create index if not exists friendships_addressee_idx on friendships(addressee_id);
+create index if not exists trade_proposals_requester_idx on trade_proposals(requester_id);
+create index if not exists trade_proposals_addressee_idx on trade_proposals(addressee_id);
+create index if not exists trade_items_proposal_idx on trade_items(proposal_id);
 create unique index if not exists friendships_unique_pair_idx on friendships (
   (case when requester_id < addressee_id then requester_id else addressee_id end),
   (case when requester_id < addressee_id then addressee_id else requester_id end)
@@ -96,6 +126,8 @@ create unique index if not exists friendships_unique_pair_idx on friendships (
 alter table albums enable row level security;
 alter table profiles enable row level security;
 alter table friendships enable row level security;
+alter table trade_proposals enable row level security;
+alter table trade_items enable row level security;
 alter table album_stickers enable row level security;
 alter table activity_log enable row level security;
 alter table album_editions enable row level security;
@@ -109,6 +141,8 @@ drop policy if exists "teams are readable by authenticated users" on teams;
 drop policy if exists "stickers are readable by authenticated users" on stickers;
 drop policy if exists "profiles can read own profile" on profiles;
 drop policy if exists "friendships can be read by participants" on friendships;
+drop policy if exists "trade proposals can be read by participants" on trade_proposals;
+drop policy if exists "trade items can be read by participants" on trade_items;
 drop policy if exists "albums can be read by their profile user" on albums;
 drop policy if exists "album stickers can be read by their profile user" on album_stickers;
 drop policy if exists "activity can be read by their profile user" on activity_log;
@@ -125,6 +159,20 @@ create policy "profiles can read own profile" on profiles
 create policy "friendships can be read by participants" on friendships
   for select to authenticated
   using (requester_id = auth.uid() or addressee_id = auth.uid());
+
+create policy "trade proposals can be read by participants" on trade_proposals
+  for select to authenticated
+  using (requester_id = auth.uid() or addressee_id = auth.uid());
+
+create policy "trade items can be read by participants" on trade_items
+  for select to authenticated
+  using (
+    proposal_id in (
+      select id
+      from trade_proposals
+      where requester_id = auth.uid() or addressee_id = auth.uid()
+    )
+  );
 
 create policy "albums can be read by their profile user" on albums
   for select to authenticated
@@ -557,11 +605,379 @@ begin
 end;
 $$;
 
+create or replace function validate_trade_proposal_availability(p_proposal_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_item record;
+  v_album_id uuid;
+  v_quantity integer;
+begin
+  for v_item in
+    select ti.*
+    from trade_items ti
+    where ti.proposal_id = p_proposal_id
+  loop
+    select p.album_id into v_album_id
+    from profiles p
+    where p.user_id = v_item.owner_id;
+
+    select coalesce(s.quantity, 0) into v_quantity
+    from album_stickers s
+    where s.album_id = v_album_id and s.sticker_code = v_item.sticker_code;
+
+    if greatest(0, coalesce(v_quantity, 0) - 1) < v_item.quantity then
+      raise exception 'Ya no hay repetidas suficientes para %.', v_item.sticker_code;
+    end if;
+  end loop;
+end;
+$$;
+
+create or replace function create_trade_proposal(
+  p_friend_username text,
+  p_items jsonb,
+  p_same_quantity boolean default true,
+  p_same_foils boolean default false,
+  p_same_formations boolean default false
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_friend_user_id uuid;
+  v_proposal_id uuid;
+  v_item jsonb;
+  v_side text;
+  v_code text;
+  v_quantity integer;
+  v_owner_id uuid;
+  v_receiver_id uuid;
+  v_owner_album_id uuid;
+  v_owner_quantity integer;
+  v_my_total integer := 0;
+  v_their_total integer := 0;
+  v_my_foils integer := 0;
+  v_their_foils integer := 0;
+  v_my_formations integer := 0;
+  v_their_formations integer := 0;
+  v_is_foil boolean;
+  v_is_formation boolean;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select p.user_id into v_friend_user_id
+  from profiles p
+  where p.username = lower(trim(p_friend_username));
+
+  if v_friend_user_id is null then
+    raise exception 'No encontramos ese usuario.';
+  end if;
+
+  if v_friend_user_id = auth.uid() then
+    raise exception 'No podes proponerte un intercambio a vos mismo.';
+  end if;
+
+  if not exists (
+    select 1
+    from friendships f
+    where f.status = 'accepted'
+      and ((f.requester_id = auth.uid() and f.addressee_id = v_friend_user_id)
+        or (f.requester_id = v_friend_user_id and f.addressee_id = auth.uid()))
+  ) then
+    raise exception 'Solo podes intercambiar con amigos aceptados.';
+  end if;
+
+  if jsonb_typeof(p_items) <> 'array' then
+    raise exception 'La propuesta no tiene items validos.';
+  end if;
+
+  insert into trade_proposals (requester_id, addressee_id, same_quantity, same_foils, same_formations)
+  values (auth.uid(), v_friend_user_id, coalesce(p_same_quantity, true), coalesce(p_same_foils, false), coalesce(p_same_formations, false))
+  returning id into v_proposal_id;
+
+  for v_item in
+    select value from jsonb_array_elements(p_items)
+  loop
+    v_side := lower(coalesce(v_item->>'side', ''));
+    v_code := upper(regexp_replace(coalesce(v_item->>'code', ''), '\s+', '', 'g'));
+    v_quantity := greatest(1, least(99, coalesce((v_item->>'quantity')::integer, 1)));
+
+    if v_side = 'mine' then
+      v_owner_id := auth.uid();
+      v_receiver_id := v_friend_user_id;
+    elsif v_side in ('theirs', 'friend') then
+      v_owner_id := v_friend_user_id;
+      v_receiver_id := auth.uid();
+    else
+      raise exception 'Cada item tiene que indicar side mine o theirs.';
+    end if;
+
+    select s.is_foil, (s.team_code <> 'FWC' and s.position = 13)
+      into v_is_foil, v_is_formation
+    from stickers s
+    where s.code = v_code;
+
+    if v_is_foil is null then
+      raise exception 'Sticker no encontrada: %', v_code;
+    end if;
+
+    select p.album_id into v_owner_album_id
+    from profiles p
+    where p.user_id = v_owner_id;
+
+    select coalesce(s.quantity, 0) into v_owner_quantity
+    from album_stickers s
+    where s.album_id = v_owner_album_id and s.sticker_code = v_code;
+
+    if greatest(0, coalesce(v_owner_quantity, 0) - 1) < v_quantity then
+      raise exception 'No hay repetidas suficientes de %.', v_code;
+    end if;
+
+    insert into trade_items (proposal_id, owner_id, receiver_id, sticker_code, quantity)
+    values (v_proposal_id, v_owner_id, v_receiver_id, v_code, v_quantity);
+
+    if v_owner_id = auth.uid() then
+      v_my_total := v_my_total + v_quantity;
+      if v_is_foil then v_my_foils := v_my_foils + v_quantity; end if;
+      if v_is_formation then v_my_formations := v_my_formations + v_quantity; end if;
+    else
+      v_their_total := v_their_total + v_quantity;
+      if v_is_foil then v_their_foils := v_their_foils + v_quantity; end if;
+      if v_is_formation then v_their_formations := v_their_formations + v_quantity; end if;
+    end if;
+  end loop;
+
+  if v_my_total = 0 or v_their_total = 0 then
+    raise exception 'Elegi al menos una figurita de cada lado.';
+  end if;
+
+  if coalesce(p_same_quantity, true) and v_my_total <> v_their_total then
+    raise exception 'La cantidad total de figuritas tiene que coincidir.';
+  end if;
+
+  if coalesce(p_same_foils, false) and v_my_foils <> v_their_foils then
+    raise exception 'La cantidad de brillantes tiene que coincidir.';
+  end if;
+
+  if coalesce(p_same_formations, false) and v_my_formations <> v_their_formations then
+    raise exception 'La cantidad de formaciones tiene que coincidir.';
+  end if;
+
+  return v_proposal_id;
+end;
+$$;
+
+create or replace function respond_trade_proposal(p_proposal_id uuid, p_accept boolean)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_proposal trade_proposals%rowtype;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select * into v_proposal
+  from trade_proposals
+  where id = p_proposal_id
+    and addressee_id = auth.uid()
+    and status = 'pending';
+
+  if v_proposal.id is null then
+    raise exception 'No encontramos una propuesta pendiente para responder.';
+  end if;
+
+  if p_accept then
+    perform validate_trade_proposal_availability(p_proposal_id);
+  end if;
+
+  update trade_proposals
+  set status = case when p_accept then 'accepted' else 'declined' end,
+      responded_at = now(),
+      updated_at = now()
+  where id = p_proposal_id;
+end;
+$$;
+
+create or replace function cancel_trade_proposal(p_proposal_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  update trade_proposals
+  set status = 'cancelled',
+      updated_at = now()
+  where id = p_proposal_id
+    and requester_id = auth.uid()
+    and status in ('pending', 'accepted');
+
+  if not found then
+    raise exception 'No se pudo cancelar esta propuesta.';
+  end if;
+end;
+$$;
+
+create or replace function apply_trade_proposal(p_proposal_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_proposal trade_proposals%rowtype;
+  v_item record;
+  v_album_id uuid;
+  v_current integer;
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  select * into v_proposal
+  from trade_proposals
+  where id = p_proposal_id
+    and status = 'accepted'
+    and (requester_id = auth.uid() or addressee_id = auth.uid());
+
+  if v_proposal.id is null then
+    raise exception 'El intercambio no esta aceptado o no existe.';
+  end if;
+
+  if (v_proposal.requester_id = auth.uid() and v_proposal.requester_applied_at is not null)
+    or (v_proposal.addressee_id = auth.uid() and v_proposal.addressee_applied_at is not null) then
+    raise exception 'Ya anotaste este intercambio en tu album.';
+  end if;
+
+  select p.album_id into v_album_id
+  from profiles p
+  where p.user_id = auth.uid();
+
+  for v_item in
+    select ti.*
+    from trade_items ti
+    where ti.proposal_id = p_proposal_id
+      and (ti.owner_id = auth.uid() or ti.receiver_id = auth.uid())
+  loop
+    select coalesce(s.quantity, 0) into v_current
+    from album_stickers s
+    where s.album_id = v_album_id and s.sticker_code = v_item.sticker_code;
+
+    if v_item.owner_id = auth.uid() then
+      if greatest(0, coalesce(v_current, 0) - v_item.quantity) < 1 then
+        raise exception 'No podes entregar %, no quedaria tu copia propia.', v_item.sticker_code;
+      end if;
+      perform set_sticker_quantity(v_item.sticker_code, v_current - v_item.quantity);
+    else
+      perform set_sticker_quantity(v_item.sticker_code, least(99, coalesce(v_current, 0) + v_item.quantity));
+    end if;
+  end loop;
+
+  update trade_proposals
+  set requester_applied_at = case when requester_id = auth.uid() then now() else requester_applied_at end,
+      addressee_applied_at = case when addressee_id = auth.uid() then now() else addressee_applied_at end,
+      updated_at = now()
+  where id = p_proposal_id;
+
+  update trade_proposals
+  set status = 'completed',
+      updated_at = now()
+  where id = p_proposal_id
+    and requester_applied_at is not null
+    and addressee_applied_at is not null;
+end;
+$$;
+
+create or replace function get_trade_proposals()
+returns table(
+  id uuid,
+  friend_username text,
+  direction text,
+  status text,
+  same_quantity boolean,
+  same_foils boolean,
+  same_formations boolean,
+  my_applied boolean,
+  friend_applied boolean,
+  created_at timestamptz,
+  updated_at timestamptz,
+  responded_at timestamptz,
+  items jsonb
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    tp.id,
+    fp.username as friend_username,
+    case when tp.requester_id = auth.uid() then 'outgoing' else 'incoming' end as direction,
+    tp.status,
+    tp.same_quantity,
+    tp.same_foils,
+    tp.same_formations,
+    case
+      when tp.requester_id = auth.uid() then tp.requester_applied_at is not null
+      else tp.addressee_applied_at is not null
+    end as my_applied,
+    case
+      when tp.requester_id = auth.uid() then tp.addressee_applied_at is not null
+      else tp.requester_applied_at is not null
+    end as friend_applied,
+    tp.created_at,
+    tp.updated_at,
+    tp.responded_at,
+    coalesce(
+      jsonb_agg(
+        jsonb_build_object(
+          'sticker_code', ti.sticker_code,
+          'sticker_name', st.name,
+          'sticker_team', st.team_name,
+          'is_foil', st.is_foil,
+          'position', st.position,
+          'quantity', ti.quantity,
+          'owner_is_me', ti.owner_id = auth.uid(),
+          'receiver_is_me', ti.receiver_id = auth.uid()
+        )
+        order by ti.created_at, ti.sticker_code
+      ) filter (where ti.id is not null),
+      '[]'::jsonb
+    ) as items
+  from trade_proposals tp
+  join profiles fp on fp.user_id = case when tp.requester_id = auth.uid() then tp.addressee_id else tp.requester_id end
+  left join trade_items ti on ti.proposal_id = tp.id
+  left join stickers st on st.code = ti.sticker_code
+  where auth.uid() is not null
+    and (tp.requester_id = auth.uid() or tp.addressee_id = auth.uid())
+  group by tp.id, fp.username
+  order by tp.updated_at desc;
+$$;
+
 grant execute on function get_friend_summaries() to authenticated;
 grant execute on function send_friend_request(text) to authenticated;
 grant execute on function respond_friend_request(uuid, boolean) to authenticated;
 grant execute on function remove_friend(uuid) to authenticated;
 grant execute on function get_friend_album(text) to authenticated;
+grant execute on function create_trade_proposal(text, jsonb, boolean, boolean, boolean) to authenticated;
+grant execute on function respond_trade_proposal(uuid, boolean) to authenticated;
+grant execute on function apply_trade_proposal(uuid) to authenticated;
+grant execute on function cancel_trade_proposal(uuid) to authenticated;
+grant execute on function get_trade_proposals() to authenticated;
 
 do $$
 begin

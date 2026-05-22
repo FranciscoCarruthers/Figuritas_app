@@ -25,6 +25,13 @@ import {
   hasActiveAlbumViewFilters,
   INITIAL_ALBUM_BLOCK_LIMIT,
 } from '../src/lib/album-rendering.ts'
+import {
+  buildTradeSuggestions,
+  getDuplicateCount,
+  getNextDuplicateQuantity,
+  isFormationSticker,
+  validateTradeRules,
+} from '../src/lib/trades.ts'
 
 const stickers = [
   { code: '00', name: 'Logo', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 0 },
@@ -204,14 +211,63 @@ assert.deepEqual(
 assert.equal(getNextAlbumBlockLimit(8, 18), 16)
 assert.equal(getNextAlbumBlockLimit(16, 18), 18)
 
+const duplicateState = {
+  ARG1: { sticker_code: 'ARG1', quantity: 3, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+  ARG2: { sticker_code: 'ARG2', quantity: 0, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+  ARG3: { sticker_code: 'ARG3', quantity: 0, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+  BRA1: { sticker_code: 'BRA1', quantity: 2, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+}
+const friendDuplicateState = {
+  ARG1: { sticker_code: 'ARG1', quantity: 0, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+  ARG2: { sticker_code: 'ARG2', quantity: 2, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+  BRA1: { sticker_code: 'BRA1', quantity: 1, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+}
+
+assert.equal(getDuplicateCount(duplicateState, 'ARG1'), 2)
+assert.equal(getDuplicateCount(duplicateState, 'ARG2'), 0)
+assert.equal(getDuplicateCount(duplicateState, 'ARG3'), 0)
+assert.equal(getNextDuplicateQuantity(0, 1), 2)
+assert.equal(getNextDuplicateQuantity(1, 1), 2)
+assert.equal(getNextDuplicateQuantity(3, -1), 2)
+assert.equal(getNextDuplicateQuantity(1, -1), 1)
+assert.equal(isFormationSticker({ code: 'ARG13', name: 'Team Photo', team: 'Argentina', teamCode: 'ARG', type: 'photo', isFoil: false, position: 13 }), true)
+assert.equal(isFormationSticker({ code: 'FWC13', name: 'History', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 13 }), false)
+
+const suggestions = buildTradeSuggestions(duplicateState, friendDuplicateState, stickers)
+assert.deepEqual(suggestions.mineUseful.map(item => [item.sticker.code, item.available]), [['ARG1', 2]])
+assert.deepEqual(suggestions.friendUseful.map(item => [item.sticker.code, item.available]), [['ARG2', 1]])
+assert.deepEqual(
+  validateTradeRules(
+    [{ sticker: stickers.find(sticker => sticker.code === 'ARG1'), quantity: 1 }],
+    [{ sticker: stickers.find(sticker => sticker.code === 'ARG2'), quantity: 1 }],
+    { sameQuantity: true, sameFoils: true, sameFormations: false },
+  ),
+  { valid: false, messages: ['La cantidad de brillantes tiene que coincidir.'] },
+)
+assert.deepEqual(
+  validateTradeRules(
+    [{ sticker: stickers.find(sticker => sticker.code === 'ARG2'), quantity: 1 }],
+    [{ sticker: stickers.find(sticker => sticker.code === 'BRA2'), quantity: 1 }],
+    { sameQuantity: true, sameFoils: false, sameFormations: false },
+  ),
+  { valid: true, messages: [] },
+)
+
 const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
 for (const expectedSql of [
   'create table if not exists friendships',
+  'create table if not exists trade_proposals',
+  'create table if not exists trade_items',
   'send_friend_request',
   'respond_friend_request',
   'remove_friend',
   'get_friend_summaries',
   'get_friend_album',
+  'create_trade_proposal',
+  'respond_trade_proposal',
+  'apply_trade_proposal',
+  'cancel_trade_proposal',
+  'get_trade_proposals',
 ]) {
   assert.ok(schema.includes(expectedSql), `schema should include ${expectedSql}`)
 }

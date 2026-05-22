@@ -18,6 +18,8 @@ export type AppEventName =
   | 'album_first_render'
   | 'import_preview_opened'
   | 'import_completed'
+  | 'duplicate_added'
+  | 'duplicate_removed'
   | 'share_missing_copied'
   | 'scanner_opened'
   | 'scanner_mode_changed'
@@ -29,6 +31,11 @@ export type AppEventName =
   | 'friend_removed'
   | 'friend_album_opened'
   | 'friends_refreshed'
+  | 'trade_proposal_created'
+  | 'trade_proposal_accepted'
+  | 'trade_proposal_declined'
+  | 'trade_proposal_cancelled'
+  | 'trade_proposal_applied'
 
 export function trackAppEvent(name: AppEventName, properties: Record<string, AnalyticsValue> = {}) {
   if (typeof window === 'undefined') return

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Check, Clock3, Loader2, RefreshCw, Trash2, Trophy, UserPlus, Users, X } from 'lucide-react'
+import { ArrowRight, Check, Clock3, Handshake, Loader2, RefreshCw, Trash2, Trophy, UserPlus, Users, X } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
@@ -19,10 +19,21 @@ import {
   sortFriendRanking,
 } from '@/lib/friends'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
-import type { FriendSummary } from '@/lib/types'
+import type { FriendSummary, TradeProposal } from '@/lib/types'
 
 function asFriends(data: unknown): FriendSummary[] {
   return (Array.isArray(data) ? data : []) as FriendSummary[]
+}
+
+function asTradeProposals(data: unknown): TradeProposal[] {
+  return (Array.isArray(data) ? data : []) as TradeProposal[]
+}
+
+function isMissingTradeRpcError(message: string): boolean {
+  return message.includes('get_trade_proposals') && (
+    message.includes('Could not find the function') ||
+    message.includes('does not exist')
+  )
 }
 
 function metric(value: number | null): string {
@@ -77,6 +88,119 @@ function FriendCard({ friend, onRemove }: { friend: FriendSummary; onRemove: (fr
         Ver album
         <ArrowRight className="h-4 w-4" />
       </Link>
+      <Link
+        href={`/amigos/${encodeURIComponent(friend.username)}/intercambiar`}
+        className="mt-2 flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-black text-white active:bg-slate-800"
+      >
+        Intercambiar
+        <Handshake className="h-4 w-4" />
+      </Link>
+    </article>
+  )
+}
+
+function tradeStatusLabel(trade: TradeProposal): string {
+  if (trade.status === 'pending' && trade.direction === 'incoming') return 'Te propusieron'
+  if (trade.status === 'pending') return 'Esperando respuesta'
+  if (trade.status === 'accepted') return 'Intercambio exitoso'
+  if (trade.status === 'completed') return 'Completado'
+  if (trade.status === 'declined') return 'Rechazado'
+  return 'Cancelado'
+}
+
+function TradeProposalCard({
+  trade,
+  busy,
+  onAccept,
+  onDecline,
+  onCancel,
+  onApply,
+}: {
+  trade: TradeProposal
+  busy: boolean
+  onAccept: (trade: TradeProposal) => void
+  onDecline: (trade: TradeProposal) => void
+  onCancel: (trade: TradeProposal) => void
+  onApply: (trade: TradeProposal) => void
+}) {
+  const mine = trade.items.filter(item => item.owner_is_me)
+  const theirs = trade.items.filter(item => item.receiver_is_me)
+  const mineTotal = mine.reduce((total, item) => total + item.quantity, 0)
+  const theirTotal = theirs.reduce((total, item) => total + item.quantity, 0)
+
+  return (
+    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-red-700">{tradeStatusLabel(trade)}</p>
+          <h3 className="mt-1 truncate text-xl font-black text-slate-950">{trade.friend_username}</h3>
+        </div>
+        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+          {mineTotal} x {theirTotal}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-2 text-sm font-bold text-slate-700 sm:grid-cols-2">
+        <div className="rounded-lg bg-slate-50 p-3">
+          <p className="text-xs font-black uppercase tracking-[0.1em] text-slate-400">Das</p>
+          <p className="mt-1 line-clamp-2">
+            {mine.length > 0 ? mine.map(item => `${item.sticker_code}${item.quantity > 1 ? ` x${item.quantity}` : ''}`).join(', ') : '-'}
+          </p>
+        </div>
+        <div className="rounded-lg bg-red-50 p-3">
+          <p className="text-xs font-black uppercase tracking-[0.1em] text-red-700">Recibis</p>
+          <p className="mt-1 line-clamp-2 text-red-800">
+            {theirs.length > 0 ? theirs.map(item => `${item.sticker_code}${item.quantity > 1 ? ` x${item.quantity}` : ''}`).join(', ') : '-'}
+          </p>
+        </div>
+      </div>
+
+      {trade.status === 'pending' && trade.direction === 'incoming' ? (
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onAccept(trade)}
+            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white disabled:opacity-50"
+          >
+            <Check className="h-4 w-4" />
+            Aceptar
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onDecline(trade)}
+            className="flex h-11 items-center justify-center gap-2 rounded-lg bg-slate-100 text-sm font-black text-slate-600 disabled:opacity-50"
+          >
+            <X className="h-4 w-4" />
+            Rechazar
+          </button>
+        </div>
+      ) : null}
+
+      {trade.status === 'pending' && trade.direction === 'outgoing' ? (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => onCancel(trade)}
+          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-100 text-sm font-black text-slate-600 disabled:opacity-50"
+        >
+          <X className="h-4 w-4" />
+          Cancelar propuesta
+        </button>
+      ) : null}
+
+      {trade.status === 'accepted' ? (
+        <button
+          type="button"
+          disabled={busy || trade.my_applied}
+          onClick={() => onApply(trade)}
+          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white disabled:bg-slate-200 disabled:text-slate-500"
+        >
+          <Check className="h-4 w-4" />
+          {trade.my_applied ? 'Ya lo anotaste' : 'Anotar en mi album'}
+        </button>
+      ) : null}
     </article>
   )
 }
@@ -85,10 +209,14 @@ export default function AmigosPage() {
   const { profile } = useAuth()
   const { albumState, isLoading: albumLoading } = useAlbum()
   const [friends, setFriends] = useState<FriendSummary[]>([])
+  const [trades, setTrades] = useState<TradeProposal[]>([])
   const [username, setUsername] = useState('')
   const [loading, setLoading] = useState(true)
+  const [tradesLoading, setTradesLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [tradeBusyId, setTradeBusyId] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const [tradeError, setTradeError] = useState('')
   const [message, setMessage] = useState('')
 
   const acceptedFriends = useMemo(() => getAcceptedFriends(friends), [friends])
@@ -103,6 +231,21 @@ export default function AmigosPage() {
     () => sortFriendRanking(ownRankingEntry ? [ownRankingEntry, ...friends] : friends),
     [friends, ownRankingEntry],
   )
+
+  const loadTrades = useCallback(async (trackRefresh = false) => {
+    const supabase = getSupabaseBrowserClient()
+    setTradesLoading(true)
+    setTradeError('')
+    const { data, error: rpcError } = await supabase.rpc('get_trade_proposals')
+    if (rpcError) {
+      setTrades([])
+      setTradeError(isMissingTradeRpcError(rpcError.message) ? '' : rpcError.message)
+    } else {
+      setTrades(asTradeProposals(data))
+      if (trackRefresh) trackAppEvent('friends_refreshed', { scope: 'trades' })
+    }
+    setTradesLoading(false)
+  }, [])
 
   const loadFriends = useCallback(async (trackRefresh = false) => {
     const supabase = getSupabaseBrowserClient()
@@ -120,7 +263,8 @@ export default function AmigosPage() {
 
   useEffect(() => {
     void loadFriends()
-  }, [loadFriends])
+    void loadTrades()
+  }, [loadFriends, loadTrades])
 
   async function sendRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -178,6 +322,64 @@ export default function AmigosPage() {
     await loadFriends()
   }
 
+  async function respondTrade(trade: TradeProposal, accept: boolean) {
+    setTradeBusyId(trade.id)
+    setTradeError('')
+    setMessage('')
+    const supabase = getSupabaseBrowserClient()
+    const { error: rpcError } = await supabase.rpc('respond_trade_proposal', {
+      p_proposal_id: trade.id,
+      p_accept: accept,
+    })
+    if (rpcError) {
+      setTradeError(rpcError.message)
+    } else {
+      trackAppEvent(accept ? 'trade_proposal_accepted' : 'trade_proposal_declined', {
+        friend: trade.friend_username,
+      })
+      setMessage(accept ? 'Intercambio aceptado.' : 'Intercambio rechazado.')
+      await loadTrades()
+    }
+    setTradeBusyId(null)
+  }
+
+  async function cancelTrade(trade: TradeProposal) {
+    setTradeBusyId(trade.id)
+    setTradeError('')
+    setMessage('')
+    const supabase = getSupabaseBrowserClient()
+    const { error: rpcError } = await supabase.rpc('cancel_trade_proposal', {
+      p_proposal_id: trade.id,
+    })
+    if (rpcError) {
+      setTradeError(rpcError.message)
+    } else {
+      trackAppEvent('trade_proposal_cancelled', { friend: trade.friend_username })
+      setMessage('Intercambio cancelado.')
+      await loadTrades()
+    }
+    setTradeBusyId(null)
+  }
+
+  async function applyTrade(trade: TradeProposal) {
+    setTradeBusyId(trade.id)
+    setTradeError('')
+    setMessage('')
+    const supabase = getSupabaseBrowserClient()
+    const { error: rpcError } = await supabase.rpc('apply_trade_proposal', {
+      p_proposal_id: trade.id,
+    })
+    if (rpcError) {
+      setTradeError(rpcError.message)
+    } else {
+      trackAppEvent('trade_proposal_applied', { friend: trade.friend_username })
+      setMessage('Intercambio anotado en tu album.')
+      await loadTrades()
+      await loadFriends()
+    }
+    setTradeBusyId(null)
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 pb-28 lg:px-8 lg:pb-8">
       <header className="safe-top pb-5 pt-4">
@@ -191,7 +393,10 @@ export default function AmigosPage() {
           </div>
           <button
             type="button"
-            onClick={() => void loadFriends(true)}
+            onClick={() => {
+              void loadFriends(true)
+              void loadTrades(true)
+            }}
             className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 active:bg-slate-100"
             aria-label="Refrescar amigos"
             title="Refrescar amigos"
@@ -242,6 +447,9 @@ export default function AmigosPage() {
       {message && (
         <p className="mt-3 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700">{message}</p>
       )}
+      {tradeError && (
+        <p className="mt-3 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-700">{tradeError}</p>
+      )}
 
       {loading ? (
         <section className="mt-5 grid gap-3 lg:grid-cols-3">
@@ -280,6 +488,41 @@ export default function AmigosPage() {
                   </article>
                 ))}
               </div>
+            </section>
+          )}
+
+          {(tradesLoading || trades.length > 0) && (
+            <section className="mt-6">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-black tracking-tight text-slate-950">Intercambios</h2>
+                  <p className="text-sm font-semibold text-slate-500">Propuestas pendientes y aceptadas.</p>
+                </div>
+                <span className="grid h-11 w-11 place-items-center rounded-full bg-red-50 text-red-700">
+                  <Handshake className="h-5 w-5" />
+                </span>
+              </div>
+              {tradesLoading ? (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {Array.from({ length: 2 }).map((_, index) => (
+                    <div key={index} className="h-44 animate-pulse rounded-xl bg-white shadow-sm" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  {trades.map(trade => (
+                    <TradeProposalCard
+                      key={trade.id}
+                      trade={trade}
+                      busy={tradeBusyId === trade.id}
+                      onAccept={nextTrade => void respondTrade(nextTrade, true)}
+                      onDecline={nextTrade => void respondTrade(nextTrade, false)}
+                      onCancel={nextTrade => void cancelTrade(nextTrade)}
+                      onApply={nextTrade => void applyTrade(nextTrade)}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           )}
 
