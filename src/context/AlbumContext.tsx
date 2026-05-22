@@ -13,6 +13,7 @@ import {
 import { STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { readCachedAlbum, writeCachedAlbum } from '@/lib/local-cache'
+import { notifyStickerUpdated } from '@/lib/push-client'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { AlbumState, AlbumSticker } from '@/lib/types'
 import { useAuth } from '@/context/AuthContext'
@@ -41,7 +42,7 @@ function getLocalStorage(): Storage | null {
 }
 
 export function AlbumProvider({ children }: { children: ReactNode }) {
-  const { profile } = useAuth()
+  const { profile, session } = useAuth()
   const [albumState, setAlbumState] = useState<AlbumState>({})
   const [isLoading, setIsLoading] = useState(true)
   const [isSyncing, setIsSyncing] = useState(false)
@@ -173,7 +174,8 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
 
     if (error) throw error
     setLastSyncedAt(new Date().toISOString())
-  }, [profile])
+    void notifyStickerUpdated(session, { code, quantity })
+  }, [profile, session])
 
   const importMissingCodes = useCallback(async (
     missingCodes: Set<string>,

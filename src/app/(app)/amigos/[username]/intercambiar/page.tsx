@@ -7,8 +7,10 @@ import { ArrowLeft, Check, CircleDashed, Handshake, Loader2, Minus, Plus, Refres
 import ProgressBar from '@/components/ProgressBar'
 import { ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
 import { useAlbum } from '@/context/AlbumContext'
+import { useAuth } from '@/context/AuthContext'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { buildFriendAlbumState } from '@/lib/friends'
+import { notifyTradeEvent } from '@/lib/push-client'
 import { buildAlbumBlocks } from '@/lib/sticker-blocks'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import {
@@ -57,6 +59,7 @@ export default function IntercambiarPage() {
   const params = useParams<{ username: string }>()
   const requestedUsername = decodeURIComponent(String(params.username ?? '')).toLowerCase()
   const { albumState } = useAlbum()
+  const { session } = useAuth()
   const [rows, setRows] = useState<FriendAlbumSticker[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -128,7 +131,7 @@ export default function IntercambiarPage() {
     ]
 
     const supabase = getSupabaseBrowserClient()
-    const { error: rpcError } = await supabase.rpc('create_trade_proposal', {
+    const { data: proposalId, error: rpcError } = await supabase.rpc('create_trade_proposal', {
       p_friend_username: requestedUsername,
       p_items: payload,
       p_same_quantity: rules.sameQuantity,
@@ -144,6 +147,9 @@ export default function IntercambiarPage() {
         mine: mySummary.total,
         theirs: friendSummary.total,
       })
+      if (typeof proposalId === 'string') {
+        void notifyTradeEvent(session, { proposalId, action: 'created' })
+      }
       setMessage('Propuesta enviada. Tu amigo la va a ver en Amigos.')
     }
     setSubmitting(false)

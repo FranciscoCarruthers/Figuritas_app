@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext'
 import { STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { getProgress } from '@/lib/album'
+import { notifyTradeEvent } from '@/lib/push-client'
 import {
   buildSelfFriendSummary,
   formatFriendLastUpdate,
@@ -206,7 +207,7 @@ function TradeProposalCard({
 }
 
 export default function AmigosPage() {
-  const { profile } = useAuth()
+  const { profile, session } = useAuth()
   const { albumState, isLoading: albumLoading } = useAlbum()
   const [friends, setFriends] = useState<FriendSummary[]>([])
   const [trades, setTrades] = useState<TradeProposal[]>([])
@@ -337,6 +338,7 @@ export default function AmigosPage() {
       trackAppEvent(accept ? 'trade_proposal_accepted' : 'trade_proposal_declined', {
         friend: trade.friend_username,
       })
+      void notifyTradeEvent(session, { proposalId: trade.id, action: accept ? 'accepted' : 'declined' })
       setMessage(accept ? 'Intercambio aceptado.' : 'Intercambio rechazado.')
       await loadTrades()
     }
@@ -355,6 +357,7 @@ export default function AmigosPage() {
       setTradeError(rpcError.message)
     } else {
       trackAppEvent('trade_proposal_cancelled', { friend: trade.friend_username })
+      void notifyTradeEvent(session, { proposalId: trade.id, action: 'cancelled' })
       setMessage('Intercambio cancelado.')
       await loadTrades()
     }
@@ -373,6 +376,7 @@ export default function AmigosPage() {
       setTradeError(rpcError.message)
     } else {
       trackAppEvent('trade_proposal_applied', { friend: trade.friend_username })
+      void notifyTradeEvent(session, { proposalId: trade.id, action: 'applied' })
       setMessage('Intercambio anotado en tu album.')
       await loadTrades()
       await loadFriends()

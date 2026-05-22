@@ -117,3 +117,19 @@ export interface TradeProposal {
   responded_at: string | null
   items: TradeProposalItem[]
 }
+
+export interface PushSubscriptionRecord {
+  id: string
+  user_id: string
+  device_id: string
+  endpoint: string
+  p256dh: string
+  auth: string
+  user_agent: string | null
+  notify_trades: boolean
+  notify_sticker_updates: boolean
+  enabled: boolean
+  created_at: string
+  updated_at: string
+  last_seen_at: string
+}

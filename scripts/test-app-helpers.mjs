@@ -32,6 +32,12 @@ import {
   isFormationSticker,
   validateTradeRules,
 } from '../src/lib/trades.ts'
+import {
+  buildStickerPushPayload,
+  buildTradePushPayload,
+  filterPushRecipients,
+  getPushEnvConfig,
+} from '../src/lib/push.ts'
 
 const stickers = [
   { code: '00', name: 'Logo', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 0 },
@@ -253,9 +259,79 @@ assert.deepEqual(
   { valid: true, messages: [] },
 )
 
+assert.deepEqual(
+  buildStickerPushPayload({
+    code: 'ARG10',
+    name: 'Lionel Messi',
+    quantity: 1,
+    actorName: 'Carru',
+  }),
+  {
+    title: 'FiguritasApp',
+    body: 'Carru marco ARG10 - Lionel Messi',
+    url: '/actividad',
+    tag: 'sticker-ARG10',
+  },
+)
+assert.deepEqual(
+  buildStickerPushPayload({
+    code: 'PAR19',
+    name: 'Jugador',
+    quantity: 0,
+    actorName: '',
+  }),
+  {
+    title: 'FiguritasApp',
+    body: 'Se desmarco PAR19 - Jugador',
+    url: '/actividad',
+    tag: 'sticker-PAR19',
+  },
+)
+assert.deepEqual(
+  buildTradePushPayload({
+    action: 'created',
+    actorName: 'Carru',
+    friendUsername: 'nico',
+  }),
+  {
+    title: 'Intercambio',
+    body: 'Carru te propuso un intercambio',
+    url: '/amigos',
+    tag: 'trade-nico-created',
+  },
+)
+assert.deepEqual(
+  buildTradePushPayload({
+    action: 'accepted',
+    actorName: '',
+    friendUsername: 'nico',
+  }).body,
+  'Intercambio aceptado',
+)
+assert.deepEqual(
+  filterPushRecipients([
+    { device_id: 'a', endpoint: 'one', enabled: true },
+    { device_id: 'b', endpoint: 'two', enabled: true },
+    { device_id: 'c', endpoint: 'three', enabled: false },
+  ], 'a').map(item => item.endpoint),
+  ['two'],
+)
+assert.deepEqual(getPushEnvConfig({}), { configured: false })
+assert.deepEqual(getPushEnvConfig({
+  NEXT_PUBLIC_VAPID_PUBLIC_KEY: 'public',
+  VAPID_PRIVATE_KEY: 'private',
+  VAPID_SUBJECT: 'https://figuritasappcarru.vercel.app',
+}), {
+  configured: true,
+  publicKey: 'public',
+  privateKey: 'private',
+  subject: 'https://figuritasappcarru.vercel.app',
+})
+
 const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
 for (const expectedSql of [
   'create table if not exists friendships',
+  'create table if not exists push_subscriptions',
   'create table if not exists trade_proposals',
   'create table if not exists trade_items',
   'send_friend_request',

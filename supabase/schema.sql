@@ -51,6 +51,23 @@ create table if not exists profiles (
   created_at timestamptz not null default now()
 );
 
+create table if not exists push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  device_id text not null,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  user_agent text,
+  notify_trades boolean not null default true,
+  notify_sticker_updates boolean not null default true,
+  enabled boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now(),
+  unique (user_id, device_id)
+);
+
 create table if not exists friendships (
   id uuid primary key default gen_random_uuid(),
   requester_id uuid not null references auth.users(id) on delete cascade,
@@ -113,6 +130,7 @@ create table if not exists activity_log (
 create index if not exists album_stickers_album_idx on album_stickers(album_id);
 create index if not exists activity_log_album_created_idx on activity_log(album_id, created_at desc);
 create index if not exists stickers_search_idx on stickers(team_code, code);
+create index if not exists push_subscriptions_user_idx on push_subscriptions(user_id, enabled);
 create index if not exists friendships_requester_idx on friendships(requester_id);
 create index if not exists friendships_addressee_idx on friendships(addressee_id);
 create index if not exists trade_proposals_requester_idx on trade_proposals(requester_id);
@@ -125,6 +143,7 @@ create unique index if not exists friendships_unique_pair_idx on friendships (
 
 alter table albums enable row level security;
 alter table profiles enable row level security;
+alter table push_subscriptions enable row level security;
 alter table friendships enable row level security;
 alter table trade_proposals enable row level security;
 alter table trade_items enable row level security;
@@ -140,6 +159,10 @@ drop policy if exists "sections are readable by authenticated users" on sections
 drop policy if exists "teams are readable by authenticated users" on teams;
 drop policy if exists "stickers are readable by authenticated users" on stickers;
 drop policy if exists "profiles can read own profile" on profiles;
+drop policy if exists "push subscriptions can be read by owner" on push_subscriptions;
+drop policy if exists "push subscriptions can be inserted by owner" on push_subscriptions;
+drop policy if exists "push subscriptions can be updated by owner" on push_subscriptions;
+drop policy if exists "push subscriptions can be deleted by owner" on push_subscriptions;
 drop policy if exists "friendships can be read by participants" on friendships;
 drop policy if exists "trade proposals can be read by participants" on trade_proposals;
 drop policy if exists "trade items can be read by participants" on trade_items;
@@ -154,6 +177,23 @@ create policy "stickers are readable by authenticated users" on stickers for sel
 
 create policy "profiles can read own profile" on profiles
   for select to authenticated
+  using (user_id = auth.uid());
+
+create policy "push subscriptions can be read by owner" on push_subscriptions
+  for select to authenticated
+  using (user_id = auth.uid());
+
+create policy "push subscriptions can be inserted by owner" on push_subscriptions
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+create policy "push subscriptions can be updated by owner" on push_subscriptions
+  for update to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+create policy "push subscriptions can be deleted by owner" on push_subscriptions
+  for delete to authenticated
   using (user_id = auth.uid());
 
 create policy "friendships can be read by participants" on friendships

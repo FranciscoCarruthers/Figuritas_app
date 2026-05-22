@@ -1,8 +1,16 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Activity, CheckCircle2, XCircle } from 'lucide-react'
+import { Activity, Bell, BellOff, CheckCircle2, Loader2, XCircle } from 'lucide-react'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
+import {
+  getCurrentPushSubscription,
+  getPushCapability,
+  isPushMarkedEnabled,
+  subscribeToPush,
+  unsubscribeFromPush,
+  type PushCapability,
+} from '@/lib/push-client'
 import type { ActivityEntry } from '@/lib/types'
 import { useAuth } from '@/context/AuthContext'
 
@@ -43,9 +51,13 @@ function entryMessage(entry: ActivityEntry): string {
 }
 
 export default function ActividadPage() {
-  const { profile } = useAuth()
+  const { profile, session } = useAuth()
   const [entries, setEntries] = useState<ActivityEntry[]>([])
   const [loading, setLoading] = useState(true)
+  const [pushCapability, setPushCapability] = useState<PushCapability | null>(null)
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushBusy, setPushBusy] = useState(false)
+  const [pushMessage, setPushMessage] = useState('')
   const channelRef = useRef<ReturnType<ReturnType<typeof getSupabaseBrowserClient>['channel']> | null>(null)
 
   useEffect(() => {
@@ -83,6 +95,36 @@ export default function ActividadPage() {
     }
   }, [profile])
 
+  useEffect(() => {
+    setPushCapability(getPushCapability())
+    void getCurrentPushSubscription()
+      .then(subscription => setPushEnabled(Boolean(subscription) && isPushMarkedEnabled()))
+      .catch(() => setPushEnabled(false))
+  }, [])
+
+  async function togglePushNotifications() {
+    if (!session) return
+    setPushBusy(true)
+    setPushMessage('')
+
+    try {
+      if (pushEnabled) {
+        await unsubscribeFromPush(session)
+        setPushEnabled(false)
+        setPushMessage('Notificaciones desactivadas en este dispositivo.')
+      } else {
+        await subscribeToPush(session)
+        setPushEnabled(true)
+        setPushMessage('Notificaciones activadas en este dispositivo.')
+      }
+    } catch (error) {
+      setPushMessage(error instanceof Error ? error.message : 'No se pudo actualizar notificaciones.')
+      setPushCapability(getPushCapability())
+    } finally {
+      setPushBusy(false)
+    }
+  }
+
   const groupedEntries = useMemo(() => {
     const groups = new Map<string, ActivityEntry[]>()
     for (const entry of entries) {
@@ -99,6 +141,39 @@ export default function ActividadPage() {
         <h1 className="mt-1 text-3xl font-black text-slate-950">Actividad</h1>
         <p className="mt-1 text-sm font-semibold text-slate-500">Ultimos cambios del album</p>
       </header>
+
+      <section className="mt-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex items-start gap-3">
+          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${
+            pushEnabled ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-500'
+          }`}>
+            {pushEnabled ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-black text-slate-950">Notificaciones</h2>
+            <p className="mt-0.5 text-sm font-semibold leading-5 text-slate-500">
+              Recibi avisos por intercambios y por cambios hechos desde otro dispositivo de esta cuenta.
+            </p>
+            {pushCapability?.supported === false ? (
+              <p className="mt-2 rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600">
+                {pushCapability.reason}
+              </p>
+            ) : null}
+            {pushMessage ? (
+              <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-700">{pushMessage}</p>
+            ) : null}
+          </div>
+        </div>
+        <button
+          type="button"
+          disabled={pushBusy || !session || pushCapability?.supported === false}
+          onClick={() => void togglePushNotifications()}
+          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-700 px-4 text-sm font-black text-white disabled:bg-slate-200 disabled:text-slate-500"
+        >
+          {pushBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : pushEnabled ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+          {pushEnabled ? 'Desactivar notificaciones' : 'Activar notificaciones'}
+        </button>
+      </section>
 
       {loading ? (
         <section className="mt-6 space-y-2">
