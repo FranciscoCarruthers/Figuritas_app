@@ -68,6 +68,13 @@ create table if not exists push_subscriptions (
   unique (user_id, device_id)
 );
 
+create table if not exists user_announcements (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  announcement_key text not null check (announcement_key <> ''),
+  seen_at timestamptz not null default now(),
+  primary key (user_id, announcement_key)
+);
+
 create table if not exists friendships (
   id uuid primary key default gen_random_uuid(),
   requester_id uuid not null references auth.users(id) on delete cascade,
@@ -131,6 +138,7 @@ create index if not exists album_stickers_album_idx on album_stickers(album_id);
 create index if not exists activity_log_album_created_idx on activity_log(album_id, created_at desc);
 create index if not exists stickers_search_idx on stickers(team_code, code);
 create index if not exists push_subscriptions_user_idx on push_subscriptions(user_id, enabled);
+create index if not exists user_announcements_user_idx on user_announcements(user_id);
 create index if not exists friendships_requester_idx on friendships(requester_id);
 create index if not exists friendships_addressee_idx on friendships(addressee_id);
 create index if not exists trade_proposals_requester_idx on trade_proposals(requester_id);
@@ -144,6 +152,7 @@ create unique index if not exists friendships_unique_pair_idx on friendships (
 alter table albums enable row level security;
 alter table profiles enable row level security;
 alter table push_subscriptions enable row level security;
+alter table user_announcements enable row level security;
 alter table friendships enable row level security;
 alter table trade_proposals enable row level security;
 alter table trade_items enable row level security;
@@ -163,6 +172,8 @@ drop policy if exists "push subscriptions can be read by owner" on push_subscrip
 drop policy if exists "push subscriptions can be inserted by owner" on push_subscriptions;
 drop policy if exists "push subscriptions can be updated by owner" on push_subscriptions;
 drop policy if exists "push subscriptions can be deleted by owner" on push_subscriptions;
+drop policy if exists "user announcements can be read by owner" on user_announcements;
+drop policy if exists "user announcements can be inserted by owner" on user_announcements;
 drop policy if exists "friendships can be read by participants" on friendships;
 drop policy if exists "trade proposals can be read by participants" on trade_proposals;
 drop policy if exists "trade items can be read by participants" on trade_items;
@@ -195,6 +206,14 @@ create policy "push subscriptions can be updated by owner" on push_subscriptions
 create policy "push subscriptions can be deleted by owner" on push_subscriptions
   for delete to authenticated
   using (user_id = auth.uid());
+
+create policy "user announcements can be read by owner" on user_announcements
+  for select to authenticated
+  using (user_id = auth.uid());
+
+create policy "user announcements can be inserted by owner" on user_announcements
+  for insert to authenticated
+  with check (user_id = auth.uid());
 
 create policy "friendships can be read by participants" on friendships
   for select to authenticated

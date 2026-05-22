@@ -18,6 +18,9 @@ import {
   writeCachedProfile,
   clearCachedAlbum,
   clearCachedProfile,
+  getAnnouncementSeenCacheKey,
+  readCachedAnnouncementSeen,
+  writeCachedAnnouncementSeen,
 } from '../src/lib/local-cache.ts'
 import {
   getNextAlbumBlockLimit,
@@ -177,6 +180,12 @@ assert.equal(readCachedProfile(storage, 'user-1'), null)
 writeCachedProfile(storage, 'user-1', profile, '2026-05-20T15:00:00.000Z')
 clearCachedProfile(storage, 'user-1')
 assert.equal(readCachedProfile(storage, 'user-1'), null)
+
+assert.equal(getAnnouncementSeenCacheKey('user-1', 'push-notifications-v1').includes('user-1'), true)
+assert.equal(readCachedAnnouncementSeen(storage, 'user-1', 'push-notifications-v1'), false)
+writeCachedAnnouncementSeen(storage, 'user-1', 'push-notifications-v1')
+assert.equal(readCachedAnnouncementSeen(storage, 'user-1', 'push-notifications-v1'), true)
+assert.equal(readCachedAnnouncementSeen(storage, 'user-2', 'push-notifications-v1'), false)
 
 writeCachedAlbum(storage, 'album-1', state, '2026-05-20T15:01:00.000Z')
 assert.deepEqual(readCachedAlbum(storage, 'album-1'), {
@@ -350,6 +359,9 @@ const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
 for (const expectedSql of [
   'create table if not exists friendships',
   'create table if not exists push_subscriptions',
+  'create table if not exists user_announcements',
+  'user announcements can be read by owner',
+  'user announcements can be inserted by owner',
   'create table if not exists trade_proposals',
   'create table if not exists trade_items',
   'send_friend_request',

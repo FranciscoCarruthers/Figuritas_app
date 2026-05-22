@@ -27,6 +27,10 @@ export function getAlbumCacheKey(albumId: string): string {
   return `${CACHE_PREFIX}:album:${albumId}`
 }
 
+export function getAnnouncementSeenCacheKey(userId: string, announcementKey: string): string {
+  return `${CACHE_PREFIX}:announcement:${userId}:${encodeURIComponent(announcementKey)}`
+}
+
 function safeParse(value: string | null): unknown {
   if (!value) return null
   try {
@@ -79,6 +83,26 @@ export function clearCachedProfile(storage: StorageLike, userId: string): void {
     storage.removeItem(getProfileCacheKey(userId))
   } catch {
     // Storage is a performance enhancement only.
+  }
+}
+
+export function readCachedAnnouncementSeen(
+  storage: StorageLike,
+  userId: string,
+  announcementKey: string,
+): boolean {
+  return storage.getItem(getAnnouncementSeenCacheKey(userId, announcementKey)) === '1'
+}
+
+export function writeCachedAnnouncementSeen(
+  storage: StorageLike,
+  userId: string,
+  announcementKey: string,
+): void {
+  try {
+    storage.setItem(getAnnouncementSeenCacheKey(userId, announcementKey), '1')
+  } catch {
+    // Storage is a fallback only.
   }
 }
 
