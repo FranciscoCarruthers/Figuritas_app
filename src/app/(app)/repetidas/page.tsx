@@ -193,26 +193,30 @@ export default function RepetidasPage() {
                   Actualizando...
                 </p>
               ) : null}
-              <button
-                type="button"
-                onClick={() => void copyDuplicateStickers()}
-                aria-label="Compartir repetidas"
-                title="Compartir repetidas"
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-red-700 px-3 text-xs font-black text-white active:bg-red-800"
-              >
-                <Share className="h-4 w-4" />
-                Compartir repetidas
-              </button>
-              <button
-                type="button"
-                disabled={totalDuplicates === 0 || isResetting}
-                onClick={() => void resetAllDuplicates()}
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-slate-950 px-3 text-xs font-black text-white disabled:bg-slate-200 disabled:text-slate-500"
-              >
-                {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-                Resetear repetidas
-              </button>
             </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+            <button
+              type="button"
+              onClick={() => void copyDuplicateStickers()}
+              aria-label="Compartir repetidas"
+              title="Compartir repetidas"
+              className="inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-red-700 px-2 text-xs font-black text-white active:bg-red-800 sm:px-3"
+            >
+              <Share className="h-4 w-4 shrink-0" />
+              <span className="truncate sm:hidden">Compartir</span>
+              <span className="hidden sm:inline">Compartir repetidas</span>
+            </button>
+            <button
+              type="button"
+              disabled={totalDuplicates === 0 || isResetting}
+              onClick={() => void resetAllDuplicates()}
+              className="inline-flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-full bg-slate-950 px-2 text-xs font-black text-white disabled:bg-slate-200 disabled:text-slate-500 sm:px-3"
+            >
+              {isResetting ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" /> : <RotateCcw className="h-4 w-4 shrink-0" />}
+              <span className="truncate sm:hidden">Resetear</span>
+              <span className="hidden sm:inline">Resetear repetidas</span>
+            </button>
           </div>
         </div>
 
