@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { ArrowLeft, Loader2, Minus, Plus, RotateCcw, Search, Sparkles } from 'lucide-react'
+import { ArrowLeft, Loader2, Minus, Plus, RotateCcw, Search, Share, Sparkles } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
 import TeamFlag from '@/components/TeamFlag'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS, STICKERS_MAP } from '@/data/sticker-data'
@@ -12,6 +12,7 @@ import { getProgress, isOwned } from '@/lib/album'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { buildAlbumBlocks, type StickerBlock } from '@/lib/sticker-blocks'
 import { findStickerCandidates, parseStickerCode } from '@/lib/sticker-search'
+import { buildDuplicateStickersShareText } from '@/lib/share-list'
 import { getDuplicateCount, getNextDuplicateQuantity, isFormationSticker } from '@/lib/trades'
 import type { Sticker } from '@/lib/types'
 
@@ -29,6 +30,27 @@ const ALL_BLOCKS = buildAlbumBlocks(ALBUM_GROUPS, getTeamStickers)
 
 function getDisplayNumber(sticker: Sticker) {
   return sticker.code === '00' ? '00' : sticker.position
+}
+
+async function copyTextToClipboard(text: string) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.top = '-999px'
+  document.body.appendChild(textarea)
+  textarea.focus()
+  textarea.select()
+
+  const copied = document.execCommand('copy')
+  document.body.removeChild(textarea)
+
+  if (!copied) throw new Error('No se pudo copiar')
 }
 
 function blockMatchesFilter(block: StickerBlock, filter: RepeatedFilter, albumState: ReturnType<typeof useAlbum>['albumState']) {
@@ -118,6 +140,16 @@ export default function RepetidasPage() {
     }
   }
 
+  async function copyDuplicateStickers() {
+    try {
+      await copyTextToClipboard(buildDuplicateStickersShareText(albumState))
+      trackAppEvent('share_duplicates_copied', { duplicates: totalDuplicates })
+      setStatus('Lista de repetidas copiada.')
+    } catch {
+      setStatus('No se pudo copiar la lista de repetidas.')
+    }
+  }
+
   return (
     <main className="min-h-dvh bg-white pb-5 lg:bg-slate-50 lg:px-6 lg:pb-8">
       <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-3 backdrop-blur lg:rounded-b-xl lg:border lg:border-t-0 lg:px-6">
@@ -161,6 +193,16 @@ export default function RepetidasPage() {
                   Actualizando...
                 </p>
               ) : null}
+              <button
+                type="button"
+                onClick={() => void copyDuplicateStickers()}
+                aria-label="Compartir repetidas"
+                title="Compartir repetidas"
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-red-700 px-3 text-xs font-black text-white active:bg-red-800"
+              >
+                <Share className="h-4 w-4" />
+                Compartir repetidas
+              </button>
               <button
                 type="button"
                 disabled={totalDuplicates === 0 || isResetting}

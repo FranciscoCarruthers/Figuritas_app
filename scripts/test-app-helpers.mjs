@@ -45,6 +45,7 @@ import {
   getPushEnvConfig,
 } from '../src/lib/push.ts'
 import { notifyStickerUpdated } from '../src/lib/push-client.ts'
+import { buildDuplicateStickersShareText } from '../src/lib/share-list.ts'
 
 const stickers = [
   { code: '00', name: 'Logo', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 0 },
@@ -255,6 +256,11 @@ assert.deepEqual(buildDuplicateResetChanges(duplicateState), [
   { code: 'ARG1', quantity: 1 },
   { code: 'BRA1', quantity: 1 },
 ])
+const duplicateShareText = buildDuplicateStickersShareText(duplicateState)
+assert.ok(duplicateShareText.startsWith('FiguritasApp - Lista\nUSA Mex Can 26\nRepetidas\n'))
+assert.match(duplicateShareText, /^ARG .+: 1 x2$/m)
+assert.match(duplicateShareText, /^BRA .+: 1$/m)
+assert.ok(duplicateShareText.endsWith('Descarga la app\nhttps://figuritasappcarru.vercel.app'))
 assert.equal(getNextDuplicateQuantity(0, 1), 2)
 assert.equal(getNextDuplicateQuantity(1, 1), 2)
 assert.equal(getNextDuplicateQuantity(3, -1), 2)

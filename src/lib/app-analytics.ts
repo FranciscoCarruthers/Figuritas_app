@@ -22,6 +22,7 @@ export type AppEventName =
   | 'duplicate_removed'
   | 'duplicates_reset'
   | 'share_missing_copied'
+  | 'share_duplicates_copied'
   | 'scanner_opened'
   | 'scanner_mode_changed'
   | 'scanner_card_status'
