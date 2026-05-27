@@ -883,8 +883,15 @@ begin
   set status = 'cancelled',
       updated_at = now()
   where id = p_proposal_id
-    and requester_id = auth.uid()
-    and status in ('pending', 'accepted');
+    and (
+      (status = 'pending' and requester_id = auth.uid())
+      or (
+        status = 'accepted'
+        and (requester_id = auth.uid() or addressee_id = auth.uid())
+        and requester_applied_at is null
+        and addressee_applied_at is null
+      )
+    );
 
   if not found then
     raise exception 'No se pudo cancelar esta propuesta.';

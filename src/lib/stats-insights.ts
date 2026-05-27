@@ -24,7 +24,7 @@ export type StatsRecommendation = {
   code?: string
 }
 
-export type StatsActivityInput = Pick<ActivityEntry, 'quantity' | 'created_at'>
+export type StatsActivityInput = Pick<ActivityEntry, 'sticker_code' | 'quantity' | 'action' | 'created_at'>
 
 export type DailyMarkedStats = {
   key: string
@@ -163,8 +163,13 @@ function dayLabel(value: Date, today: Date): string {
   return value.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
 }
 
+function isAlbumMarkedActivity(entry: StatsActivityInput): boolean {
+  return entry.quantity === 1 && /\bmarco\b/i.test(entry.action)
+}
+
 export function buildDailyMarkedStats(
   albumState: AlbumState,
+  activityEntries: StatsActivityInput[] = [],
   days = 7,
   now = new Date(),
 ): DailyMarkedStats[] {
@@ -180,8 +185,29 @@ export function buildDailyMarkedStats(
     })
   }
 
+  if (activityEntries.length > 0) {
+    const latestAlbumMarkBySticker = new Map<string, Date>()
+
+    for (const entry of activityEntries) {
+      if (!isAlbumMarkedActivity(entry)) continue
+      if ((albumState[entry.sticker_code]?.quantity ?? 0) <= 0) continue
+
+      const markedAt = new Date(entry.created_at)
+      const previous = latestAlbumMarkBySticker.get(entry.sticker_code)
+      if (!previous || markedAt > previous) latestAlbumMarkBySticker.set(entry.sticker_code, markedAt)
+    }
+
+    for (const markedAt of latestAlbumMarkBySticker.values()) {
+      const key = dayKey(markedAt)
+      const bucket = buckets.get(key)
+      if (bucket) bucket.marked += 1
+    }
+
+    return [...buckets.values()]
+  }
+
   for (const sticker of Object.values(albumState)) {
-    if (sticker.quantity <= 0) continue
+    if (sticker.quantity !== 1) continue
     const key = dayKey(new Date(sticker.updated_at))
     const bucket = buckets.get(key)
     if (bucket) bucket.marked += 1
@@ -222,7 +248,7 @@ export function buildAlbumInsights(
       marked: weeklyEntries.filter(entry => entry.quantity > 0).length,
       unmarked: weeklyEntries.filter(entry => entry.quantity === 0).length,
     },
-    dailyMarked: buildDailyMarkedStats(albumState, 7, now),
+    dailyMarked: buildDailyMarkedStats(albumState, weeklyEntries, 7, now),
     recommendations: buildRecommendations(closestTeams, groupProgress, foils.missing),
   }
 }

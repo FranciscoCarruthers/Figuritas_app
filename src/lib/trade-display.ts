@@ -12,3 +12,8 @@ export function getTradeStatusLabel(trade: TradeStatusInfo): string {
   if (trade.status === 'declined') return 'Rechazado'
   return 'Cancelado'
 }
+
+export function canCancelTradeProposal(trade: TradeStatusInfo): boolean {
+  if (trade.status === 'pending') return trade.direction === 'outgoing'
+  return trade.status === 'accepted' && !trade.my_applied && !trade.friend_applied
+}

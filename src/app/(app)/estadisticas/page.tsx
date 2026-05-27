@@ -42,7 +42,7 @@ function DailyMarkedChart({ days }: { days: DailyMarkedStats[] }) {
     <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Anotadas por dia</p>
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">Pegadas por dia</p>
           <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">{totalMarked} en 7 dias</h2>
           <p className="mt-1 text-sm font-semibold text-slate-500">
             {bestDay && bestDay.marked > 0 ? `Mejor dia: ${bestDay.label} con ${bestDay.marked}.` : 'Todavia sin altas esta semana.'}
@@ -65,8 +65,8 @@ function DailyMarkedChart({ days }: { days: DailyMarkedStats[] }) {
                   day.marked > 0 ? 'bg-red-700 shadow-sm' : 'bg-slate-200'
                 }`}
                 style={{ height }}
-                aria-label={`${day.label}: ${day.marked} figuritas anotadas`}
-                title={`${day.label}: ${day.marked} figuritas anotadas`}
+                aria-label={`${day.label}: ${day.marked} figuritas pegadas`}
+                title={`${day.label}: ${day.marked} figuritas pegadas`}
               />
               <p className="w-full truncate text-center text-[11px] font-bold text-slate-500">{day.label}</p>
             </div>

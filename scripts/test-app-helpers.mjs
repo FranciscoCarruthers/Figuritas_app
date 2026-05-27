@@ -37,7 +37,7 @@ import {
   isFormationSticker,
   validateTradeRules,
 } from '../src/lib/trades.ts'
-import { getTradeStatusLabel } from '../src/lib/trade-display.ts'
+import { canCancelTradeProposal, getTradeStatusLabel } from '../src/lib/trade-display.ts'
 import {
   buildStickerPushPayload,
   buildTradePushPayload,
@@ -85,11 +85,16 @@ assert.deepEqual(preview, {
 })
 
 const insights = buildAlbumInsights(stickers, groups, state, [
-  { quantity: 1, created_at: '2026-05-18T12:00:00.000Z' },
-  { quantity: 1, created_at: '2026-05-18T13:00:00.000Z' },
-  { quantity: 1, created_at: '2026-05-16T12:00:00.000Z' },
-  { quantity: 1, created_at: '2026-05-15T12:00:00.000Z' },
-  { quantity: 0, created_at: '2026-05-17T12:00:00.000Z' },
+  { sticker_code: '00', quantity: 1, action: 'test marco 00 - Logo', created_at: '2026-05-18T12:00:00.000Z' },
+  { sticker_code: 'FWC1', quantity: 1, action: 'test marco FWC1 - Emblem', created_at: '2026-05-18T12:10:00.000Z' },
+  { sticker_code: 'ARG1', quantity: 1, action: 'test marco ARG1 - Team Logo', created_at: '2026-05-18T12:20:00.000Z' },
+  { sticker_code: 'ARG2', quantity: 1, action: 'test marco ARG2 - Player', created_at: '2026-05-18T12:30:00.000Z' },
+  { sticker_code: 'BRA1', quantity: 1, action: 'test marco BRA1 - Team Logo', created_at: '2026-05-18T12:40:00.000Z' },
+  { sticker_code: 'BRA2', quantity: 1, action: 'test marco BRA2 - Player', created_at: '2026-05-18T12:50:00.000Z' },
+  { sticker_code: 'BRA3', quantity: 1, action: 'test marco BRA3 - Player', created_at: '2026-05-18T13:00:00.000Z' },
+  { sticker_code: 'ARG2', quantity: 2, action: 'test sumo repetida de ARG2 - Player', created_at: '2026-05-20T12:00:00.000Z' },
+  { sticker_code: 'ARG3', quantity: 1, action: 'test marco ARG3 - Player', created_at: '2026-05-19T12:00:00.000Z' },
+  { sticker_code: 'ARG3', quantity: 0, action: 'test desmarco ARG3 - Player', created_at: '2026-05-20T12:30:00.000Z' },
 ], new Date('2026-05-20T15:00:00.000Z'))
 
 assert.equal(insights.progress.owned, 7)
@@ -99,8 +104,8 @@ assert.equal(insights.completedTeams, 1)
 assert.equal(insights.completedSections, 1)
 assert.equal(insights.closestTeams[0].code, 'ARG')
 assert.equal(insights.groupProgress.find(group => group.label === 'Grupo A')?.percent, 83)
-assert.equal(insights.weeklyActivity.total, 5)
-assert.equal(insights.weeklyActivity.marked, 4)
+assert.equal(insights.weeklyActivity.total, 10)
+assert.equal(insights.weeklyActivity.marked, 9)
 assert.equal(insights.weeklyActivity.unmarked, 1)
 assert.equal(insights.dailyMarked.length, 7)
 assert.deepEqual(
@@ -291,6 +296,12 @@ assert.deepEqual(
 assert.equal(getTradeStatusLabel({ status: 'accepted', direction: 'incoming', my_applied: false, friend_applied: false }), 'Listo para anotar')
 assert.equal(getTradeStatusLabel({ status: 'accepted', direction: 'outgoing', my_applied: true, friend_applied: false }), 'Esperando que el otro lo anote')
 assert.equal(getTradeStatusLabel({ status: 'completed', direction: 'outgoing', my_applied: true, friend_applied: true }), 'Completado')
+assert.equal(canCancelTradeProposal({ status: 'pending', direction: 'outgoing', my_applied: false, friend_applied: false }), true)
+assert.equal(canCancelTradeProposal({ status: 'pending', direction: 'incoming', my_applied: false, friend_applied: false }), false)
+assert.equal(canCancelTradeProposal({ status: 'accepted', direction: 'incoming', my_applied: false, friend_applied: false }), true)
+assert.equal(canCancelTradeProposal({ status: 'accepted', direction: 'outgoing', my_applied: false, friend_applied: false }), true)
+assert.equal(canCancelTradeProposal({ status: 'accepted', direction: 'incoming', my_applied: true, friend_applied: false }), false)
+assert.equal(canCancelTradeProposal({ status: 'completed', direction: 'outgoing', my_applied: true, friend_applied: true }), false)
 
 assert.deepEqual(
   buildStickerPushPayload({
@@ -379,6 +390,7 @@ assert.deepEqual(getPushEnvConfig({
 })
 
 const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
+const cancelAcceptedTradesPatch = fs.readFileSync('supabase/cancel-accepted-trades.sql', 'utf8')
 for (const expectedSql of [
   'create table if not exists friendships',
   'create table if not exists push_subscriptions',
@@ -396,9 +408,13 @@ for (const expectedSql of [
   'respond_trade_proposal',
   'apply_trade_proposal',
   'cancel_trade_proposal',
+  'requester_applied_at is null',
+  'addressee_applied_at is null',
   'get_trade_proposals',
 ]) {
   assert.ok(schema.includes(expectedSql), `schema should include ${expectedSql}`)
 }
+assert.ok(cancelAcceptedTradesPatch.includes('requester_applied_at is null'), 'cancel accepted trades patch should block already applied trades')
+assert.ok(cancelAcceptedTradesPatch.includes('grant execute on function cancel_trade_proposal(uuid) to authenticated'), 'cancel accepted trades patch should grant rpc access')
 
 console.log('App helpers validated.')

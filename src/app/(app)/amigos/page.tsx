@@ -10,7 +10,7 @@ import { STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { getProgress } from '@/lib/album'
 import { notifyTradeEvent } from '@/lib/push-client'
-import { getTradeStatusLabel } from '@/lib/trade-display'
+import { canCancelTradeProposal, getTradeStatusLabel } from '@/lib/trade-display'
 import {
   buildSelfFriendSummary,
   formatFriendLastUpdate,
@@ -120,6 +120,7 @@ function TradeProposalCard({
   const theirs = trade.items.filter(item => item.receiver_is_me)
   const mineTotal = mine.reduce((total, item) => total + item.quantity, 0)
   const theirTotal = theirs.reduce((total, item) => total + item.quantity, 0)
+  const canCancel = canCancelTradeProposal(trade)
 
   return (
     <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -184,15 +185,28 @@ function TradeProposalCard({
       ) : null}
 
       {trade.status === 'accepted' ? (
-        <button
-          type="button"
-          disabled={busy || trade.my_applied}
-          onClick={() => onApply(trade)}
-          className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white disabled:bg-slate-200 disabled:text-slate-500"
-        >
-          <Check className="h-4 w-4" />
-          {trade.my_applied ? 'Ya lo anotaste' : 'Anotar en mi album'}
-        </button>
+        <div className={`mt-4 grid gap-2 ${canCancel ? 'sm:grid-cols-2' : ''}`}>
+          <button
+            type="button"
+            disabled={busy || trade.my_applied}
+            onClick={() => onApply(trade)}
+            className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-700 text-sm font-black text-white disabled:bg-slate-200 disabled:text-slate-500"
+          >
+            <Check className="h-4 w-4" />
+            {trade.my_applied ? 'Ya lo anotaste' : 'Anotar en mi album'}
+          </button>
+          {canCancel ? (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onCancel(trade)}
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-100 text-sm font-black text-slate-600 disabled:opacity-50"
+            >
+              <X className="h-4 w-4" />
+              Cancelar intercambio
+            </button>
+          ) : null}
+        </div>
       ) : null}
     </article>
   )
@@ -338,6 +352,8 @@ export default function AmigosPage() {
   }
 
   async function cancelTrade(trade: TradeProposal) {
+    if (trade.status === 'accepted' && !window.confirm('Cancelar este intercambio aceptado? No se va a anotar en ningun album.')) return
+
     setTradeBusyId(trade.id)
     setTradeError('')
     setMessage('')
