@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-05-20T03:31:48.630Z",
-  "mapped": 790,
-  "available": 797,
+  "mapped": 792,
+  "available": 792,
   "total": 980,
   "candidates": 829,
   "missing": [
@@ -187,7 +187,12 @@
     "UZB2",
     "UZB9",
     "UZB10",
-    "UZB13"
+    "UZB13",
+    "BIH15",
+    "CUW9",
+    "ENG6",
+    "NZL11",
+    "RSA10"
   ],
   "accepted": [
     {
@@ -1412,6 +1417,15 @@
       "reason": "manual-override",
       "score": 2500,
       "candidate": "tmp/sticker-candidates/candidate-0270.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV2",
+      "name": "Yahia Fofana",
+      "type": "player",
+      "reason": "manual-keep-orphan",
+      "score": 2500,
+      "candidate": "public/stickers/CIV2.webp",
       "page": 17
     },
     {
@@ -5651,6 +5665,15 @@
       "reason": "player",
       "score": 1010,
       "candidate": "tmp/sticker-candidates/candidate-0653.webp",
+      "page": 42
+    },
+    {
+      "code": "POR8",
+      "name": "Gonçalo Inácio",
+      "type": "player",
+      "reason": "manual-keep-orphan",
+      "score": 2500,
+      "candidate": "public/stickers/POR8.webp",
       "page": 42
     },
     {
