@@ -37,7 +37,7 @@ import {
   isFormationSticker,
   validateTradeRules,
 } from '../src/lib/trades.ts'
-import { canCancelTradeProposal, getTradeStatusLabel } from '../src/lib/trade-display.ts'
+import { canCancelTradeProposal, getTradeStatusLabel, shouldShowTradeProposal } from '../src/lib/trade-display.ts'
 import {
   buildStickerPushPayload,
   buildTradePushPayload,
@@ -302,6 +302,11 @@ assert.equal(canCancelTradeProposal({ status: 'accepted', direction: 'incoming',
 assert.equal(canCancelTradeProposal({ status: 'accepted', direction: 'outgoing', my_applied: false, friend_applied: false }), true)
 assert.equal(canCancelTradeProposal({ status: 'accepted', direction: 'incoming', my_applied: true, friend_applied: false }), false)
 assert.equal(canCancelTradeProposal({ status: 'completed', direction: 'outgoing', my_applied: true, friend_applied: true }), false)
+assert.equal(shouldShowTradeProposal({ status: 'pending', direction: 'outgoing', my_applied: false, friend_applied: false }), true)
+assert.equal(shouldShowTradeProposal({ status: 'accepted', direction: 'incoming', my_applied: false, friend_applied: false }), true)
+assert.equal(shouldShowTradeProposal({ status: 'completed', direction: 'incoming', my_applied: true, friend_applied: true }), true)
+assert.equal(shouldShowTradeProposal({ status: 'cancelled', direction: 'outgoing', my_applied: false, friend_applied: false }), false)
+assert.equal(shouldShowTradeProposal({ status: 'declined', direction: 'incoming', my_applied: false, friend_applied: false }), false)
 
 assert.deepEqual(
   buildStickerPushPayload({

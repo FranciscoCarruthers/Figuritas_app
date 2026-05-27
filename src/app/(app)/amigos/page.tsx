@@ -10,7 +10,7 @@ import { STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { getProgress } from '@/lib/album'
 import { notifyTradeEvent } from '@/lib/push-client'
-import { canCancelTradeProposal, getTradeStatusLabel } from '@/lib/trade-display'
+import { canCancelTradeProposal, getTradeStatusLabel, shouldShowTradeProposal } from '@/lib/trade-display'
 import {
   buildSelfFriendSummary,
   formatFriendLastUpdate,
@@ -28,7 +28,7 @@ function asFriends(data: unknown): FriendSummary[] {
 }
 
 function asTradeProposals(data: unknown): TradeProposal[] {
-  return (Array.isArray(data) ? data : []) as TradeProposal[]
+  return ((Array.isArray(data) ? data : []) as TradeProposal[]).filter(shouldShowTradeProposal)
 }
 
 function isMissingTradeRpcError(message: string): boolean {
@@ -366,6 +366,7 @@ export default function AmigosPage() {
     } else {
       trackAppEvent('trade_proposal_cancelled', { friend: trade.friend_username })
       void notifyTradeEvent(session, { proposalId: trade.id, action: 'cancelled' })
+      setTrades(currentTrades => currentTrades.filter(currentTrade => currentTrade.id !== trade.id))
       setMessage('Intercambio cancelado.')
       await loadTrades()
     }

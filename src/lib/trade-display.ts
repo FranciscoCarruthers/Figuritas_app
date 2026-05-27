@@ -17,3 +17,7 @@ export function canCancelTradeProposal(trade: TradeStatusInfo): boolean {
   if (trade.status === 'pending') return trade.direction === 'outgoing'
   return trade.status === 'accepted' && !trade.my_applied && !trade.friend_applied
 }
+
+export function shouldShowTradeProposal(trade: TradeStatusInfo): boolean {
+  return trade.status !== 'cancelled' && trade.status !== 'declined'
+}
