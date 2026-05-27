@@ -9,7 +9,7 @@ import {
   sortFriendRanking,
 } from '../src/lib/friends.ts'
 import { buildAlbumBlocks } from '../src/lib/sticker-blocks.ts'
-import { buildAlbumInsights } from '../src/lib/stats-insights.ts'
+import { buildAlbumInsights, buildDailyMarkedStats } from '../src/lib/stats-insights.ts'
 import {
   getAlbumCacheKey,
   getProfileCacheKey,
@@ -121,6 +121,15 @@ assert.deepEqual(
   ],
 )
 assert.ok(insights.recommendations.some(item => item.kind === 'almost-team' && item.code === 'ARG'))
+
+const dailyMarkedWithProductionActions = buildDailyMarkedStats(state, [
+  { sticker_code: 'ARG1', quantity: 1, action: 'test actualizo ARG1 - Team Logo', created_at: '2026-05-20T12:00:00.000Z' },
+  { sticker_code: 'BRA1', quantity: 1, action: 'test marcó BRA1 - Team Logo', created_at: '2026-05-20T12:10:00.000Z' },
+  { sticker_code: 'ARG2', quantity: 1, action: 'test resto una copia de ARG2 - Player', created_at: '2026-05-20T12:20:00.000Z' },
+  { sticker_code: 'ARG3', quantity: 1, action: 'test marco ARG3 - Player', created_at: '2026-05-20T12:30:00.000Z' },
+], 7, new Date('2026-05-20T15:00:00.000Z'))
+
+assert.equal(dailyMarkedWithProductionActions.at(-1)?.marked, 2)
 
 const friendRows = [
   { sticker_code: 'ARG1', quantity: 1, updated_at: '2026-05-18T10:00:00.000Z' },

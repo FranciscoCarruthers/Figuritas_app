@@ -87,13 +87,41 @@ export default function EstadisticasPage() {
     if (!profile) return
 
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    let active = true
+
     supabase
       .from('activity_log')
       .select('*')
       .eq('album_id', profile.album_id)
       .gte('created_at', since)
       .order('created_at', { ascending: false })
-      .then(({ data }) => setWeeklyEntries((data as ActivityEntry[]) ?? []))
+      .then(({ data }) => {
+        if (active) setWeeklyEntries((data as ActivityEntry[]) ?? [])
+      })
+
+    const channel = supabase
+      .channel(`stats-activity:${profile.album_id}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'activity_log', filter: `album_id=eq.${profile.album_id}` },
+        payload => {
+          const entry = payload.new as ActivityEntry
+          if (new Date(entry.created_at) < new Date(since)) return
+
+          setWeeklyEntries(prev => {
+            if (prev.some(item => item.id === entry.id)) return prev
+            return [entry, ...prev]
+              .sort((left, right) => new Date(right.created_at).getTime() - new Date(left.created_at).getTime())
+              .slice(0, 300)
+          })
+        },
+      )
+      .subscribe()
+
+    return () => {
+      active = false
+      void supabase.removeChannel(channel)
+    }
   }, [profile])
 
   const stats = useMemo(() => {

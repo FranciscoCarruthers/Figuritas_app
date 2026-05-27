@@ -163,8 +163,19 @@ function dayLabel(value: Date, today: Date): string {
   return value.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })
 }
 
+function normalizeActivityAction(action: string): string {
+  return action
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
 function isAlbumMarkedActivity(entry: StatsActivityInput): boolean {
-  return entry.quantity === 1 && /\bmarco\b/i.test(entry.action)
+  if (entry.quantity !== 1) return false
+
+  const action = normalizeActivityAction(entry.action)
+  if (/\b(desmarco|sumo|resto)\b/.test(action)) return false
+  return /\b(marco|actualizo|anoto)\b/.test(action)
 }
 
 export function buildDailyMarkedStats(
