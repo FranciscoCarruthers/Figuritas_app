@@ -1,4 +1,4 @@
-const CACHE_NAME = 'figuritas-2026-v6'
+const CACHE_NAME = 'figuritas-2026-v7'
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icon-192.png',

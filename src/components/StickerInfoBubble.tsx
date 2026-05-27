@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react'
 import type { Sticker } from '@/lib/types'
+import { getStickerImageCodes } from '@/lib/sticker-image-assets'
 
 export default function StickerInfoBubble({
   sticker,
@@ -15,10 +16,25 @@ export default function StickerInfoBubble({
   onClose: () => void
 }) {
   const [imageFailed, setImageFailed] = useState(false)
+  const [imageAllowed, setImageAllowed] = useState(false)
   const imageSrc = `/stickers/${sticker.code}.webp`
 
   useEffect(() => {
+    let active = true
     setImageFailed(false)
+    setImageAllowed(false)
+
+    getStickerImageCodes()
+      .then(codes => {
+        if (active) setImageAllowed(codes.has(sticker.code))
+      })
+      .catch(() => {
+        if (active) setImageAllowed(false)
+      })
+
+    return () => {
+      active = false
+    }
   }, [sticker.code])
 
   return (
@@ -31,7 +47,7 @@ export default function StickerInfoBubble({
       className="no-ios-selection fixed inset-0 z-50 bg-slate-950/10"
     >
       <span className="pointer-events-none fixed inset-x-4 bottom-[calc(5.25rem+env(safe-area-inset-bottom))] mx-auto block max-w-sm overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-2xl shadow-slate-950/20 lg:bottom-6">
-        {!imageFailed ? (
+        {imageAllowed && !imageFailed ? (
           <span className="block bg-slate-100 p-3">
             <img
               src={imageSrc}
