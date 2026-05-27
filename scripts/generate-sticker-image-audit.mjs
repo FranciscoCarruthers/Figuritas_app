@@ -11,6 +11,7 @@ const ROOT = process.cwd()
 const PUBLIC_STICKERS_DIR = path.join(ROOT, 'public', 'stickers')
 const OUTPUT_HTML = path.join(ROOT, 'tmp', 'sticker-image-audit.html')
 const OUTPUT_CSV = path.join(ROOT, 'tmp', 'sticker-image-audit.csv')
+const OUTPUT_CORRECTIONS = path.join(ROOT, 'tmp', 'sticker-image-corrections-template.txt')
 
 function readJsonIfExists(filePath, fallback) {
   if (!fs.existsSync(filePath)) return fallback
@@ -369,11 +370,50 @@ function writeCsv(rows) {
   fs.writeFileSync(OUTPUT_CSV, `${lines.join('\n')}\n`)
 }
 
+function writeCorrectionsTemplate(rows) {
+  const orphanRows = rows.filter(row => row.status === 'orphan')
+  const missingRows = rows.filter(row => row.status === 'missing')
+  const lines = [
+    '# FiguritasApp - plantilla de correcciones de imagenes',
+    '#',
+    '# Como completarla:',
+    '# CODIGO_ACTUAL=KEEP        si la imagen es correcta para ese mismo codigo y hay que aceptarla.',
+    '# CODIGO_ACTUAL=CODIGO_REAL si la imagen pertenece a otra figurita.',
+    '# CODIGO_ACTUAL=SKIP        si la imagen es duplicada, mala, o no sirve.',
+    '#',
+    '# Ejemplos:',
+    '# ENG6=BRA13',
+    '# BIH15=KEEP',
+    '# RSA10=SKIP',
+    '',
+    '# Huerfanas: tienen archivo de imagen, pero no estan aceptadas por el manifest confiable.',
+    '# Estas son las mas faciles de corregir mirando el HTML.',
+  ]
+
+  for (const row of orphanRows) {
+    lines.push(`# ${row.code} | ${row.name} | ${row.team} | legacy #${row.legacyCandidateId ?? '-'} | pagina ${row.page || '-'}`)
+    lines.push(`${row.code}=`)
+  }
+
+  lines.push('')
+  lines.push('# Sin imagen: no tienen archivo publico asociado todavia.')
+  lines.push('# Si en otro reporte/candidato ves una imagen que corresponde a una de estas, pasamelo como:')
+  lines.push('# candidate_id=CODIGO_REAL')
+  lines.push('# o decime el codigo de la figurita y el id visual que estas viendo.')
+
+  for (const row of missingRows) {
+    lines.push(`# ${row.code} | ${row.name} | ${row.team}`)
+  }
+
+  fs.writeFileSync(OUTPUT_CORRECTIONS, `${lines.join('\n')}\n`)
+}
+
 function main() {
   fs.mkdirSync(path.dirname(OUTPUT_HTML), { recursive: true })
   const rows = buildRows()
   fs.writeFileSync(OUTPUT_HTML, renderHtml(rows))
   writeCsv(rows)
+  writeCorrectionsTemplate(rows)
 
   const counts = rows.reduce((acc, row) => {
     acc[row.status] = (acc[row.status] ?? 0) + 1
@@ -383,6 +423,7 @@ function main() {
   console.log(`Sticker image audit generated:
   HTML: ${OUTPUT_HTML}
   CSV:  ${OUTPUT_CSV}
+  Corrections: ${OUTPUT_CORRECTIONS}
   OK: ${counts.ok ?? 0}
   Missing: ${counts.missing ?? 0}
   Orphan: ${counts.orphan ?? 0}`)
