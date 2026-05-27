@@ -31,6 +31,7 @@ import {
 } from '../src/lib/album-rendering.ts'
 import {
   buildTradeSuggestions,
+  buildDuplicateResetChanges,
   getDuplicateCount,
   getNextDuplicateQuantity,
   isFormationSticker,
@@ -250,6 +251,10 @@ const friendDuplicateState = {
 assert.equal(getDuplicateCount(duplicateState, 'ARG1'), 2)
 assert.equal(getDuplicateCount(duplicateState, 'ARG2'), 0)
 assert.equal(getDuplicateCount(duplicateState, 'ARG3'), 0)
+assert.deepEqual(buildDuplicateResetChanges(duplicateState), [
+  { code: 'ARG1', quantity: 1 },
+  { code: 'BRA1', quantity: 1 },
+])
 assert.equal(getNextDuplicateQuantity(0, 1), 2)
 assert.equal(getNextDuplicateQuantity(1, 1), 2)
 assert.equal(getNextDuplicateQuantity(3, -1), 2)

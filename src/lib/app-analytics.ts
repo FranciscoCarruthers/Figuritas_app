@@ -20,6 +20,7 @@ export type AppEventName =
   | 'import_completed'
   | 'duplicate_added'
   | 'duplicate_removed'
+  | 'duplicates_reset'
   | 'share_missing_copied'
   | 'scanner_opened'
   | 'scanner_mode_changed'

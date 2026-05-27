@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { ArrowLeft, Minus, Plus, Search, Sparkles } from 'lucide-react'
+import { ArrowLeft, Loader2, Minus, Plus, RotateCcw, Search, Sparkles } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
 import TeamFlag from '@/components/TeamFlag'
 import { ALBUM_GROUPS, getTeamStickers, STICKERS, STICKERS_MAP } from '@/data/sticker-data'
@@ -47,12 +47,14 @@ function blockMatchesFilter(block: StickerBlock, filter: RepeatedFilter, albumSt
 }
 
 export default function RepetidasPage() {
-  const { albumState, updateQuantity, isSyncing, cacheHit } = useAlbum()
+  const { albumState, updateQuantity, resetDuplicates, isSyncing, cacheHit } = useAlbum()
   const { profile } = useAuth()
   const [input, setInput] = useState('')
   const [selected, setSelected] = useState<Sticker | null>(null)
   const [filter, setFilter] = useState<RepeatedFilter>('all')
   const [status, setStatus] = useState<string | null>(null)
+  const [isResetting, setIsResetting] = useState(false)
+  const [resetProgress, setResetProgress] = useState<{ completed: number; total: number } | null>(null)
 
   const progress = getProgress(albumState, STICKERS)
   const totalDuplicates = useMemo(
@@ -93,6 +95,29 @@ export default function RepetidasPage() {
     }
   }
 
+  async function resetAllDuplicates() {
+    if (totalDuplicates === 0 || isResetting) return
+    const confirmed = window.confirm(`Vas a dejar en 0 tus ${totalDuplicates} repetidas. Las figuritas que tenes quedan marcadas. Continuar?`)
+    if (!confirmed) return
+
+    setIsResetting(true)
+    setResetProgress(null)
+    setStatus(null)
+    try {
+      const changed = await resetDuplicates(progressInfo => setResetProgress(progressInfo))
+      trackAppEvent('duplicates_reset', {
+        changed,
+        duplicates: totalDuplicates,
+      })
+      setStatus(changed === 1 ? 'Reseteaste las repetidas de 1 figurita.' : `Reseteaste las repetidas de ${changed} figuritas.`)
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'No se pudieron resetear las repetidas.')
+    } finally {
+      setIsResetting(false)
+      setResetProgress(null)
+    }
+  }
+
   return (
     <main className="min-h-dvh bg-white pb-5 lg:bg-slate-50 lg:px-6 lg:pb-8">
       <header className="safe-top sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 pb-3 backdrop-blur lg:rounded-b-xl lg:border lg:border-t-0 lg:px-6">
@@ -125,11 +150,27 @@ export default function RepetidasPage() {
           <ProgressBar value={Math.min(100, Math.round((totalDuplicates / Math.max(1, progress.total)) * 100))} color="#b91c1c" />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold text-slate-500">{profile?.username}</p>
-            {isSyncing && cacheHit ? (
-              <p className="rounded-full bg-red-50 px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-red-700">
-                Actualizando...
-              </p>
-            ) : null}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {resetProgress ? (
+                <p className="rounded-full bg-red-50 px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-red-700">
+                  {resetProgress.completed}/{resetProgress.total}
+                </p>
+              ) : null}
+              {isSyncing && cacheHit ? (
+                <p className="rounded-full bg-red-50 px-2 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-red-700">
+                  Actualizando...
+                </p>
+              ) : null}
+              <button
+                type="button"
+                disabled={totalDuplicates === 0 || isResetting}
+                onClick={() => void resetAllDuplicates()}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-slate-950 px-3 text-xs font-black text-white disabled:bg-slate-200 disabled:text-slate-500"
+              >
+                {isResetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                Resetear repetidas
+              </button>
+            </div>
           </div>
         </div>
 

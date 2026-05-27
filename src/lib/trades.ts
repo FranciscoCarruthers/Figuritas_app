@@ -9,6 +9,13 @@ export function getDuplicateCount(state: AlbumState, code: string): number {
   return Math.max(0, (state[code]?.quantity ?? 0) - 1)
 }
 
+export function buildDuplicateResetChanges(state: AlbumState): Array<{ code: string; quantity: 1 }> {
+  return Object.values(state)
+    .filter(sticker => sticker.quantity > 1)
+    .map(sticker => ({ code: sticker.sticker_code, quantity: 1 as const }))
+    .sort((a, b) => a.code.localeCompare(b.code))
+}
+
 export function getNextDuplicateQuantity(currentQuantity: number, delta: number): number {
   if (delta > 0) return Math.min(99, Math.max(1, currentQuantity) + delta)
   return Math.max(1, currentQuantity - 1)

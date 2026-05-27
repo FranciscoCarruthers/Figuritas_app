@@ -16,6 +16,7 @@ import { albumRowsToState } from '@/lib/album-state'
 import { readCachedAlbum, writeCachedAlbum } from '@/lib/local-cache'
 import { notifyStickerUpdated } from '@/lib/push-client'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
+import { buildDuplicateResetChanges } from '@/lib/trades'
 import type { AlbumState, AlbumSticker } from '@/lib/types'
 import { useAuth } from '@/context/AuthContext'
 
@@ -27,6 +28,7 @@ type AlbumContextValue = {
   cacheHit: boolean
   refreshAlbum: () => Promise<void>
   updateQuantity: (code: string, quantity: number) => Promise<void>
+  resetDuplicates: (onProgress?: ImportProgressCallback) => Promise<number>
   importMissingCodes: (missingCodes: Set<string>, onProgress?: ImportProgressCallback) => Promise<number>
 }
 
@@ -201,6 +203,54 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     void notifyStickerUpdated(session, { code, quantity })
   }, [profile, session])
 
+  const resetDuplicates = useCallback(async (onProgress?: ImportProgressCallback) => {
+    if (!profile) throw new Error('No hay album activo.')
+
+    const supabase = getSupabaseBrowserClient()
+    const changes = buildDuplicateResetChanges(albumState)
+    onProgress?.({ completed: 0, total: changes.length })
+    if (changes.length === 0) return 0
+
+    const updatedAt = new Date().toISOString()
+    setAlbumState(prev => {
+      const next = { ...prev }
+      for (const change of changes) {
+        const current = next[change.code]
+        if (!current) continue
+        next[change.code] = {
+          ...current,
+          quantity: 1,
+          updated_at: updatedAt,
+        }
+      }
+      const storage = getLocalStorage()
+      if (storage) writeCachedAlbum(storage, profile.album_id, next)
+      return next
+    })
+
+    let completed = 0
+    try {
+      for (let index = 0; index < changes.length; index += IMPORT_BATCH_SIZE) {
+        const batch = changes.slice(index, index + IMPORT_BATCH_SIZE)
+        const results = await Promise.all(batch.map(change => supabase.rpc('set_sticker_quantity', {
+          p_sticker_code: change.code,
+          p_quantity: change.quantity,
+        })))
+        const failed = results.find(result => result.error)
+        if (failed?.error) throw failed.error
+
+        completed += batch.length
+        onProgress?.({ completed, total: changes.length })
+      }
+    } catch (error) {
+      await refreshAlbum().catch(() => undefined)
+      throw error
+    }
+
+    setLastSyncedAt(new Date().toISOString())
+    return changes.length
+  }, [albumState, profile, refreshAlbum])
+
   const importMissingCodes = useCallback(async (
     missingCodes: Set<string>,
     onProgress?: ImportProgressCallback,
@@ -262,8 +312,9 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
     cacheHit,
     refreshAlbum,
     updateQuantity,
+    resetDuplicates,
     importMissingCodes,
-  }), [albumState, cacheHit, importMissingCodes, isLoading, isSyncing, lastSyncedAt, refreshAlbum, updateQuantity])
+  }), [albumState, cacheHit, importMissingCodes, isLoading, isSyncing, lastSyncedAt, refreshAlbum, resetDuplicates, updateQuantity])
 
   return <AlbumContext.Provider value={value}>{children}</AlbumContext.Provider>
 }
