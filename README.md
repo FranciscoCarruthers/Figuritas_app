@@ -1,42 +1,45 @@
-# Figuritas App
+# FiguritasApp
 
-PWA gratis para llevar el album Panini FIFA World Cup 2026 desde iPhone, con Next.js, Vercel y Supabase Free.
+FiguritasApp es una PWA para llevar el álbum de figuritas Panini de la FIFA World Cup 2026 entre varias personas, pensada para usar desde el iPhone sin pasar por la App Store.
 
-## Setup
+La app está disponible en: [figuritasappcarru.vercel.app](https://figuritasappcarru.vercel.app)
 
-1. Crea un proyecto en Supabase Free.
-2. Ejecuta `supabase/schema.sql` y luego `supabase/seed.sql` en el SQL editor.
-3. En Authentication, deja habilitado Email provider. Si no cargas `SUPABASE_SERVICE_ROLE_KEY`, desactiva "Confirm email" para poder crear usuarios con emails sinteticos.
-4. Copia `.env.example` a `.env.local` y completa las variables.
-5. Para registro con usuario + contraseña sin email real, carga tambien `SUPABASE_SERVICE_ROLE_KEY` en Vercel y local.
-6. Valida los datos base:
+## Qué permite hacer
 
-```bash
-npm run validate:stickers
-npm run test:parser
-```
+- Registrar el progreso del álbum compartido con usuario y contraseña.
+- Marcar rápidamente qué figuritas están pegadas y cuáles faltan.
+- Ver el álbum por secciones, países y figuritas bonus de Coca Cola.
+- Consultar imagen, código, nombre y estado de cada figurita.
+- Cargar repetidas en una pantalla rápida dedicada.
+- Compartir listas de faltantes y repetidas en formato texto.
+- Importar listas de faltantes desde otras apps o desde mensajes compartidos.
+- Ver estadísticas de progreso, actividad diaria, brillantes faltantes y secciones más avanzadas.
+- Agregar amigos, comparar álbumes y ver hace cuánto actualizaron su progreso.
+- Proponer intercambios con amigos usando repetidas de ambos lados.
+- Recibir notificaciones push por intercambios y cambios hechos desde otro dispositivo.
+- Usar scanner manual y cámara para cargar figuritas.
 
-7. Instala dependencias y ejecuta la app:
+## PWA para iPhone
 
-```bash
-npm install
-npm run dev
-```
+FiguritasApp está preparada para instalarse desde Safari con **Compartir > Agregar a inicio**. Una vez agregada, se abre como web app independiente, con ícono propio, pantalla completa y sin necesidad de App Store ni cuenta de Apple Developer.
 
-## Datos del album
+## Stack
 
-La checklist base vive en `src/data/sticker-data.ts` y el seed SQL se regenera con:
+- **Next.js + React** para la app web.
+- **Vercel** para hosting, HTTPS y deploys.
+- **Supabase** para autenticación, base de datos, realtime, RLS y funciones SQL.
+- **Web Push** para notificaciones en dispositivos compatibles.
+- **OpenCV.js + Tesseract.js** para el scanner local en navegador.
+- **PWA + Service Worker** para instalación, caché de assets e íconos.
 
-```bash
-node scripts/generate-supabase-seed.mjs
-```
+## Datos del álbum
 
-El validador exige 980 figuritas, 48 equipos y 13 secciones.
+El catálogo principal incluye 980 figuritas, 48 selecciones, secciones FWC y grupos A-L. Además, la app incluye una sección bonus de 14 figuritas Coca Cola sin afectar el progreso principal del álbum.
 
-## Deploy gratis
+El progreso principal se calcula sobre las 980 figuritas base. Las figuritas bonus se muestran y se pueden marcar, compartir, cargar como repetidas e incluir en intercambios, pero no cambian el porcentaje principal.
 
-Sube el repo a GitHub y conectalo en Vercel Hobby. Vercel da HTTPS automaticamente, necesario para la camara del iPhone.
+## Filosofía del proyecto
 
-## Instalar en iPhone
+La app nació como una herramienta familiar para compartir un álbum real y evitar tener que preguntar todo el tiempo qué figuritas faltan, cuáles están repetidas o si el álbum de otra persona está actualizado.
 
-Abre la URL de Vercel en Safari, toca Compartir y elige "Agregar a inicio". La app queda como PWA, sin App Store.
+La prioridad es que sea rápida, clara y gratis de mantener: una web app instalable, con datos sincronizados, sin App Store y sin servicios pagos obligatorios.
