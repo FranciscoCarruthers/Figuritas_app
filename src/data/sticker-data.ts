@@ -39,20 +39,20 @@ const INTRO_STICKERS: Sticker[] = [
 const BONUS_TEAM: TeamInfo = { code: 'CC', name: 'Coca Cola' }
 
 export const BONUS_STICKERS: Sticker[] = [
-  { code: 'CC1', name: 'Coca Cola 1', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 1 },
-  { code: 'CC2', name: 'Coca Cola 2', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 2 },
-  { code: 'CC3', name: 'Coca Cola 3', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 3 },
-  { code: 'CC4', name: 'Coca Cola 4', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 4 },
-  { code: 'CC5', name: 'Coca Cola 5', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 5 },
-  { code: 'CC6', name: 'Coca Cola 6', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 6 },
-  { code: 'CC7', name: 'Coca Cola 7', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 7 },
-  { code: 'CC8', name: 'Coca Cola 8', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 8 },
-  { code: 'CC9', name: 'Coca Cola 9', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 9 },
-  { code: 'CC10', name: 'Coca Cola 10', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 10 },
-  { code: 'CC11', name: 'Coca Cola 11', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 11 },
-  { code: 'CC12', name: 'Coca Cola 12', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 12 },
-  { code: 'CC13', name: 'Coca Cola 13', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 13 },
-  { code: 'CC14', name: 'Coca Cola 14', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 14 },
+  { code: 'CC1', name: 'Lamine Yamal', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 1 },
+  { code: 'CC2', name: 'Joshua Kimmich', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 2 },
+  { code: 'CC3', name: 'Harry Kane', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 3 },
+  { code: 'CC4', name: 'Santiago Gimenez', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 4 },
+  { code: 'CC5', name: 'Josko Gvardiol', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 5 },
+  { code: 'CC6', name: 'Federico Valverde', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 6 },
+  { code: 'CC7', name: 'Jefferson Lerma', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 7 },
+  { code: 'CC8', name: 'Enner Valencia', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 8 },
+  { code: 'CC9', name: 'Gabriel Magalhaes', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 9 },
+  { code: 'CC10', name: 'Virgil Van Dijk', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 10 },
+  { code: 'CC11', name: 'Alphonso Davies', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 11 },
+  { code: 'CC12', name: 'Emiliano Martinez', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 12 },
+  { code: 'CC13', name: 'Raul Gimenez', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 13 },
+  { code: 'CC14', name: 'Lautaro Martinez', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 14 },
 ]
 
 const TEAM_DATA: Array<{ code: string; name: string; players: string[] }> = [

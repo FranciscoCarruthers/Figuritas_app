@@ -8,7 +8,7 @@ import {
   formatFriendLastUpdate,
   sortFriendRanking,
 } from '../src/lib/friends.ts'
-import { BONUS_STICKERS, CORE_STICKERS, STICKERS } from '../src/data/sticker-data.ts'
+import { BONUS_STICKERS, CORE_STICKERS, DISPLAY_ALBUM_GROUPS, getTeamStickers, STICKERS } from '../src/data/sticker-data.ts'
 import { getProgress } from '../src/lib/album.ts'
 import { parseMissingStickersList } from '../src/lib/import-list.ts'
 import { buildAlbumBlocks } from '../src/lib/sticker-blocks.ts'
@@ -87,6 +87,29 @@ assert.deepEqual(BONUS_STICKERS.map(sticker => sticker.code), [
   'CC13',
   'CC14',
 ])
+assert.deepEqual(BONUS_STICKERS.map(sticker => sticker.name), [
+  'Lamine Yamal',
+  'Joshua Kimmich',
+  'Harry Kane',
+  'Santiago Gimenez',
+  'Josko Gvardiol',
+  'Federico Valverde',
+  'Jefferson Lerma',
+  'Enner Valencia',
+  'Gabriel Magalhaes',
+  'Virgil Van Dijk',
+  'Alphonso Davies',
+  'Emiliano Martinez',
+  'Raul Gimenez',
+  'Lautaro Martinez',
+])
+
+const productionBlocks = buildAlbumBlocks(DISPLAY_ALBUM_GROUPS, getTeamStickers)
+assert.equal(productionBlocks.at(-1)?.id, 'CC')
+assert.ok(
+  productionBlocks.findIndex(block => block.id === 'fwc-history') < productionBlocks.findIndex(block => block.id === 'CC'),
+  'Coca Cola should render after FWC history',
+)
 
 const state = {
   '00': { sticker_code: '00', quantity: 1, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },

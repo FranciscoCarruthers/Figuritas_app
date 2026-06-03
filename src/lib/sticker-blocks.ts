@@ -14,9 +14,10 @@ type AlbumGroupLike = {
 }
 
 const SOFT_DRINK = String.fromCodePoint(0x1f964)
+const BONUS_TEAM_CODE = 'CC'
 
 function blockTitleForTeam(team: TeamInfo): string {
-  if (team.code === 'CC') return `${team.code} - ${team.name} ${SOFT_DRINK}`
+  if (team.code === BONUS_TEAM_CODE) return `${team.code} - ${team.name} ${SOFT_DRINK}`
   return `${team.code} - ${team.name}`
 }
 
@@ -25,6 +26,7 @@ export function buildAlbumBlocks(
   getStickersForTeam: (teamCode: string) => Sticker[],
 ): StickerBlock[] {
   const blocks: StickerBlock[] = []
+  const bonusBlocks: StickerBlock[] = []
   const fwc = getStickersForTeam('FWC')
   const introSection = albumGroups[0]?.label ?? 'Introducción'
 
@@ -44,13 +46,18 @@ export function buildAlbumBlocks(
   for (const group of albumGroups) {
     for (const team of group.teams) {
       if (team.code === 'FWC') continue
-      blocks.push({
+      const block = {
         id: team.code,
         title: blockTitleForTeam(team),
         section: group.label,
         stickers: getStickersForTeam(team.code),
         teamCode: team.code,
-      })
+      }
+      if (team.code === BONUS_TEAM_CODE) {
+        bonusBlocks.push(block)
+      } else {
+        blocks.push(block)
+      }
     }
   }
 
@@ -60,6 +67,7 @@ export function buildAlbumBlocks(
     section: introSection,
     stickers: fwc.filter(sticker => sticker.position >= 9),
   })
+  blocks.push(...bonusBlocks)
 
   return blocks
 }
