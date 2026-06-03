@@ -1,4 +1,4 @@
-const CACHE_NAME = 'figuritas-2026-v7'
+const CACHE_NAME = 'figuritas-2026-v8'
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/icon-192.png',
@@ -37,6 +37,19 @@ self.addEventListener('fetch', event => {
     CACHEABLE_PREFIXES.some(prefix => url.pathname.startsWith(prefix))
 
   if (!shouldCache) return
+
+  if (url.pathname === '/stickers/_manifest.json') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          const copy = response.clone()
+          caches.open(CACHE_NAME).then(cache => cache.put(request, copy))
+          return response
+        })
+        .catch(() => caches.match(request))
+    )
+    return
+  }
 
   event.respondWith(
     caches.match(request)

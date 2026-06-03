@@ -124,7 +124,7 @@ as $$
     case when fc.status = 'accepted' then greatest(0, fc.total_stickers - fc.owned_total) else null end as missing_count,
     case when fc.status = 'accepted' then fc.total_stickers else null end as total_count,
     case
-      when fc.status = 'accepted' and fc.total_stickers > 0 then round((fc.owned_total::numeric / fc.total_stickers::numeric) * 100)::integer
+      when fc.status = 'accepted' and fc.total_stickers > 0 then floor((fc.owned_total::numeric / fc.total_stickers::numeric) * 100)::integer
       else null
     end as percent,
     case when fc.status = 'accepted' then fc.album_last_updated_at else null end as last_updated_at,

@@ -6,6 +6,7 @@ import {
   buildSelfFriendSummary,
   buildFriendAlbumState,
   formatFriendLastUpdate,
+  normalizeFriendSummary,
   sortFriendRanking,
 } from '../src/lib/friends.ts'
 import { BONUS_STICKERS, CORE_STICKERS, DISPLAY_ALBUM_GROUPS, getTeamStickers, STICKERS } from '../src/data/sticker-data.ts'
@@ -141,6 +142,26 @@ assert.equal(getProgress(stateWithBonus, CORE_STICKERS).owned, getProgress(state
 assert.equal(getProgress(stateWithBonus, BONUS_STICKERS).total, 14)
 assert.equal(getProgress(stateWithBonus, BONUS_STICKERS).owned, 1)
 
+const almostCompleteCoreState = Object.fromEntries(
+  CORE_STICKERS.slice(0, 977).map(sticker => [
+    sticker.code,
+    { sticker_code: sticker.code, quantity: 1, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+  ]),
+)
+assert.deepEqual(getProgress(almostCompleteCoreState, CORE_STICKERS), {
+  total: 980,
+  owned: 977,
+  missing: 3,
+  percent: 99,
+})
+const completeCoreState = Object.fromEntries(
+  CORE_STICKERS.map(sticker => [
+    sticker.code,
+    { sticker_code: sticker.code, quantity: 1, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+  ]),
+)
+assert.equal(getProgress(completeCoreState, CORE_STICKERS).percent, 100)
+
 const oldImport = parseMissingStickersList('FiguritasApp - Lista\nMe faltan\nARG: 1, 2')
 assert.equal(oldImport.includedBonusTeamCodes.has('CC'), false)
 assert.equal(oldImport.missingCodes.has('CC1'), false)
@@ -233,6 +254,23 @@ assert.equal(buildSelfFriendSummary(null, state, { total: 8, owned: 7, missing: 
 assert.equal(
   buildSelfFriendSummary('test', state, { total: 8, owned: 7, missing: 1, percent: 88 })?.last_updated_at,
   '2026-05-18T10:00:00.000Z',
+)
+assert.equal(
+  normalizeFriendSummary({
+    friendship_id: 'friend-1',
+    username: 'nico',
+    status: 'accepted',
+    direction: 'accepted',
+    owned_count: 977,
+    missing_count: 3,
+    total_count: 980,
+    percent: 100,
+    last_updated_at: '2026-05-18T10:00:00.000Z',
+    requested_at: '2026-05-18T10:00:00.000Z',
+    responded_at: null,
+    updated_at: '2026-05-18T10:00:00.000Z',
+  }).percent,
+  99,
 )
 
 const blocks = buildAlbumBlocks(groups, teamCode => stickers.filter(sticker => sticker.teamCode === teamCode))
@@ -476,6 +514,14 @@ assert.deepEqual(getPushEnvConfig({
 
 const schema = fs.readFileSync('supabase/schema.sql', 'utf8')
 const cancelAcceptedTradesPatch = fs.readFileSync('supabase/cancel-accepted-trades.sql', 'utf8')
+assert.ok(
+  schema.includes('floor((fc.owned_total::numeric / fc.total_stickers::numeric) * 100)::integer'),
+  'friend summary percent should round down until the album is complete',
+)
+assert.ok(
+  !schema.includes('round((fc.owned_total::numeric / fc.total_stickers::numeric) * 100)::integer'),
+  'friend summary percent should not round 99.x up to 100',
+)
 for (const expectedSql of [
   'create table if not exists friendships',
   'create table if not exists push_subscriptions',

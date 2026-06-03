@@ -56,6 +56,22 @@ export function buildSelfFriendSummary(
   }
 }
 
+function completionPercent(owned: number, total: number): number {
+  if (total === 0) return 0
+  if (owned >= total) return 100
+  return Math.floor((owned / total) * 100)
+}
+
+export function normalizeFriendSummary(friend: FriendSummary): FriendSummary {
+  if (friend.status !== 'accepted') return friend
+  if (friend.owned_count === null || friend.total_count === null) return friend
+
+  return {
+    ...friend,
+    percent: completionPercent(friend.owned_count, friend.total_count),
+  }
+}
+
 export function isSelfFriendSummary(friend: Pick<FriendSummary, 'friendship_id'>): boolean {
   return friend.friendship_id === 'self'
 }

@@ -18,13 +18,14 @@ import {
   getIncomingFriendRequests,
   getOutgoingFriendRequests,
   isSelfFriendSummary,
+  normalizeFriendSummary,
   sortFriendRanking,
 } from '@/lib/friends'
 import { getSupabaseBrowserClient } from '@/lib/supabase'
 import type { FriendSummary, TradeProposal } from '@/lib/types'
 
 function asFriends(data: unknown): FriendSummary[] {
-  return (Array.isArray(data) ? data : []) as FriendSummary[]
+  return ((Array.isArray(data) ? data : []) as FriendSummary[]).map(normalizeFriendSummary)
 }
 
 function asTradeProposals(data: unknown): TradeProposal[] {

@@ -64,7 +64,9 @@ type AlbumGroupInput = {
 }
 
 function percent(owned: number, total: number): number {
-  return total === 0 ? 0 : Math.round((owned / total) * 100)
+  if (total === 0) return 0
+  if (owned >= total) return 100
+  return Math.floor((owned / total) * 100)
 }
 
 function isOwned(albumState: AlbumState, code: string): boolean {
