@@ -424,7 +424,9 @@ as $$
       coalesce((
         select count(*)::integer
         from album_stickers s
+        join stickers st on st.code = s.sticker_code
         where s.album_id = fp.album_id and s.quantity > 0
+          and st.team_code <> 'CC'
       ), 0) as owned_total,
       coalesce((
         select max(l.created_at)
@@ -778,7 +780,7 @@ begin
       raise exception 'Cada item tiene que indicar side mine o theirs.';
     end if;
 
-    select s.is_foil, (s.team_code <> 'FWC' and s.position = 13)
+    select s.is_foil, (s.team_code <> 'FWC' and s.team_code <> 'CC' and s.position = 13)
       into v_is_foil, v_is_formation
     from stickers s
     where s.code = v_code;

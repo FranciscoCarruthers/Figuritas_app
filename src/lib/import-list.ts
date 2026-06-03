@@ -1,8 +1,9 @@
-import { getTeamStickers, STICKERS_MAP } from '@/data/sticker-data'
+import { getTeamStickers, isBonusTeamCode, STICKERS_MAP } from '../data/sticker-data.ts'
 
 type ParsedMissingList = {
   missingCodes: Set<string>
   lineCount: number
+  includedBonusTeamCodes: Set<string>
 }
 
 function normalizeLine(value: string): string {
@@ -42,6 +43,7 @@ function teamCodeFromNumber(teamCode: string, value: string): string | null {
 
 export function parseMissingStickersList(value: string): ParsedMissingList {
   const missingCodes = new Set<string>()
+  const includedBonusTeamCodes = new Set<string>()
   let lineCount = 0
 
   for (const rawLine of value.split(/\r?\n/)) {
@@ -76,8 +78,11 @@ export function parseMissingStickersList(value: string): ParsedMissingList {
         found += 1
       }
     }
-    if (found > 0) lineCount += 1
+    if (found > 0) {
+      lineCount += 1
+      if (isBonusTeamCode(teamCode)) includedBonusTeamCodes.add(teamCode)
+    }
   }
 
-  return { missingCodes, lineCount }
+  return { missingCodes, lineCount, includedBonusTeamCodes }
 }

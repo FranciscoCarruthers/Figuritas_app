@@ -36,6 +36,25 @@ const INTRO_STICKERS: Sticker[] = [
   { code: 'FWC19', name: 'Argentina 2022', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 19 },
 ]
 
+const BONUS_TEAM: TeamInfo = { code: 'CC', name: 'Coca Cola' }
+
+export const BONUS_STICKERS: Sticker[] = [
+  { code: 'CC1', name: 'Coca Cola 1', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 1 },
+  { code: 'CC2', name: 'Coca Cola 2', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 2 },
+  { code: 'CC3', name: 'Coca Cola 3', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 3 },
+  { code: 'CC4', name: 'Coca Cola 4', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 4 },
+  { code: 'CC5', name: 'Coca Cola 5', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 5 },
+  { code: 'CC6', name: 'Coca Cola 6', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 6 },
+  { code: 'CC7', name: 'Coca Cola 7', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 7 },
+  { code: 'CC8', name: 'Coca Cola 8', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 8 },
+  { code: 'CC9', name: 'Coca Cola 9', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 9 },
+  { code: 'CC10', name: 'Coca Cola 10', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 10 },
+  { code: 'CC11', name: 'Coca Cola 11', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 11 },
+  { code: 'CC12', name: 'Coca Cola 12', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 12 },
+  { code: 'CC13', name: 'Coca Cola 13', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 13 },
+  { code: 'CC14', name: 'Coca Cola 14', team: BONUS_TEAM.name, teamCode: BONUS_TEAM.code, type: 'intro', isFoil: false, position: 14 },
+]
+
 const TEAM_DATA: Array<{ code: string; name: string; players: string[] }> = [
   { code: 'ALG', name: 'Algeria', players: ['Alexis Guendouz', 'Ramy Bensebaini', 'Youcef Atal', 'Rayan Aït-Nouri', 'Mohamed Amine Tougai', 'Aïssa Mandi', 'Ismael Bennacer', 'Houssem Aquar', 'Hicham Boudaoui', 'Ramiz Zerrouki', 'Nabil Bentalab', 'Farés Chaibi', 'Riyad Mahrez', 'Said Benrahma', 'Anis Hadj Moussa', 'Amine Gouiri', 'Baghdad Bounedjah', 'Mohammed Amoura'] },
   { code: 'ARG', name: 'Argentina', players: ['Emiliano Martinez', 'Nahuel Molina', 'Cristian Romero', 'Nicolas Otamendi', 'Nicolas Tagliafico', 'Leonardo Balerdi', 'Enzo Fernandez', 'Alexis Mac Allister', 'Rodrigo De Paul', 'Exequiel Palacios', 'Leandro Paredes', 'Nico Paz', 'Franco Mastantuono', 'Nico Gonzalez', 'Lionel Messi', 'Lautaro Martinez', 'Julian Alvarez', 'Giuliano Simeone'] },
@@ -89,7 +108,9 @@ const TEAM_DATA: Array<{ code: string; name: string; players: string[] }> = [
 
 const TEAM_STICKERS: Sticker[] = TEAM_DATA.flatMap(t => makeTeam(t.code, t.name, t.players))
 
-export const STICKERS: Sticker[] = [...INTRO_STICKERS, ...TEAM_STICKERS]
+export const CORE_STICKERS: Sticker[] = [...INTRO_STICKERS, ...TEAM_STICKERS]
+
+export const STICKERS: Sticker[] = [...CORE_STICKERS, ...BONUS_STICKERS]
 
 export const STICKERS_MAP: Record<string, Sticker> = Object.fromEntries(STICKERS.map(s => [s.code, s]))
 
@@ -126,13 +147,31 @@ export const ALBUM_GROUPS: AlbumGroup[] = [
   { label: 'Grupo L', teams: t('ENG', 'CRO', 'GHA', 'PAN') },
 ]
 
+export const BONUS_ALBUM_GROUPS: AlbumGroup[] = [
+  { label: 'Coca Cola', teams: [BONUS_TEAM] },
+]
+
+export const DISPLAY_ALBUM_GROUPS: AlbumGroup[] = [...ALBUM_GROUPS, ...BONUS_ALBUM_GROUPS]
+
+export const STICKER_PREFIXES: string[] = [...new Set(STICKERS.map(sticker => sticker.code.match(/^[A-Z]+/)?.[0]).filter(Boolean) as string[])]
+
+export function isBonusSticker(sticker: Pick<Sticker, 'teamCode'>): boolean {
+  return sticker.teamCode === BONUS_TEAM.code
+}
+
+export function isBonusTeamCode(teamCode: string): boolean {
+  return teamCode.toUpperCase() === BONUS_TEAM.code
+}
+
 export function getTeamStickers(teamCode: string): Sticker[] {
   if (teamCode === 'FWC') return INTRO_STICKERS
+  if (teamCode === BONUS_TEAM.code) return BONUS_STICKERS
   return TEAM_STICKERS.filter(s => s.teamCode === teamCode)
 }
 
 export function getTeamByCode(code: string): TeamInfo | undefined {
   if (code === 'FWC') return INTRO_TEAM
+  if (code === BONUS_TEAM.code) return BONUS_TEAM
   return TEAMS.find(t => t.code === code)
 }
 

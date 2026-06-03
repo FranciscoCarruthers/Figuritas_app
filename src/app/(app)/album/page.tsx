@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, CopyPlus, Import as ImportIcon, LogOut, Search, Share, SlidersHorizontal, Sparkles, X } from 'lucide-react'
-import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
+import { BONUS_STICKERS, CORE_STICKERS, DISPLAY_ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
 import StickerCircle from '@/components/StickerCircle'
 import StickerInfoBubble from '@/components/StickerInfoBubble'
 import ProgressBar from '@/components/ProgressBar'
@@ -21,7 +21,7 @@ import { trackAppEvent } from '@/lib/app-analytics'
 import { buildImportPreview } from '@/lib/import-preview'
 import { parseMissingStickersList } from '@/lib/import-list'
 import { buildMissingStickersShareText } from '@/lib/share-list'
-import type { StickerBlock } from '@/lib/sticker-blocks'
+import { buildAlbumBlocks, type StickerBlock } from '@/lib/sticker-blocks'
 import type { AlbumState, Sticker } from '@/lib/types'
 
 type FilterMode = 'all' | 'missing' | 'owned'
@@ -32,48 +32,7 @@ const FILTERS: Array<{ value: FilterMode; label: string }> = [
   { value: 'owned', label: 'Tengo' },
 ]
 
-function makeBlocks(): StickerBlock[] {
-  const blocks: StickerBlock[] = []
-  const fwc = getTeamStickers('FWC')
-  const introSection = ALBUM_GROUPS[0]?.label ?? 'Introducción'
-
-  blocks.push({
-    id: 'fwc-specials',
-    title: 'FWC - Especiales',
-    section: introSection,
-    stickers: fwc.filter(sticker => sticker.position <= 4),
-  })
-  blocks.push({
-    id: 'fwc-ball-countries',
-    title: 'FWC - Balon y Paises',
-    section: introSection,
-    stickers: fwc.filter(sticker => sticker.position >= 5 && sticker.position <= 8),
-  })
-
-  for (const group of ALBUM_GROUPS) {
-    for (const team of group.teams) {
-      if (team.code === 'FWC') continue
-      blocks.push({
-        id: team.code,
-        title: `${team.code} - ${team.name}`,
-        section: group.label,
-        stickers: getTeamStickers(team.code),
-        teamCode: team.code,
-      })
-    }
-  }
-
-  blocks.push({
-    id: 'fwc-history',
-    title: 'FWC - Historia',
-    section: introSection,
-    stickers: fwc.filter(sticker => sticker.position >= 9),
-  })
-
-  return blocks
-}
-
-const ALL_BLOCKS = makeBlocks()
+const ALL_BLOCKS = buildAlbumBlocks(DISPLAY_ALBUM_GROUPS, getTeamStickers)
 const LAST_SECTION_STORAGE_KEY = 'figuritasapp:last-section'
 
 function normalizeSearch(value: string) {
@@ -132,13 +91,19 @@ export default function AlbumPage() {
   const [renderLimit, setRenderLimit] = useState(INITIAL_ALBUM_BLOCK_LIMIT)
   const searchTrackedRef = useRef(false)
   const firstRenderTrackedRef = useRef(false)
-  const progress = getProgress(albumState, STICKERS)
+  const progress = getProgress(albumState, CORE_STICKERS)
+  const bonusProgress = getProgress(albumState, BONUS_STICKERS)
   const parsedImport = useMemo(() => parseMissingStickersList(importText), [importText])
+  const importPreviewStickers = useMemo(() => (
+    parsedImport.includedBonusTeamCodes.has('CC')
+      ? [...CORE_STICKERS, ...BONUS_STICKERS]
+      : CORE_STICKERS
+  ), [parsedImport])
   const importPreview = useMemo(() => (
     parsedImport.missingCodes.size > 0
-      ? buildImportPreview(STICKERS, albumState, parsedImport.missingCodes)
+      ? buildImportPreview(importPreviewStickers, albumState, parsedImport.missingCodes)
       : null
-  ), [albumState, parsedImport])
+  ), [albumState, importPreviewStickers, parsedImport])
   const importProgressPercent = importProgress && importProgress.total > 0
     ? Math.round((importProgress.completed / importProgress.total) * 100)
     : 0
@@ -263,7 +228,9 @@ export default function AlbumPage() {
     setImportStatus(null)
     setImportProgress({ completed: 0, total: 0 })
     try {
-      const changed = await importMissingCodes(parsedImport.missingCodes, setImportProgress)
+      const changed = await importMissingCodes(parsedImport.missingCodes, setImportProgress, {
+        includedBonusTeamCodes: parsedImport.includedBonusTeamCodes,
+      })
       trackAppEvent('import_completed', {
         missing: parsedImport.missingCodes.size,
         changed,
@@ -405,7 +372,7 @@ export default function AlbumPage() {
         </div>
 
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {['Todas', ...ALBUM_GROUPS.map(group => group.label)].map(label => (
+          {['Todas', ...DISPLAY_ALBUM_GROUPS.map(group => group.label)].map(label => (
             <button
               type="button"
               key={label}
@@ -471,6 +438,10 @@ export default function AlbumPage() {
             <span>{progress.percent}% completo</span>
           </div>
           <ProgressBar value={progress.percent} color="#b91c1c" />
+          <div className="mt-2 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs font-black text-slate-600">
+            <span>Coca Cola bonus</span>
+            <span>{bonusProgress.owned}/{bonusProgress.total}</span>
+          </div>
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold text-slate-500">{profile?.username}</p>
             {isSyncing && cacheHit ? (
@@ -569,11 +540,11 @@ export default function AlbumPage() {
                   setImportStatus(null)
                 }}
                 disabled={importing}
-                placeholder={`FiguritasApp - Lista\nMe faltan\nFWC: 00, 1, 2\nARG: 4, 10, 13\nMEX: 1, 5, 20`}
+                placeholder={`FiguritasApp - Lista\nMe faltan\nFWC: 00, 1, 2\nARG: 4, 10, 13\nMEX: 1, 5, 20\nCC 🥤: 1, 14`}
                 className="min-h-64 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-semibold leading-6 text-slate-950 outline-none focus:border-red-700 disabled:opacity-70"
               />
               <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-bold leading-5 text-red-800">
-                Importante: esto reemplaza el estado actual del album segun la lista pegada.
+                Importante: esto reemplaza el estado principal segun la lista pegada. Coca Cola solo cambia si la lista trae una linea CC.
               </p>
               {importPreview ? (
                 <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
@@ -586,6 +557,8 @@ export default function AlbumPage() {
                   </div>
                   <p className="mt-2 text-xs font-semibold text-slate-500">
                     Se aplicarian {importPreview.totalChanges} cambios reales sobre {importPreview.total} figuritas.
+                    {' '}
+                    {parsedImport.includedBonusTeamCodes.has('CC') ? 'Incluye Coca Cola.' : 'Coca Cola queda sin cambios.'}
                   </p>
                 </div>
               ) : null}

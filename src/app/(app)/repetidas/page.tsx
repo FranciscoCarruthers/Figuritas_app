@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { ArrowLeft, Loader2, Minus, Plus, RotateCcw, Search, Share, Sparkles } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
 import TeamFlag from '@/components/TeamFlag'
-import { ALBUM_GROUPS, getTeamStickers, STICKERS, STICKERS_MAP } from '@/data/sticker-data'
+import { CORE_STICKERS, DISPLAY_ALBUM_GROUPS, getTeamStickers, STICKERS, STICKERS_MAP } from '@/data/sticker-data'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { getProgress, isOwned } from '@/lib/album'
@@ -26,7 +26,7 @@ const FILTERS: Array<{ value: RepeatedFilter; label: string }> = [
   { value: 'formations', label: 'Formaciones' },
 ]
 
-const ALL_BLOCKS = buildAlbumBlocks(ALBUM_GROUPS, getTeamStickers)
+const ALL_BLOCKS = buildAlbumBlocks(DISPLAY_ALBUM_GROUPS, getTeamStickers)
 
 function getDisplayNumber(sticker: Sticker) {
   return sticker.code === '00' ? '00' : sticker.position
@@ -78,7 +78,7 @@ export default function RepetidasPage() {
   const [isResetting, setIsResetting] = useState(false)
   const [resetProgress, setResetProgress] = useState<{ completed: number; total: number } | null>(null)
 
-  const progress = getProgress(albumState, STICKERS)
+  const progress = getProgress(albumState, CORE_STICKERS)
   const totalDuplicates = useMemo(
     () => STICKERS.reduce((total, sticker) => total + getDuplicateCount(albumState, sticker.code), 0),
     [albumState],

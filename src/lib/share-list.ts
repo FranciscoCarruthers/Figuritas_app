@@ -1,4 +1,4 @@
-import { ALBUM_GROUPS, getTeamStickers } from '../data/sticker-data.ts'
+import { ALBUM_GROUPS, BONUS_STICKERS, getTeamStickers } from '../data/sticker-data.ts'
 import { isOwned } from './album.ts'
 import { getTeamFlagEmoji } from './team-flags.ts'
 import type { AlbumState, Sticker } from './types.ts'
@@ -7,6 +7,7 @@ const APP_URL = 'https://figuritasappcarru.vercel.app'
 const TROPHY = String.fromCodePoint(0x1f3c6)
 const GLOBE = String.fromCodePoint(0x1f30e)
 const SCROLL = String.fromCodePoint(0x1f4dc)
+const SOFT_DRINK = String.fromCodePoint(0x1f964)
 
 function stickerNumber(sticker: Sticker): string {
   return sticker.code === '00' ? '00' : String(sticker.position)
@@ -79,6 +80,7 @@ export function buildMissingStickersShareText(albumState: AlbumState): string {
     `FWC ${SCROLL}`,
     fwcStickers.filter(sticker => sticker.position >= 9),
   )
+  appendMissingLine(lines, albumState, `CC ${SOFT_DRINK}`, BONUS_STICKERS)
 
   if (lines.length === 3) {
     lines.push('Album completo')
@@ -120,6 +122,7 @@ export function buildDuplicateStickersShareText(albumState: AlbumState): string 
     `FWC ${SCROLL}`,
     fwcStickers.filter(sticker => sticker.position >= 9),
   )
+  appendDuplicateLine(lines, albumState, `CC ${SOFT_DRINK}`, BONUS_STICKERS)
 
   if (lines.length === 3) {
     lines.push('No tengo repetidas')

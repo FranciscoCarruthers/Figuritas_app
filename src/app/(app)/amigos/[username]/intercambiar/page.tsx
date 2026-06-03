@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Check, CircleDashed, Handshake, Loader2, Minus, Plus, RefreshCw, Sparkles } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
-import { ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
+import { DISPLAY_ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
 import { trackAppEvent } from '@/lib/app-analytics'
@@ -22,7 +22,7 @@ import {
 } from '@/lib/trades'
 import type { DuplicateSummary, FriendAlbumSticker, TradeRuleSet } from '@/lib/types'
 
-const ORDERED_STICKERS = buildAlbumBlocks(ALBUM_GROUPS, getTeamStickers).flatMap(block => block.stickers)
+const ORDERED_STICKERS = buildAlbumBlocks(DISPLAY_ALBUM_GROUPS, getTeamStickers).flatMap(block => block.stickers)
 
 type SelectionState = Record<string, number>
 

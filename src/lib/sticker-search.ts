@@ -1,4 +1,4 @@
-import { STICKERS, STICKERS_MAP, TEAMS } from '@/data/sticker-data'
+import { STICKER_PREFIXES, STICKERS, STICKERS_MAP } from '@/data/sticker-data'
 import type { Sticker } from '@/lib/types'
 
 const NUMBER_TRANSLATION: Record<string, string> = {
@@ -91,7 +91,7 @@ function collectStickerCodesFromText(value: string): string[] {
   if (direct) hits.add(direct)
 
   const text = normalizeText(value)
-  const codes = ['FWC', ...TEAMS.map(team => team.code)]
+  const codes = STICKER_PREFIXES
 
   for (const teamCode of codes) {
     const pattern = new RegExp(`(?:^|[^A-Z0-9])${teamCode}\\s*[-:.]?\\s*([0-9OQDGISZIL|BT]{1,2})(?=$|[^A-Z0-9])`, 'g')

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { BarChart3, CalendarDays, CheckCircle2, CircleDashed, Flag, Percent, Sparkles, Target, TrendingUp, Trophy } from 'lucide-react'
-import { ALBUM_GROUPS, getTeamStickers, STICKERS } from '@/data/sticker-data'
+import { ALBUM_GROUPS, BONUS_STICKERS, CORE_STICKERS, getTeamStickers } from '@/data/sticker-data'
 import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
@@ -125,9 +125,10 @@ export default function EstadisticasPage() {
   }, [profile])
 
   const stats = useMemo(() => {
-    const overall = getProgress(albumState, STICKERS)
+    const overall = getProgress(albumState, CORE_STICKERS)
     const intro = getProgress(albumState, getTeamStickers('FWC'))
-    const foil = getProgress(albumState, STICKERS.filter(sticker => sticker.isFoil))
+    const foil = getProgress(albumState, CORE_STICKERS.filter(sticker => sticker.isFoil))
+    const bonus = getProgress(albumState, BONUS_STICKERS)
 
     const teamStats = ALBUM_GROUPS.flatMap(group =>
       group.teams
@@ -159,11 +160,11 @@ export default function EstadisticasPage() {
       .sort((a, b) => b.progress.percent - a.progress.percent || a.progress.missing - b.progress.missing)
       .slice(0, 4)
 
-    return { overall, intro, foil, groupStats, teamStats, completedTeams, bestTeam, closestTeams }
+    return { overall, intro, foil, bonus, groupStats, teamStats, completedTeams, bestTeam, closestTeams }
   }, [albumState])
 
   const insights = useMemo(
-    () => buildAlbumInsights(STICKERS, ALBUM_GROUPS, albumState, weeklyEntries),
+    () => buildAlbumInsights(CORE_STICKERS, ALBUM_GROUPS, albumState, weeklyEntries),
     [albumState, weeklyEntries],
   )
 
@@ -178,7 +179,7 @@ export default function EstadisticasPage() {
       <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm lg:p-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-bold text-slate-500">Album completo</p>
+            <p className="text-sm font-bold text-slate-500">Album principal</p>
             <p className="mt-1 text-5xl font-black tracking-tight text-slate-950">{stats.overall.percent}%</p>
           </div>
           <span className="grid h-12 w-12 place-items-center rounded-full bg-red-50 text-red-700">
@@ -221,12 +222,18 @@ export default function EstadisticasPage() {
         />
       </section>
 
-      <section className="mt-4 grid gap-3 lg:grid-cols-3">
+      <section className="mt-4 grid gap-3 lg:grid-cols-4">
         <StatCard
           label="Brillantes"
           value={`${stats.foil.owned}/${stats.foil.total}`}
           detail={`${stats.foil.missing} faltan`}
           icon={<Sparkles className="h-5 w-5" />}
+        />
+        <StatCard
+          label="Coca Cola"
+          value={`${stats.bonus.owned}/${stats.bonus.total}`}
+          detail="bonus separado"
+          icon={<Trophy className="h-5 w-5" />}
         />
         <StatCard
           label="Mejor equipo"

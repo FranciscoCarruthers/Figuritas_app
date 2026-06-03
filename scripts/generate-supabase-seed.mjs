@@ -42,9 +42,11 @@ function findArrayAfter(marker) {
   throw new Error(`Unclosed array after: ${marker}`)
 }
 
-function parseArray(marker) {
+function parseArray(marker, context = {}) {
   const arrayText = findArrayAfter(marker)
-  return Function(`"use strict"; return (${arrayText});`)()
+  const names = Object.keys(context)
+  const values = Object.values(context)
+  return Function(...names, `"use strict"; return (${arrayText});`)(...values)
 }
 
 function sql(value) {
@@ -69,23 +71,27 @@ function makeTeamStickers(team) {
 
 const intro = parseArray('const INTRO_STICKERS')
 const teams = parseArray('const TEAM_DATA')
+const bonusTeam = { code: 'CC', name: 'Coca Cola' }
+const bonus = parseArray('export const BONUS_STICKERS', { BONUS_TEAM: bonusTeam })
 
-const sectionMatches = [...source.matchAll(/\{ label: '([^']+)', teams: (\[INTRO_TEAM\]|t\(([^)]*)\)) \}/g)]
+const sectionMatches = [...source.matchAll(/\{ label: '([^']+)', teams: (\[INTRO_TEAM\]|\[BONUS_TEAM\]|t\(([^)]*)\)) \}/g)]
 const sections = sectionMatches.map((match, index) => ({
   id: `section-${String(index).padStart(2, '0')}`,
   label: match[1],
   teams: match[2] === '[INTRO_TEAM]'
     ? ['FWC']
-    : [...match[3].matchAll(/'([^']+)'/g)].map(codeMatch => codeMatch[1]),
+    : match[2] === '[BONUS_TEAM]'
+      ? [bonusTeam.code]
+      : [...match[3].matchAll(/'([^']+)'/g)].map(codeMatch => codeMatch[1]),
 }))
 
-const teamByCode = new Map(teams.map(team => [team.code, team]))
+const teamByCode = new Map([...teams.map(team => [team.code, team]), [bonusTeam.code, bonusTeam]])
 const teamSection = new Map()
 for (const section of sections) {
   for (const code of section.teams) teamSection.set(code, section)
 }
 
-const stickerRows = [
+const coreStickerRows = [
   ...intro.map(sticker => ({
     ...sticker,
     team: 'Introducción',
@@ -97,15 +103,26 @@ const stickerRows = [
   }))),
 ]
 
+const stickerRows = [
+  ...coreStickerRows,
+  ...bonus.map(sticker => ({
+    ...sticker,
+    section: teamSection.get(sticker.teamCode),
+  })),
+]
+
 const codes = new Set(stickerRows.map(sticker => sticker.code))
-const groupedTeamCodes = new Set(sections.flatMap(section => section.teams).filter(code => code !== 'FWC'))
+const groupedTeamCodes = new Set(sections.flatMap(section => section.teams).filter(code => code !== 'FWC' && code !== bonusTeam.code))
 
 if (intro.length !== 20) throw new Error(`Expected 20 intro stickers, got ${intro.length}`)
 if (teams.length !== 48) throw new Error(`Expected 48 teams, got ${teams.length}`)
 if (teams.some(team => team.players.length !== 18)) throw new Error('Every team must have 18 players')
-if (stickerRows.length !== 980) throw new Error(`Expected 980 stickers, got ${stickerRows.length}`)
+if (coreStickerRows.length !== 980) throw new Error(`Expected 980 core stickers, got ${coreStickerRows.length}`)
+if (bonus.length !== 14) throw new Error(`Expected 14 bonus stickers, got ${bonus.length}`)
+if (stickerRows.length !== 994) throw new Error(`Expected 994 stickers, got ${stickerRows.length}`)
 if (codes.size !== stickerRows.length) throw new Error('Sticker codes are not unique')
 if (groupedTeamCodes.size !== 48) throw new Error(`Expected 48 grouped teams, got ${groupedTeamCodes.size}`)
+if (!teamSection.get(bonusTeam.code)) throw new Error('Missing Coca Cola bonus section')
 
 if (!checkOnly) {
   const lines = [
@@ -133,4 +150,4 @@ if (!checkOnly) {
   fs.writeFileSync('supabase/seed.sql', lines.join('\n'))
 }
 
-console.log(`Validated ${stickerRows.length} stickers, ${teams.length} teams, ${sections.length} sections.`)
+console.log(`Validated ${coreStickerRows.length} core stickers, ${bonus.length} bonus stickers, ${stickerRows.length} total stickers, ${teams.length} teams, ${sections.length} sections.`)

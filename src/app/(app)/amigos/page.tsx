@@ -6,7 +6,7 @@ import { ArrowRight, Check, Clock3, Handshake, Loader2, RefreshCw, Trash2, Troph
 import ProgressBar from '@/components/ProgressBar'
 import { useAlbum } from '@/context/AlbumContext'
 import { useAuth } from '@/context/AuthContext'
-import { STICKERS } from '@/data/sticker-data'
+import { CORE_STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { getProgress } from '@/lib/album'
 import { notifyTradeEvent } from '@/lib/push-client'
@@ -229,7 +229,7 @@ export default function AmigosPage() {
   const acceptedFriends = useMemo(() => getAcceptedFriends(friends), [friends])
   const incomingRequests = useMemo(() => getIncomingFriendRequests(friends), [friends])
   const outgoingRequests = useMemo(() => getOutgoingFriendRequests(friends), [friends])
-  const ownProgress = useMemo(() => getProgress(albumState, STICKERS), [albumState])
+  const ownProgress = useMemo(() => getProgress(albumState, CORE_STICKERS), [albumState])
   const ownRankingEntry = useMemo(
     () => albumLoading ? null : buildSelfFriendSummary(profile?.username, albumState, ownProgress),
     [albumLoading, albumState, ownProgress, profile?.username],

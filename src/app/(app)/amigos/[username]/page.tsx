@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, CheckCircle2, CircleDashed, Clock3, Handshake, RefreshCw, Search, Users } from 'lucide-react'
 import ProgressBar from '@/components/ProgressBar'
 import TeamFlag from '@/components/TeamFlag'
-import { ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
+import { BONUS_STICKERS, CORE_STICKERS, DISPLAY_ALBUM_GROUPS, getTeamStickers } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { getProgress, isOwned } from '@/lib/album'
 import { buildFriendAlbumState, formatFriendLastUpdate } from '@/lib/friends'
@@ -16,8 +16,7 @@ import type { FriendAlbumSticker, Sticker } from '@/lib/types'
 
 type FriendFilter = 'missing' | 'owned' | 'all'
 
-const ALL_BLOCKS = buildAlbumBlocks(ALBUM_GROUPS, getTeamStickers)
-const ORDERED_STICKERS = ALL_BLOCKS.flatMap(block => block.stickers)
+const ALL_BLOCKS = buildAlbumBlocks(DISPLAY_ALBUM_GROUPS, getTeamStickers)
 
 function normalize(value: string): string {
   return value
@@ -55,7 +54,8 @@ export default function FriendAlbumPage() {
   const [query, setQuery] = useState('')
 
   const albumState = useMemo(() => buildFriendAlbumState(rows), [rows])
-  const progress = useMemo(() => getProgress(albumState, ORDERED_STICKERS), [albumState])
+  const progress = useMemo(() => getProgress(albumState, CORE_STICKERS), [albumState])
+  const bonusProgress = useMemo(() => getProgress(albumState, BONUS_STICKERS), [albumState])
   const lastUpdatedAt = rows[0]?.last_updated_at ?? null
   const searchQuery = normalize(query)
 
@@ -163,6 +163,10 @@ export default function FriendAlbumPage() {
             <div className="mt-3 flex items-center justify-between text-sm font-black text-slate-600">
               <span>{loading ? '-' : `${progress.owned}/${progress.total}`} tiene</span>
               <span>{loading ? '-' : progress.missing} faltan</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs font-black text-slate-600">
+              <span>Coca Cola bonus</span>
+              <span>{loading ? '-' : `${bonusProgress.owned}/${bonusProgress.total}`}</span>
             </div>
           </section>
 

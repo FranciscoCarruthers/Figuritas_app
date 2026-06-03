@@ -13,6 +13,13 @@ type AlbumGroupLike = {
   teams: TeamInfo[]
 }
 
+const SOFT_DRINK = String.fromCodePoint(0x1f964)
+
+function blockTitleForTeam(team: TeamInfo): string {
+  if (team.code === 'CC') return `${team.code} - ${team.name} ${SOFT_DRINK}`
+  return `${team.code} - ${team.name}`
+}
+
 export function buildAlbumBlocks(
   albumGroups: AlbumGroupLike[],
   getStickersForTeam: (teamCode: string) => Sticker[],
@@ -39,7 +46,7 @@ export function buildAlbumBlocks(
       if (team.code === 'FWC') continue
       blocks.push({
         id: team.code,
-        title: `${team.code} - ${team.name}`,
+        title: blockTitleForTeam(team),
         section: group.label,
         stickers: getStickersForTeam(team.code),
         teamCode: team.code,

@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { STICKERS } from '@/data/sticker-data'
+import { BONUS_STICKERS, CORE_STICKERS } from '@/data/sticker-data'
 import { trackAppEvent } from '@/lib/app-analytics'
 import { albumRowsToState } from '@/lib/album-state'
 import { readCachedAlbum, writeCachedAlbum } from '@/lib/local-cache'
@@ -29,13 +29,16 @@ type AlbumContextValue = {
   refreshAlbum: () => Promise<void>
   updateQuantity: (code: string, quantity: number) => Promise<void>
   resetDuplicates: (onProgress?: ImportProgressCallback) => Promise<number>
-  importMissingCodes: (missingCodes: Set<string>, onProgress?: ImportProgressCallback) => Promise<number>
+  importMissingCodes: (missingCodes: Set<string>, onProgress?: ImportProgressCallback, options?: ImportMissingOptions) => Promise<number>
 }
 
 const AlbumContext = createContext<AlbumContextValue | null>(null)
 const IMPORT_BATCH_SIZE = 20
 
 type ImportProgressCallback = (progress: { completed: number; total: number }) => void
+type ImportMissingOptions = {
+  includedBonusTeamCodes?: Set<string>
+}
 
 function nowMs(): number {
   return typeof performance === 'undefined' ? Date.now() : performance.now()
@@ -254,10 +257,16 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
   const importMissingCodes = useCallback(async (
     missingCodes: Set<string>,
     onProgress?: ImportProgressCallback,
+    options?: ImportMissingOptions,
   ) => {
     if (!profile) throw new Error('No hay album activo.')
     const supabase = getSupabaseBrowserClient()
-    const changes = STICKERS.map(sticker => {
+    const includedBonusTeamCodes = options?.includedBonusTeamCodes ?? new Set<string>()
+    const stickersToImport = [
+      ...CORE_STICKERS,
+      ...BONUS_STICKERS.filter(sticker => includedBonusTeamCodes.has(sticker.teamCode)),
+    ]
+    const changes = stickersToImport.map(sticker => {
       const nextQuantity = missingCodes.has(sticker.code) ? 0 : 1
       const currentQuantity = albumState[sticker.code]?.quantity ?? 0
       const currentOwned = currentQuantity > 0
@@ -269,7 +278,7 @@ export function AlbumProvider({ children }: { children: ReactNode }) {
 
     setAlbumState(prev => {
       const next = { ...prev }
-      for (const sticker of STICKERS) {
+      for (const sticker of stickersToImport) {
         if (missingCodes.has(sticker.code)) {
           delete next[sticker.code]
         } else {

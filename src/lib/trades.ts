@@ -22,7 +22,7 @@ export function getNextDuplicateQuantity(currentQuantity: number, delta: number)
 }
 
 export function isFormationSticker(sticker: Pick<Sticker, 'teamCode' | 'position'>): boolean {
-  return sticker.teamCode !== 'FWC' && sticker.position === 13
+  return sticker.teamCode !== 'FWC' && sticker.teamCode !== 'CC' && sticker.position === 13
 }
 
 function stateOwnsSticker(state: AlbumState, code: string): boolean {

@@ -8,6 +8,9 @@ import {
   formatFriendLastUpdate,
   sortFriendRanking,
 } from '../src/lib/friends.ts'
+import { BONUS_STICKERS, CORE_STICKERS, STICKERS } from '../src/data/sticker-data.ts'
+import { getProgress } from '../src/lib/album.ts'
+import { parseMissingStickersList } from '../src/lib/import-list.ts'
 import { buildAlbumBlocks } from '../src/lib/sticker-blocks.ts'
 import { buildAlbumInsights, buildDailyMarkedStats } from '../src/lib/stats-insights.ts'
 import {
@@ -47,6 +50,8 @@ import {
 import { notifyStickerUpdated } from '../src/lib/push-client.ts'
 import { buildDuplicateStickersShareText } from '../src/lib/share-list.ts'
 
+const SOFT_DRINK = String.fromCodePoint(0x1f964)
+
 const stickers = [
   { code: '00', name: 'Logo', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 0 },
   { code: 'FWC1', name: 'Emblem', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 1 },
@@ -62,6 +67,26 @@ const groups = [
   { label: 'Introducción', teams: [{ code: 'FWC', name: 'Introducción' }] },
   { label: 'Grupo A', teams: [{ code: 'ARG', name: 'Argentina' }, { code: 'BRA', name: 'Brazil' }] },
 ]
+
+assert.equal(CORE_STICKERS.length, 980)
+assert.equal(BONUS_STICKERS.length, 14)
+assert.equal(STICKERS.length, 994)
+assert.deepEqual(BONUS_STICKERS.map(sticker => sticker.code), [
+  'CC1',
+  'CC2',
+  'CC3',
+  'CC4',
+  'CC5',
+  'CC6',
+  'CC7',
+  'CC8',
+  'CC9',
+  'CC10',
+  'CC11',
+  'CC12',
+  'CC13',
+  'CC14',
+])
 
 const state = {
   '00': { sticker_code: '00', quantity: 1, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
@@ -83,6 +108,24 @@ assert.deepEqual(preview, {
   changesToMissing: 1,
   totalChanges: 2,
 })
+
+const stateWithBonus = {
+  ...state,
+  CC1: { sticker_code: 'CC1', quantity: 1, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+}
+assert.equal(getProgress(stateWithBonus, CORE_STICKERS).total, 980)
+assert.equal(getProgress(stateWithBonus, CORE_STICKERS).owned, getProgress(state, CORE_STICKERS).owned)
+assert.equal(getProgress(stateWithBonus, BONUS_STICKERS).total, 14)
+assert.equal(getProgress(stateWithBonus, BONUS_STICKERS).owned, 1)
+
+const oldImport = parseMissingStickersList('FiguritasApp - Lista\nMe faltan\nARG: 1, 2')
+assert.equal(oldImport.includedBonusTeamCodes.has('CC'), false)
+assert.equal(oldImport.missingCodes.has('CC1'), false)
+
+const importWithCocaCola = parseMissingStickersList(`FiguritasApp - Lista\nMe faltan\nCC ${SOFT_DRINK}: 1, 14`)
+assert.equal(importWithCocaCola.includedBonusTeamCodes.has('CC'), true)
+assert.equal(importWithCocaCola.missingCodes.has('CC1'), true)
+assert.equal(importWithCocaCola.missingCodes.has('CC14'), true)
 
 const insights = buildAlbumInsights(stickers, groups, state, [
   { sticker_code: '00', quantity: 1, action: 'test marco 00 - Logo', created_at: '2026-05-18T12:00:00.000Z' },
@@ -275,12 +318,17 @@ assert.ok(duplicateShareText.startsWith('FiguritasApp - Lista\nUSA Mex Can 26\nR
 assert.match(duplicateShareText, /^ARG .+: 1 x2$/m)
 assert.match(duplicateShareText, /^BRA .+: 1$/m)
 assert.ok(duplicateShareText.endsWith('Descarga la app\nhttps://figuritasappcarru.vercel.app'))
+const bonusDuplicateShareText = buildDuplicateStickersShareText({
+  CC1: { sticker_code: 'CC1', quantity: 2, updated_by: null, updated_at: '2026-05-18T10:00:00.000Z' },
+})
+assert.match(bonusDuplicateShareText, new RegExp(`^CC ${SOFT_DRINK}: 1$`, 'm'))
 assert.equal(getNextDuplicateQuantity(0, 1), 2)
 assert.equal(getNextDuplicateQuantity(1, 1), 2)
 assert.equal(getNextDuplicateQuantity(3, -1), 2)
 assert.equal(getNextDuplicateQuantity(1, -1), 1)
 assert.equal(isFormationSticker({ code: 'ARG13', name: 'Team Photo', team: 'Argentina', teamCode: 'ARG', type: 'photo', isFoil: false, position: 13 }), true)
 assert.equal(isFormationSticker({ code: 'FWC13', name: 'History', team: 'Introduction', teamCode: 'FWC', type: 'intro', isFoil: true, position: 13 }), false)
+assert.equal(isFormationSticker(BONUS_STICKERS.find(sticker => sticker.code === 'CC13')), false)
 
 const suggestions = buildTradeSuggestions(duplicateState, friendDuplicateState, stickers)
 assert.deepEqual(suggestions.mineUseful.map(item => [item.sticker.code, item.available]), [['ARG1', 2]])

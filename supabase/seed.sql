@@ -16,7 +16,8 @@ insert into sections (id, edition_id, name, sort_order) values
   ('section-09', 'fifa-world-cup-2026', 'Grupo I', 9),
   ('section-10', 'fifa-world-cup-2026', 'Grupo J', 10),
   ('section-11', 'fifa-world-cup-2026', 'Grupo K', 11),
-  ('section-12', 'fifa-world-cup-2026', 'Grupo L', 12)
+  ('section-12', 'fifa-world-cup-2026', 'Grupo L', 12),
+  ('section-13', 'fifa-world-cup-2026', 'Coca Cola', 13)
 on conflict (id) do update set name = excluded.name, sort_order = excluded.sort_order;
 
 insert into teams (code, edition_id, section_id, name, sort_order) values
@@ -68,7 +69,8 @@ insert into teams (code, edition_id, section_id, name, sort_order) values
   ('ENG', 'fifa-world-cup-2026', 'section-12', 'England', 0),
   ('CRO', 'fifa-world-cup-2026', 'section-12', 'Croatia', 1),
   ('GHA', 'fifa-world-cup-2026', 'section-12', 'Ghana', 2),
-  ('PAN', 'fifa-world-cup-2026', 'section-12', 'Panama', 3)
+  ('PAN', 'fifa-world-cup-2026', 'section-12', 'Panama', 3),
+  ('CC', 'fifa-world-cup-2026', 'section-13', 'Coca Cola', 0)
 on conflict (code) do update set section_id = excluded.section_id, name = excluded.name, sort_order = excluded.sort_order;
 
 insert into stickers (code, edition_id, section_id, team_code, team_name, name, sticker_type, is_foil, position) values
@@ -1051,7 +1053,21 @@ insert into stickers (code, edition_id, section_id, team_code, team_name, name, 
   ('UZB17', 'fifa-world-cup-2026', 'section-11', 'UZB', 'Uzbekistan', 'Oston Urunov', 'player', false, 17),
   ('UZB18', 'fifa-world-cup-2026', 'section-11', 'UZB', 'Uzbekistan', 'Jaloliddin Masharipov', 'player', false, 18),
   ('UZB19', 'fifa-world-cup-2026', 'section-11', 'UZB', 'Uzbekistan', 'Igor Sergeev', 'player', false, 19),
-  ('UZB20', 'fifa-world-cup-2026', 'section-11', 'UZB', 'Uzbekistan', 'Abbosbek Fayzullaev', 'player', false, 20)
+  ('UZB20', 'fifa-world-cup-2026', 'section-11', 'UZB', 'Uzbekistan', 'Abbosbek Fayzullaev', 'player', false, 20),
+  ('CC1', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 1', 'intro', false, 1),
+  ('CC2', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 2', 'intro', false, 2),
+  ('CC3', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 3', 'intro', false, 3),
+  ('CC4', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 4', 'intro', false, 4),
+  ('CC5', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 5', 'intro', false, 5),
+  ('CC6', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 6', 'intro', false, 6),
+  ('CC7', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 7', 'intro', false, 7),
+  ('CC8', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 8', 'intro', false, 8),
+  ('CC9', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 9', 'intro', false, 9),
+  ('CC10', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 10', 'intro', false, 10),
+  ('CC11', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 11', 'intro', false, 11),
+  ('CC12', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 12', 'intro', false, 12),
+  ('CC13', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 13', 'intro', false, 13),
+  ('CC14', 'fifa-world-cup-2026', 'section-13', 'CC', 'Coca Cola', 'Coca Cola 14', 'intro', false, 14)
 on conflict (code) do update set section_id = excluded.section_id, team_code = excluded.team_code, team_name = excluded.team_name, name = excluded.name, sticker_type = excluded.sticker_type, is_foil = excluded.is_foil, position = excluded.position;
 
 commit;
