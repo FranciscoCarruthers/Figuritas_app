@@ -28,9 +28,11 @@ export function findArrayAfter(source, marker) {
 }
 
 export function parseStickerDataSource(source) {
+  const bonusTeam = { code: 'CC', name: 'Coca Cola' }
   return {
     intro: Function(`"use strict"; return (${findArrayAfter(source, 'const INTRO_STICKERS')});`)(),
     teams: Function(`"use strict"; return (${findArrayAfter(source, 'const TEAM_DATA')});`)(),
+    bonus: Function('BONUS_TEAM', `"use strict"; return (${findArrayAfter(source, 'export const BONUS_STICKERS')});`)(bonusTeam),
   }
 }
 
@@ -110,7 +112,8 @@ export function buildStickerImageCatalog(data) {
       .sort((left, right) => compact(right).length - compact(left).length),
   }))
   const teamStickers = teams.flatMap(makeTeamStickers)
-  const stickers = [...data.intro, ...teamStickers]
+  const bonus = data.bonus ?? []
+  const stickers = [...data.intro, ...teamStickers, ...bonus]
   const stickerByCode = new Map(stickers.map(sticker => [sticker.code, sticker]))
   const teamsByCode = new Map(teams.map(team => [team.code, team]))
   const tokenCounts = new Map()
@@ -121,7 +124,7 @@ export function buildStickerImageCatalog(data) {
     }
   }
 
-  return { intro: data.intro, teams, stickers, stickerByCode, teamsByCode, tokenCounts }
+  return { intro: data.intro, teams, stickers, bonus, stickerByCode, teamsByCode, tokenCounts }
 }
 
 function includesCompact(textCompact, phrase) {
@@ -192,9 +195,17 @@ export function classifyStickerImageText(text, catalog) {
   const textCompact = compact(text)
   const candidates = []
   const hasWeAre = textCompact.includes('WEARE') || textCompact.includes('QUALIFIERS')
+  const hasCocaCola = textCompact.includes('COCACOLA') || textCompact.includes('COKE')
   const looksLikePlayerCard = /\b\d{1,2}\s+\d{1,2}\s+\d{4}\b/.test(normalized) ||
     textCompact.includes('KG') ||
     /\b\d{3,4}M\b/.test(textCompact)
+
+  if (hasCocaCola) {
+    for (const sticker of catalog.bonus) {
+      const score = scorePlayerText(text, sticker, catalog.tokenCounts)
+      if (score > 0) candidates.push({ sticker, score: 1800 + score, reason: 'coca-cola' })
+    }
+  }
 
   for (const team of catalog.teams) {
     const alias = findTeamAlias(textCompact, team)

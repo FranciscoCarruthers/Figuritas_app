@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-05-20T03:31:48.630Z",
-  "mapped": 792,
-  "available": 792,
-  "total": 980,
+  "generatedAt": "2026-06-03T12:43:29.324Z",
+  "mapped": 806,
+  "available": 806,
+  "total": 994,
   "candidates": 829,
   "missing": [
     "FWC2",
@@ -39,6 +39,7 @@
     "BIH10",
     "BIH13",
     "BIH14",
+    "BIH15",
     "BIH17",
     "CAN4",
     "CAN13",
@@ -56,6 +57,7 @@
     "CRO13",
     "CRO15",
     "CRO17",
+    "CUW9",
     "CUW12",
     "CUW13",
     "CUW14",
@@ -72,6 +74,7 @@
     "EGY15",
     "EGY16",
     "EGY18",
+    "ENG6",
     "ENG7",
     "ENG13",
     "GER4",
@@ -111,6 +114,7 @@
     "MAR11",
     "MAR18",
     "NZL7",
+    "NZL11",
     "NZL13",
     "NZL16",
     "NZL18",
@@ -156,6 +160,7 @@
     "RSA1",
     "RSA4",
     "RSA6",
+    "RSA10",
     "RSA11",
     "RSA13",
     "RSA14",
@@ -187,12 +192,7 @@
     "UZB2",
     "UZB9",
     "UZB10",
-    "UZB13",
-    "BIH15",
-    "CUW9",
-    "ENG6",
-    "NZL11",
-    "RSA10"
+    "UZB13"
   ],
   "accepted": [
     {
@@ -203,6 +203,60 @@
       "score": 2500,
       "candidate": "tmp/sticker-candidates/candidate-0223.webp",
       "page": 14
+    },
+    {
+      "code": "FWC1",
+      "name": "Official Emblem",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0156.webp",
+      "page": 10
+    },
+    {
+      "code": "FWC3",
+      "name": "Official Mascots",
+      "type": "intro",
+      "reason": "intro",
+      "score": 1105,
+      "candidate": "tmp/sticker-candidates/candidate-0222.webp",
+      "page": 14
+    },
+    {
+      "code": "FWC4",
+      "name": "Official Slogan",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0157.webp",
+      "page": 10
+    },
+    {
+      "code": "FWC5",
+      "name": "Official Ball",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0142.webp",
+      "page": 9
+    },
+    {
+      "code": "FWC7",
+      "name": "Mexico – Host Cities",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0158.webp",
+      "page": 10
+    },
+    {
+      "code": "FWC8",
+      "name": "USA – Host Cities",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0254.webp",
+      "page": 16
     },
     {
       "code": "ALG1",
@@ -1411,328 +1465,157 @@
       "page": 13
     },
     {
-      "code": "CIV1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0270.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV2",
-      "name": "Yahia Fofana",
-      "type": "player",
-      "reason": "manual-keep-orphan",
-      "score": 2500,
-      "candidate": "public/stickers/CIV2.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV3",
-      "name": "Ghislain Konan",
+      "code": "CPV2",
+      "name": "Vozinha",
       "type": "player",
       "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0256.webp",
-      "page": 17
+      "score": 1007,
+      "candidate": "tmp/sticker-candidates/candidate-0183.webp",
+      "page": 12
     },
     {
-      "code": "CIV4",
-      "name": "Wilfried Singo",
+      "code": "CPV3",
+      "name": "Logan Costa",
       "type": "player",
       "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0264.webp",
-      "page": 17
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0178.webp",
+      "page": 12
     },
     {
-      "code": "CIV5",
-      "name": "Odilon Kossounou",
+      "code": "CPV4",
+      "name": "Pico",
       "type": "player",
       "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0257.webp",
-      "page": 17
+      "score": 1004,
+      "candidate": "tmp/sticker-candidates/candidate-0180.webp",
+      "page": 12
     },
     {
-      "code": "CIV6",
-      "name": "Evan Ndicka",
+      "code": "CPV5",
+      "name": "Diney",
       "type": "player",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0271.webp",
-      "page": 17
+      "candidate": "tmp/sticker-candidates/candidate-0190.webp",
+      "page": 12
     },
     {
-      "code": "CIV7",
-      "name": "Willy Boly",
+      "code": "CPV6",
+      "name": "Steven Moreira",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0182.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV7",
+      "name": "Wagner Pina",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0184.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV8",
+      "name": "Joao Paulo",
       "type": "player",
       "reason": "player",
       "score": 1009,
-      "candidate": "tmp/sticker-candidates/candidate-0265.webp",
-      "page": 17
+      "candidate": "tmp/sticker-candidates/candidate-0176.webp",
+      "page": 12
     },
     {
-      "code": "CIV8",
-      "name": "Emmanuel Agbadou",
+      "code": "CPV9",
+      "name": "Yannick Semedo",
       "type": "player",
       "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0269.webp",
-      "page": 17
+      "score": 713,
+      "candidate": "tmp/sticker-candidates/candidate-0186.webp",
+      "page": 12
     },
     {
-      "code": "CIV9",
-      "name": "Ousmane Diomande",
+      "code": "CPV10",
+      "name": "Kevin Pina",
       "type": "player",
       "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0258.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV11",
-      "name": "Seko Fofana",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0260.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV12",
-      "name": "Ibrahim Sangare",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0141.webp",
-      "page": 9
-    },
-    {
-      "code": "CIV14",
-      "name": "Jean-Philippe Gbamin",
-      "type": "player",
-      "reason": "player",
-      "score": 1018,
-      "candidate": "tmp/sticker-candidates/candidate-0095.webp",
+      "score": 1009,
+      "candidate": "tmp/sticker-candidates/candidate-0093.webp",
       "page": 6
     },
     {
-      "code": "CIV15",
-      "name": "Amad Diallo",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0268.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV16",
-      "name": "Sébastien Haller",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0259.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV17",
-      "name": "Simon Adingra",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0261.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV18",
-      "name": "Yan Diomande",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0267.webp",
-      "page": 17
-    },
-    {
-      "code": "CIV19",
-      "name": "Evann Guessand",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0079.webp",
-      "page": 5
-    },
-    {
-      "code": "CIV20",
-      "name": "Oumar Diakite",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0078.webp",
-      "page": 5
-    },
-    {
-      "code": "COD1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0677.webp",
-      "page": 45
-    },
-    {
-      "code": "COD2",
-      "name": "Lionel Mpasi",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0680.webp",
-      "page": 45
-    },
-    {
-      "code": "COD3",
-      "name": "Aaron Wan-Bissaka",
-      "type": "player",
-      "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0685.webp",
-      "page": 45
-    },
-    {
-      "code": "COD4",
-      "name": "Axel Tuanzebe",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0687.webp",
-      "page": 45
-    },
-    {
-      "code": "COD5",
-      "name": "Arthur Masuaku",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0686.webp",
-      "page": 45
-    },
-    {
-      "code": "COD6",
-      "name": "Chancel Mbemba",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0690.webp",
-      "page": 45
-    },
-    {
-      "code": "COD7",
-      "name": "Joris Kayembe",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0679.webp",
-      "page": 45
-    },
-    {
-      "code": "COD8",
-      "name": "Charles Pickel",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0675.webp",
-      "page": 45
-    },
-    {
-      "code": "COD9",
-      "name": "Ngal'ayel Mukau",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0683.webp",
-      "page": 45
-    },
-    {
-      "code": "COD10",
-      "name": "Edo Kayembe",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0676.webp",
-      "page": 45
-    },
-    {
-      "code": "COD11",
-      "name": "Samuel Moutoussamy",
-      "type": "player",
-      "reason": "player",
-      "score": 1017,
-      "candidate": "tmp/sticker-candidates/candidate-0534.webp",
-      "page": 34
-    },
-    {
-      "code": "COD14",
-      "name": "Théo Bongonda",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0470.webp",
-      "page": 30
-    },
-    {
-      "code": "COD15",
-      "name": "Meschak Elia",
-      "type": "player",
-      "reason": "player",
-      "score": 710,
-      "candidate": "tmp/sticker-candidates/candidate-0681.webp",
-      "page": 45
-    },
-    {
-      "code": "COD16",
-      "name": "Yoane Wissa",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0684.webp",
-      "page": 45
-    },
-    {
-      "code": "COD17",
-      "name": "Brian Cipenga",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0688.webp",
-      "page": 45
-    },
-    {
-      "code": "COD18",
-      "name": "Fiston Mayele",
-      "type": "player",
-      "reason": "player",
-      "score": 711,
-      "candidate": "tmp/sticker-candidates/candidate-0678.webp",
-      "page": 45
-    },
-    {
-      "code": "COD19",
-      "name": "Cédric Bakambu",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0689.webp",
-      "page": 45
-    },
-    {
-      "code": "COD20",
-      "name": "Nathanaël Mbuku",
+      "code": "CPV11",
+      "name": "Patrick Andrade",
       "type": "player",
       "reason": "player",
       "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0682.webp",
-      "page": 45
+      "candidate": "tmp/sticker-candidates/candidate-0179.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV14",
+      "name": "Deroy Duarte",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0189.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV15",
+      "name": "Garry Rodrigues",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0094.webp",
+      "page": 6
+    },
+    {
+      "code": "CPV16",
+      "name": "Jovane Cabral",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0177.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV17",
+      "name": "Ryan Mendes",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0181.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV18",
+      "name": "Dailon Livramento",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0191.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV19",
+      "name": "Willy Semedo",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0185.webp",
+      "page": 12
+    },
+    {
+      "code": "CPV20",
+      "name": "Bebe",
+      "type": "player",
+      "reason": "player",
+      "score": 1004,
+      "candidate": "tmp/sticker-candidates/candidate-0187.webp",
+      "page": 12
     },
     {
       "code": "COL1",
@@ -1915,157 +1798,166 @@
       "page": 15
     },
     {
-      "code": "CPV2",
-      "name": "Vozinha",
-      "type": "player",
-      "reason": "player",
-      "score": 1007,
-      "candidate": "tmp/sticker-candidates/candidate-0183.webp",
-      "page": 12
+      "code": "COD1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0677.webp",
+      "page": 45
     },
     {
-      "code": "CPV3",
-      "name": "Logan Costa",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0178.webp",
-      "page": 12
-    },
-    {
-      "code": "CPV4",
-      "name": "Pico",
-      "type": "player",
-      "reason": "player",
-      "score": 1004,
-      "candidate": "tmp/sticker-candidates/candidate-0180.webp",
-      "page": 12
-    },
-    {
-      "code": "CPV5",
-      "name": "Diney",
+      "code": "COD2",
+      "name": "Lionel Mpasi",
       "type": "player",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0190.webp",
-      "page": 12
+      "candidate": "tmp/sticker-candidates/candidate-0680.webp",
+      "page": 45
     },
     {
-      "code": "CPV6",
-      "name": "Steven Moreira",
+      "code": "COD3",
+      "name": "Aaron Wan-Bissaka",
       "type": "player",
       "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0182.webp",
-      "page": 12
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0685.webp",
+      "page": 45
     },
     {
-      "code": "CPV7",
-      "name": "Wagner Pina",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0184.webp",
-      "page": 12
-    },
-    {
-      "code": "CPV8",
-      "name": "Joao Paulo",
-      "type": "player",
-      "reason": "player",
-      "score": 1009,
-      "candidate": "tmp/sticker-candidates/candidate-0176.webp",
-      "page": 12
-    },
-    {
-      "code": "CPV9",
-      "name": "Yannick Semedo",
-      "type": "player",
-      "reason": "player",
-      "score": 713,
-      "candidate": "tmp/sticker-candidates/candidate-0186.webp",
-      "page": 12
-    },
-    {
-      "code": "CPV10",
-      "name": "Kevin Pina",
-      "type": "player",
-      "reason": "player",
-      "score": 1009,
-      "candidate": "tmp/sticker-candidates/candidate-0093.webp",
-      "page": 6
-    },
-    {
-      "code": "CPV11",
-      "name": "Patrick Andrade",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0179.webp",
-      "page": 12
-    },
-    {
-      "code": "CPV14",
-      "name": "Deroy Duarte",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0189.webp",
-      "page": 12
-    },
-    {
-      "code": "CPV15",
-      "name": "Garry Rodrigues",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0094.webp",
-      "page": 6
-    },
-    {
-      "code": "CPV16",
-      "name": "Jovane Cabral",
+      "code": "COD4",
+      "name": "Axel Tuanzebe",
       "type": "player",
       "reason": "player",
       "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0177.webp",
-      "page": 12
+      "candidate": "tmp/sticker-candidates/candidate-0687.webp",
+      "page": 45
     },
     {
-      "code": "CPV17",
-      "name": "Ryan Mendes",
+      "code": "COD5",
+      "name": "Arthur Masuaku",
       "type": "player",
       "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0181.webp",
-      "page": 12
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0686.webp",
+      "page": 45
     },
     {
-      "code": "CPV18",
-      "name": "Dailon Livramento",
+      "code": "COD6",
+      "name": "Chancel Mbemba",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0690.webp",
+      "page": 45
+    },
+    {
+      "code": "COD7",
+      "name": "Joris Kayembe",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0679.webp",
+      "page": 45
+    },
+    {
+      "code": "COD8",
+      "name": "Charles Pickel",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0675.webp",
+      "page": 45
+    },
+    {
+      "code": "COD9",
+      "name": "Ngal'ayel Mukau",
       "type": "player",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0191.webp",
-      "page": 12
+      "candidate": "tmp/sticker-candidates/candidate-0683.webp",
+      "page": 45
     },
     {
-      "code": "CPV19",
-      "name": "Willy Semedo",
+      "code": "COD10",
+      "name": "Edo Kayembe",
       "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0185.webp",
-      "page": 12
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0676.webp",
+      "page": 45
     },
     {
-      "code": "CPV20",
-      "name": "Bebe",
+      "code": "COD11",
+      "name": "Samuel Moutoussamy",
       "type": "player",
       "reason": "player",
-      "score": 1004,
-      "candidate": "tmp/sticker-candidates/candidate-0187.webp",
-      "page": 12
+      "score": 1017,
+      "candidate": "tmp/sticker-candidates/candidate-0534.webp",
+      "page": 34
+    },
+    {
+      "code": "COD14",
+      "name": "Théo Bongonda",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0470.webp",
+      "page": 30
+    },
+    {
+      "code": "COD15",
+      "name": "Meschak Elia",
+      "type": "player",
+      "reason": "player",
+      "score": 710,
+      "candidate": "tmp/sticker-candidates/candidate-0681.webp",
+      "page": 45
+    },
+    {
+      "code": "COD16",
+      "name": "Yoane Wissa",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0684.webp",
+      "page": 45
+    },
+    {
+      "code": "COD17",
+      "name": "Brian Cipenga",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0688.webp",
+      "page": 45
+    },
+    {
+      "code": "COD18",
+      "name": "Fiston Mayele",
+      "type": "player",
+      "reason": "player",
+      "score": 711,
+      "candidate": "tmp/sticker-candidates/candidate-0678.webp",
+      "page": 45
+    },
+    {
+      "code": "COD19",
+      "name": "Cédric Bakambu",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0689.webp",
+      "page": 45
+    },
+    {
+      "code": "COD20",
+      "name": "Nathanaël Mbuku",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0682.webp",
+      "page": 45
     },
     {
       "code": "CRO3",
@@ -2896,186 +2788,6 @@
       "page": 29
     },
     {
-      "code": "ESP1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0349.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP2",
-      "name": "Unai Simon",
-      "type": "player",
-      "reason": "player",
-      "score": 1009,
-      "candidate": "tmp/sticker-candidates/candidate-0351.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP3",
-      "name": "Robin Le Normand",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0368.webp",
-      "page": 24
-    },
-    {
-      "code": "ESP4",
-      "name": "Aymeric Laporte",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0367.webp",
-      "page": 24
-    },
-    {
-      "code": "ESP5",
-      "name": "Dean Huijsen",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0366.webp",
-      "page": 24
-    },
-    {
-      "code": "ESP6",
-      "name": "Pedro Porro",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0365.webp",
-      "page": 24
-    },
-    {
-      "code": "ESP7",
-      "name": "Dani Carvajal",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0364.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP8",
-      "name": "Marc Cucurella",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0363.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP9",
-      "name": "Martín Zubimendi",
-      "type": "player",
-      "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0362.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP10",
-      "name": "Rodri",
-      "type": "player",
-      "reason": "player",
-      "score": 1005,
-      "candidate": "tmp/sticker-candidates/candidate-0361.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP11",
-      "name": "Pedri",
-      "type": "player",
-      "reason": "player",
-      "score": 1005,
-      "candidate": "tmp/sticker-candidates/candidate-0360.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP12",
-      "name": "Fabian Ruiz",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0359.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP13",
-      "name": "Team Photo",
-      "type": "photo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0369.webp",
-      "page": 24
-    },
-    {
-      "code": "ESP14",
-      "name": "Mikel Merino",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0358.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP15",
-      "name": "Lamine Yamal",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0352.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP16",
-      "name": "Dani Olmo",
-      "type": "player",
-      "reason": "player",
-      "score": 1008,
-      "candidate": "tmp/sticker-candidates/candidate-0355.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP17",
-      "name": "Nico Williams",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0354.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP18",
-      "name": "Ferran Torres",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0353.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP19",
-      "name": "Álvaro Morata",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0356.webp",
-      "page": 23
-    },
-    {
-      "code": "ESP20",
-      "name": "Mikel Oyarzabal",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0357.webp",
-      "page": 23
-    },
-    {
       "code": "FRA1",
       "name": "Team Logo",
       "type": "logo",
@@ -3254,60 +2966,6 @@
       "score": 1012,
       "candidate": "tmp/sticker-candidates/candidate-0394.webp",
       "page": 26
-    },
-    {
-      "code": "FWC1",
-      "name": "Official Emblem",
-      "type": "intro",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0156.webp",
-      "page": 10
-    },
-    {
-      "code": "FWC3",
-      "name": "Official Mascots",
-      "type": "intro",
-      "reason": "intro",
-      "score": 1105,
-      "candidate": "tmp/sticker-candidates/candidate-0222.webp",
-      "page": 14
-    },
-    {
-      "code": "FWC4",
-      "name": "Official Slogan",
-      "type": "intro",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0157.webp",
-      "page": 10
-    },
-    {
-      "code": "FWC5",
-      "name": "Official Ball",
-      "type": "intro",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0142.webp",
-      "page": 9
-    },
-    {
-      "code": "FWC7",
-      "name": "Mexico – Host Cities",
-      "type": "intro",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0158.webp",
-      "page": 10
-    },
-    {
-      "code": "FWC8",
-      "name": "USA – Host Cities",
-      "type": "intro",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0254.webp",
-      "page": 16
     },
     {
       "code": "GER1",
@@ -4021,6 +3679,294 @@
       "page": 31
     },
     {
+      "code": "CIV1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0270.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV2",
+      "name": "Yahia Fofana",
+      "type": "player",
+      "reason": "manual-keep-orphan",
+      "score": 2500,
+      "candidate": "public/stickers/CIV2.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV3",
+      "name": "Ghislain Konan",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0256.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV4",
+      "name": "Wilfried Singo",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0264.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV5",
+      "name": "Odilon Kossounou",
+      "type": "player",
+      "reason": "player",
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0257.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV6",
+      "name": "Evan Ndicka",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0271.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV7",
+      "name": "Willy Boly",
+      "type": "player",
+      "reason": "player",
+      "score": 1009,
+      "candidate": "tmp/sticker-candidates/candidate-0265.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV8",
+      "name": "Emmanuel Agbadou",
+      "type": "player",
+      "reason": "player",
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0269.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV9",
+      "name": "Ousmane Diomande",
+      "type": "player",
+      "reason": "player",
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0258.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV11",
+      "name": "Seko Fofana",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0260.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV12",
+      "name": "Ibrahim Sangare",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0141.webp",
+      "page": 9
+    },
+    {
+      "code": "CIV14",
+      "name": "Jean-Philippe Gbamin",
+      "type": "player",
+      "reason": "player",
+      "score": 1018,
+      "candidate": "tmp/sticker-candidates/candidate-0095.webp",
+      "page": 6
+    },
+    {
+      "code": "CIV15",
+      "name": "Amad Diallo",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0268.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV16",
+      "name": "Sébastien Haller",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0259.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV17",
+      "name": "Simon Adingra",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0261.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV18",
+      "name": "Yan Diomande",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0267.webp",
+      "page": 17
+    },
+    {
+      "code": "CIV19",
+      "name": "Evann Guessand",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0079.webp",
+      "page": 5
+    },
+    {
+      "code": "CIV20",
+      "name": "Oumar Diakite",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0078.webp",
+      "page": 5
+    },
+    {
+      "code": "JPN1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0500.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN5",
+      "name": "Junnosuke Suzuki",
+      "type": "player",
+      "reason": "player",
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0487.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN6",
+      "name": "Shogo Taniguchi",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0491.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN7",
+      "name": "Tsuyoshi Watanabe",
+      "type": "player",
+      "reason": "player",
+      "score": 1016,
+      "candidate": "tmp/sticker-candidates/candidate-0495.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN8",
+      "name": "Kaishu Sano",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0489.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN9",
+      "name": "Yuki Soma",
+      "type": "player",
+      "reason": "player",
+      "score": 1008,
+      "candidate": "tmp/sticker-candidates/candidate-0496.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN10",
+      "name": "Ao Tanaka",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0497.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN11",
+      "name": "Daichi Kamada",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0499.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN12",
+      "name": "Takefusa Kubo",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0493.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN15",
+      "name": "Keito Nakamura",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0490.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN16",
+      "name": "Takumi Minamino",
+      "type": "player",
+      "reason": "player",
+      "score": 714,
+      "candidate": "tmp/sticker-candidates/candidate-0494.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN17",
+      "name": "Shuto Machino",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0492.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN18",
+      "name": "Junya Ito",
+      "type": "player",
+      "reason": "player",
+      "score": 1008,
+      "candidate": "tmp/sticker-candidates/candidate-0488.webp",
+      "page": 32
+    },
+    {
+      "code": "JPN20",
+      "name": "Ayase Ueda",
+      "type": "player",
+      "reason": "player",
+      "score": 708,
+      "candidate": "tmp/sticker-candidates/candidate-0498.webp",
+      "page": 32
+    },
+    {
       "code": "JOR1",
       "name": "Team Logo",
       "type": "logo",
@@ -4181,528 +4127,6 @@
       "score": 1012,
       "candidate": "tmp/sticker-candidates/candidate-0516.webp",
       "page": 33
-    },
-    {
-      "code": "JPN1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0500.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN5",
-      "name": "Junnosuke Suzuki",
-      "type": "player",
-      "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0487.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN6",
-      "name": "Shogo Taniguchi",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0491.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN7",
-      "name": "Tsuyoshi Watanabe",
-      "type": "player",
-      "reason": "player",
-      "score": 1016,
-      "candidate": "tmp/sticker-candidates/candidate-0495.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN8",
-      "name": "Kaishu Sano",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0489.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN9",
-      "name": "Yuki Soma",
-      "type": "player",
-      "reason": "player",
-      "score": 1008,
-      "candidate": "tmp/sticker-candidates/candidate-0496.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN10",
-      "name": "Ao Tanaka",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0497.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN11",
-      "name": "Daichi Kamada",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0499.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN12",
-      "name": "Takefusa Kubo",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0493.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN15",
-      "name": "Keito Nakamura",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0490.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN16",
-      "name": "Takumi Minamino",
-      "type": "player",
-      "reason": "player",
-      "score": 714,
-      "candidate": "tmp/sticker-candidates/candidate-0494.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN17",
-      "name": "Shuto Machino",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0492.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN18",
-      "name": "Junya Ito",
-      "type": "player",
-      "reason": "player",
-      "score": 1008,
-      "candidate": "tmp/sticker-candidates/candidate-0488.webp",
-      "page": 32
-    },
-    {
-      "code": "JPN20",
-      "name": "Ayase Ueda",
-      "type": "player",
-      "reason": "player",
-      "score": 708,
-      "candidate": "tmp/sticker-candidates/candidate-0498.webp",
-      "page": 32
-    },
-    {
-      "code": "KOR1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0253.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR2",
-      "name": "Hyeon-woo Jo",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0244.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR3",
-      "name": "Seung-Gyu Kim",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0249.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR5",
-      "name": "Yu-min Cho",
-      "type": "player",
-      "reason": "player",
-      "score": 1008,
-      "candidate": "tmp/sticker-candidates/candidate-0252.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR6",
-      "name": "Young-woo Seol",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0251.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR7",
-      "name": "Han-beom Lee",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0240.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR9",
-      "name": "Myung-jae Lee",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0248.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR10",
-      "name": "Jae-sung Lee",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0245.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR12",
-      "name": "Kang-in Lee",
-      "type": "player",
-      "reason": "player",
-      "score": 1009,
-      "candidate": "tmp/sticker-candidates/candidate-0247.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR14",
-      "name": "Seung-ho Paik",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0250.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR15",
-      "name": "Jens Castrop",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0246.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR18",
-      "name": "Heung-min Son",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0242.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR19",
-      "name": "Hee-chan Hwang",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0241.webp",
-      "page": 16
-    },
-    {
-      "code": "KOR20",
-      "name": "Hyeon-Gyu Oh",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0243.webp",
-      "page": 16
-    },
-    {
-      "code": "KSA1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "team-logo",
-      "score": 905,
-      "candidate": "tmp/sticker-candidates/candidate-0029.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA3",
-      "name": "Abdulrahman Al-Sanbi",
-      "type": "player",
-      "reason": "player",
-      "score": 1018,
-      "candidate": "tmp/sticker-candidates/candidate-0020.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA4",
-      "name": "Saud Abdulhamid",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0016.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA6",
-      "name": "Jihad Thakri",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0022.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA7",
-      "name": "Moteb Al-Harbi",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0024.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA8",
-      "name": "Hassan Altambakti",
-      "type": "player",
-      "reason": "player",
-      "score": 1016,
-      "candidate": "tmp/sticker-candidates/candidate-0021.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA9",
-      "name": "Musab Aljuwayr",
-      "type": "player",
-      "reason": "player",
-      "score": 712,
-      "candidate": "tmp/sticker-candidates/candidate-0030.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA10",
-      "name": "Ziyad Aljohani",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0017.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA11",
-      "name": "Abdullah Alkhaibari",
-      "type": "player",
-      "reason": "player",
-      "score": 1018,
-      "candidate": "tmp/sticker-candidates/candidate-0018.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA12",
-      "name": "Nasser Aldawsari",
-      "type": "player",
-      "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0025.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA14",
-      "name": "Saleh Abu Alshamat",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0026.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA15",
-      "name": "Marwan Alsahafi",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0023.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA16",
-      "name": "Salem Aldawsari",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0028.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA17",
-      "name": "Abdulrahman Al-Aboud",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0019.webp",
-      "page": 2
-    },
-    {
-      "code": "KSA19",
-      "name": "Saleh Alshehri",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0027.webp",
-      "page": 2
-    },
-    {
-      "code": "MAR1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0527.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR2",
-      "name": "Yassine Bounou",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0532.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR6",
-      "name": "Nayef Aguerd",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0531.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR7",
-      "name": "Roman Saiss",
-      "type": "player",
-      "reason": "player",
-      "score": 709,
-      "candidate": "tmp/sticker-candidates/candidate-0530.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR8",
-      "name": "Jawad El Yamio",
-      "type": "player",
-      "reason": "player",
-      "score": 705,
-      "candidate": "tmp/sticker-candidates/candidate-0519.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR9",
-      "name": "Adam Masina",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0522.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR10",
-      "name": "Sofyan Amrabat",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0529.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR12",
-      "name": "Eliesse Ben Seghir",
-      "type": "player",
-      "reason": "player",
-      "score": 1016,
-      "candidate": "tmp/sticker-candidates/candidate-0526.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR13",
-      "name": "Team Photo",
-      "type": "photo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0533.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR14",
-      "name": "Bilal El Khannouss",
-      "type": "player",
-      "reason": "player",
-      "score": 1016,
-      "candidate": "tmp/sticker-candidates/candidate-0524.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR15",
-      "name": "Ismael Saibari",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0528.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR16",
-      "name": "Youssef En-Nesyri",
-      "type": "player",
-      "reason": "player",
-      "score": 1015,
-      "candidate": "tmp/sticker-candidates/candidate-0520.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR17",
-      "name": "Abde Ezzalzouli",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0521.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR19",
-      "name": "Brahim Diaz",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0525.webp",
-      "page": 34
-    },
-    {
-      "code": "MAR20",
-      "name": "Ayoub El Kaabi",
-      "type": "player",
-      "reason": "player",
-      "score": 1012,
-      "candidate": "tmp/sticker-candidates/candidate-0523.webp",
-      "page": 34
     },
     {
       "code": "MEX1",
@@ -4885,6 +4309,141 @@
       "page": 36
     },
     {
+      "code": "MAR1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0527.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR2",
+      "name": "Yassine Bounou",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0532.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR6",
+      "name": "Nayef Aguerd",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0531.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR7",
+      "name": "Roman Saiss",
+      "type": "player",
+      "reason": "player",
+      "score": 709,
+      "candidate": "tmp/sticker-candidates/candidate-0530.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR8",
+      "name": "Jawad El Yamio",
+      "type": "player",
+      "reason": "player",
+      "score": 705,
+      "candidate": "tmp/sticker-candidates/candidate-0519.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR9",
+      "name": "Adam Masina",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0522.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR10",
+      "name": "Sofyan Amrabat",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0529.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR12",
+      "name": "Eliesse Ben Seghir",
+      "type": "player",
+      "reason": "player",
+      "score": 1016,
+      "candidate": "tmp/sticker-candidates/candidate-0526.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR13",
+      "name": "Team Photo",
+      "type": "photo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0533.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR14",
+      "name": "Bilal El Khannouss",
+      "type": "player",
+      "reason": "player",
+      "score": 1016,
+      "candidate": "tmp/sticker-candidates/candidate-0524.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR15",
+      "name": "Ismael Saibari",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0528.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR16",
+      "name": "Youssef En-Nesyri",
+      "type": "player",
+      "reason": "player",
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0520.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR17",
+      "name": "Abde Ezzalzouli",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0521.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR19",
+      "name": "Brahim Diaz",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0525.webp",
+      "page": 34
+    },
+    {
+      "code": "MAR20",
+      "name": "Ayoub El Kaabi",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0523.webp",
+      "page": 34
+    },
+    {
       "code": "NED1",
       "name": "Team Logo",
       "type": "logo",
@@ -5065,141 +4624,6 @@
       "page": 36
     },
     {
-      "code": "NOR1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0561.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR4",
-      "name": "Leo Ostigård",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0564.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR5",
-      "name": "Kristoffer Vassbakk Ajer",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0574.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR7",
-      "name": "David Møller Wolfe",
-      "type": "player",
-      "reason": "player",
-      "score": 714,
-      "candidate": "tmp/sticker-candidates/candidate-0575.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR8",
-      "name": "Torbjørn Heggem",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0570.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR9",
-      "name": "Morten Thorsby",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0566.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR10",
-      "name": "Martin Ødegaard",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0565.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR11",
-      "name": "Sander Berge",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0569.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR12",
-      "name": "Andreas Schjelderup",
-      "type": "player",
-      "reason": "player",
-      "score": 1018,
-      "candidate": "tmp/sticker-candidates/candidate-0571.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR14",
-      "name": "Patrick Berg",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0568.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR15",
-      "name": "Erling Haaland",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0576.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR17",
-      "name": "Aron Dønnum",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0573.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR18",
-      "name": "Jorgen Strand Larsen",
-      "type": "player",
-      "reason": "player",
-      "score": 1018,
-      "candidate": "tmp/sticker-candidates/candidate-0562.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR19",
-      "name": "Antonio Nusa",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0572.webp",
-      "page": 37
-    },
-    {
-      "code": "NOR20",
-      "name": "Oscar Bobb",
-      "type": "player",
-      "reason": "player",
-      "score": 1009,
-      "candidate": "tmp/sticker-candidates/candidate-0567.webp",
-      "page": 37
-    },
-    {
       "code": "NZL1",
       "name": "Team Logo",
       "type": "logo",
@@ -5333,6 +4757,141 @@
       "score": 1016,
       "candidate": "tmp/sticker-candidates/candidate-0580.webp",
       "page": 38
+    },
+    {
+      "code": "NOR1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0561.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR4",
+      "name": "Leo Ostigård",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0564.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR5",
+      "name": "Kristoffer Vassbakk Ajer",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0574.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR7",
+      "name": "David Møller Wolfe",
+      "type": "player",
+      "reason": "player",
+      "score": 714,
+      "candidate": "tmp/sticker-candidates/candidate-0575.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR8",
+      "name": "Torbjørn Heggem",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0570.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR9",
+      "name": "Morten Thorsby",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0566.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR10",
+      "name": "Martin Ødegaard",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0565.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR11",
+      "name": "Sander Berge",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0569.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR12",
+      "name": "Andreas Schjelderup",
+      "type": "player",
+      "reason": "player",
+      "score": 1018,
+      "candidate": "tmp/sticker-candidates/candidate-0571.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR14",
+      "name": "Patrick Berg",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0568.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR15",
+      "name": "Erling Haaland",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0576.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR17",
+      "name": "Aron Dønnum",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0573.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR18",
+      "name": "Jorgen Strand Larsen",
+      "type": "player",
+      "reason": "player",
+      "score": 1018,
+      "candidate": "tmp/sticker-candidates/candidate-0562.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR19",
+      "name": "Antonio Nusa",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0572.webp",
+      "page": 37
+    },
+    {
+      "code": "NOR20",
+      "name": "Oscar Bobb",
+      "type": "player",
+      "reason": "player",
+      "score": 1009,
+      "candidate": "tmp/sticker-candidates/candidate-0567.webp",
+      "page": 37
     },
     {
       "code": "PAN1",
@@ -5902,103 +5461,139 @@
       "page": 44
     },
     {
-      "code": "RSA2",
-      "name": "Ronwen Williams",
+      "code": "KSA1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "team-logo",
+      "score": 905,
+      "candidate": "tmp/sticker-candidates/candidate-0029.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA3",
+      "name": "Abdulrahman Al-Sanbi",
+      "type": "player",
+      "reason": "player",
+      "score": 1018,
+      "candidate": "tmp/sticker-candidates/candidate-0020.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA4",
+      "name": "Saud Abdulhamid",
       "type": "player",
       "reason": "player",
       "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0723.webp",
-      "page": 48
+      "candidate": "tmp/sticker-candidates/candidate-0016.webp",
+      "page": 2
     },
     {
-      "code": "RSA3",
-      "name": "Sipho Chaine",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0727.webp",
-      "page": 48
-    },
-    {
-      "code": "RSA5",
-      "name": "Samukele Kabini",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0724.webp",
-      "page": 48
-    },
-    {
-      "code": "RSA7",
-      "name": "Khulumani Ndamane",
-      "type": "player",
-      "reason": "player",
-      "score": 1016,
-      "candidate": "tmp/sticker-candidates/candidate-0732.webp",
-      "page": 48
-    },
-    {
-      "code": "RSA8",
-      "name": "Siyabonga Ngezana",
-      "type": "player",
-      "reason": "player",
-      "score": 715,
-      "candidate": "tmp/sticker-candidates/candidate-0726.webp",
-      "page": 48
-    },
-    {
-      "code": "RSA9",
-      "name": "Khuliso Mudau",
+      "code": "KSA6",
+      "name": "Jihad Thakri",
       "type": "player",
       "reason": "manual-override",
       "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0731.webp",
-      "page": 48
+      "candidate": "tmp/sticker-candidates/candidate-0022.webp",
+      "page": 2
     },
     {
-      "code": "RSA12",
-      "name": "Thalente Mbatha",
+      "code": "KSA7",
+      "name": "Moteb Al-Harbi",
       "type": "player",
       "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0728.webp",
-      "page": 48
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0024.webp",
+      "page": 2
     },
     {
-      "code": "RSA16",
-      "name": "Sipho Mbule",
+      "code": "KSA8",
+      "name": "Hassan Altambakti",
       "type": "player",
       "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0725.webp",
-      "page": 48
+      "score": 1016,
+      "candidate": "tmp/sticker-candidates/candidate-0021.webp",
+      "page": 2
     },
     {
-      "code": "RSA18",
-      "name": "Iqraam Rayners",
+      "code": "KSA9",
+      "name": "Musab Aljuwayr",
       "type": "player",
       "reason": "player",
-      "score": 711,
-      "candidate": "tmp/sticker-candidates/candidate-0729.webp",
-      "page": 48
+      "score": 712,
+      "candidate": "tmp/sticker-candidates/candidate-0030.webp",
+      "page": 2
     },
     {
-      "code": "RSA19",
-      "name": "Mohau Nkota",
-      "type": "player",
-      "reason": "player",
-      "score": 1010,
-      "candidate": "tmp/sticker-candidates/candidate-0733.webp",
-      "page": 48
-    },
-    {
-      "code": "RSA20",
-      "name": "Oswin Appollis",
+      "code": "KSA10",
+      "name": "Ziyad Aljohani",
       "type": "player",
       "reason": "player",
       "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0734.webp",
-      "page": 48
+      "candidate": "tmp/sticker-candidates/candidate-0017.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA11",
+      "name": "Abdullah Alkhaibari",
+      "type": "player",
+      "reason": "player",
+      "score": 1018,
+      "candidate": "tmp/sticker-candidates/candidate-0018.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA12",
+      "name": "Nasser Aldawsari",
+      "type": "player",
+      "reason": "player",
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0025.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA14",
+      "name": "Saleh Abu Alshamat",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0026.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA15",
+      "name": "Marwan Alsahafi",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0023.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA16",
+      "name": "Salem Aldawsari",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0028.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA17",
+      "name": "Abdulrahman Al-Aboud",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0019.webp",
+      "page": 2
+    },
+    {
+      "code": "KSA19",
+      "name": "Saleh Alshehri",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0027.webp",
+      "page": 2
     },
     {
       "code": "SCO1",
@@ -6253,6 +5848,537 @@
       "page": 47
     },
     {
+      "code": "RSA2",
+      "name": "Ronwen Williams",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0723.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA3",
+      "name": "Sipho Chaine",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0727.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA5",
+      "name": "Samukele Kabini",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0724.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA7",
+      "name": "Khulumani Ndamane",
+      "type": "player",
+      "reason": "player",
+      "score": 1016,
+      "candidate": "tmp/sticker-candidates/candidate-0732.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA8",
+      "name": "Siyabonga Ngezana",
+      "type": "player",
+      "reason": "player",
+      "score": 715,
+      "candidate": "tmp/sticker-candidates/candidate-0726.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA9",
+      "name": "Khuliso Mudau",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0731.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA12",
+      "name": "Thalente Mbatha",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0728.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA16",
+      "name": "Sipho Mbule",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0725.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA18",
+      "name": "Iqraam Rayners",
+      "type": "player",
+      "reason": "player",
+      "score": 711,
+      "candidate": "tmp/sticker-candidates/candidate-0729.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA19",
+      "name": "Mohau Nkota",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0733.webp",
+      "page": 48
+    },
+    {
+      "code": "RSA20",
+      "name": "Oswin Appollis",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0734.webp",
+      "page": 48
+    },
+    {
+      "code": "KOR1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0253.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR2",
+      "name": "Hyeon-woo Jo",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0244.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR3",
+      "name": "Seung-Gyu Kim",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0249.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR5",
+      "name": "Yu-min Cho",
+      "type": "player",
+      "reason": "player",
+      "score": 1008,
+      "candidate": "tmp/sticker-candidates/candidate-0252.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR6",
+      "name": "Young-woo Seol",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0251.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR7",
+      "name": "Han-beom Lee",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0240.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR9",
+      "name": "Myung-jae Lee",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0248.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR10",
+      "name": "Jae-sung Lee",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0245.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR12",
+      "name": "Kang-in Lee",
+      "type": "player",
+      "reason": "player",
+      "score": 1009,
+      "candidate": "tmp/sticker-candidates/candidate-0247.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR14",
+      "name": "Seung-ho Paik",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0250.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR15",
+      "name": "Jens Castrop",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0246.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR18",
+      "name": "Heung-min Son",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0242.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR19",
+      "name": "Hee-chan Hwang",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0241.webp",
+      "page": 16
+    },
+    {
+      "code": "KOR20",
+      "name": "Hyeon-Gyu Oh",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0243.webp",
+      "page": 16
+    },
+    {
+      "code": "ESP1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0349.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP2",
+      "name": "Unai Simon",
+      "type": "player",
+      "reason": "player",
+      "score": 1009,
+      "candidate": "tmp/sticker-candidates/candidate-0351.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP3",
+      "name": "Robin Le Normand",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0368.webp",
+      "page": 24
+    },
+    {
+      "code": "ESP4",
+      "name": "Aymeric Laporte",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0367.webp",
+      "page": 24
+    },
+    {
+      "code": "ESP5",
+      "name": "Dean Huijsen",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0366.webp",
+      "page": 24
+    },
+    {
+      "code": "ESP6",
+      "name": "Pedro Porro",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0365.webp",
+      "page": 24
+    },
+    {
+      "code": "ESP7",
+      "name": "Dani Carvajal",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0364.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP8",
+      "name": "Marc Cucurella",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0363.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP9",
+      "name": "Martín Zubimendi",
+      "type": "player",
+      "reason": "player",
+      "score": 1015,
+      "candidate": "tmp/sticker-candidates/candidate-0362.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP10",
+      "name": "Rodri",
+      "type": "player",
+      "reason": "player",
+      "score": 1005,
+      "candidate": "tmp/sticker-candidates/candidate-0361.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP11",
+      "name": "Pedri",
+      "type": "player",
+      "reason": "player",
+      "score": 1005,
+      "candidate": "tmp/sticker-candidates/candidate-0360.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP12",
+      "name": "Fabian Ruiz",
+      "type": "player",
+      "reason": "player",
+      "score": 1010,
+      "candidate": "tmp/sticker-candidates/candidate-0359.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP13",
+      "name": "Team Photo",
+      "type": "photo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0369.webp",
+      "page": 24
+    },
+    {
+      "code": "ESP14",
+      "name": "Mikel Merino",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0358.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP15",
+      "name": "Lamine Yamal",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0352.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP16",
+      "name": "Dani Olmo",
+      "type": "player",
+      "reason": "player",
+      "score": 1008,
+      "candidate": "tmp/sticker-candidates/candidate-0355.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP17",
+      "name": "Nico Williams",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0354.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP18",
+      "name": "Ferran Torres",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0353.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP19",
+      "name": "Álvaro Morata",
+      "type": "player",
+      "reason": "player",
+      "score": 1012,
+      "candidate": "tmp/sticker-candidates/candidate-0356.webp",
+      "page": 23
+    },
+    {
+      "code": "ESP20",
+      "name": "Mikel Oyarzabal",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0357.webp",
+      "page": 23
+    },
+    {
+      "code": "SWE1",
+      "name": "Team Logo",
+      "type": "logo",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0747.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE2",
+      "name": "Victor Johansson",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0742.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE3",
+      "name": "Isak Hien",
+      "type": "player",
+      "reason": "player",
+      "score": 1008,
+      "candidate": "tmp/sticker-candidates/candidate-0736.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE4",
+      "name": "Gabriel Gudmundsson",
+      "type": "player",
+      "reason": "player",
+      "score": 1018,
+      "candidate": "tmp/sticker-candidates/candidate-0748.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE6",
+      "name": "Victor Nilsson Lindelöf",
+      "type": "player",
+      "reason": "player",
+      "score": 720,
+      "candidate": "tmp/sticker-candidates/candidate-0741.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE8",
+      "name": "Lucas Bergvall",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0739.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE9",
+      "name": "Hugo Larsson",
+      "type": "player",
+      "reason": "player",
+      "score": 1011,
+      "candidate": "tmp/sticker-candidates/candidate-0735.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE10",
+      "name": "Jesper Karlström",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0737.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE11",
+      "name": "Yasin Ayari",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0743.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE14",
+      "name": "Daniel Svensson",
+      "type": "player",
+      "reason": "player",
+      "score": 1014,
+      "candidate": "tmp/sticker-candidates/candidate-0746.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE15",
+      "name": "Ken Sema",
+      "type": "player",
+      "reason": "player",
+      "score": 1007,
+      "candidate": "tmp/sticker-candidates/candidate-0738.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE16",
+      "name": "Roony Bardghji",
+      "type": "player",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0740.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE18",
+      "name": "Anthony Elanga",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0745.webp",
+      "page": 49
+    },
+    {
+      "code": "SWE19",
+      "name": "Alexander Isak",
+      "type": "player",
+      "reason": "player",
+      "score": 1013,
+      "candidate": "tmp/sticker-candidates/candidate-0744.webp",
+      "page": 49
+    },
+    {
       "code": "SUI1",
       "name": "Team Logo",
       "type": "logo",
@@ -6422,132 +6548,6 @@
       "score": 1011,
       "candidate": "tmp/sticker-candidates/candidate-0757.webp",
       "page": 50
-    },
-    {
-      "code": "SWE1",
-      "name": "Team Logo",
-      "type": "logo",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0747.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE2",
-      "name": "Victor Johansson",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0742.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE3",
-      "name": "Isak Hien",
-      "type": "player",
-      "reason": "player",
-      "score": 1008,
-      "candidate": "tmp/sticker-candidates/candidate-0736.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE4",
-      "name": "Gabriel Gudmundsson",
-      "type": "player",
-      "reason": "player",
-      "score": 1018,
-      "candidate": "tmp/sticker-candidates/candidate-0748.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE6",
-      "name": "Victor Nilsson Lindelöf",
-      "type": "player",
-      "reason": "player",
-      "score": 720,
-      "candidate": "tmp/sticker-candidates/candidate-0741.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE8",
-      "name": "Lucas Bergvall",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0739.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE9",
-      "name": "Hugo Larsson",
-      "type": "player",
-      "reason": "player",
-      "score": 1011,
-      "candidate": "tmp/sticker-candidates/candidate-0735.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE10",
-      "name": "Jesper Karlström",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0737.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE11",
-      "name": "Yasin Ayari",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0743.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE14",
-      "name": "Daniel Svensson",
-      "type": "player",
-      "reason": "player",
-      "score": 1014,
-      "candidate": "tmp/sticker-candidates/candidate-0746.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE15",
-      "name": "Ken Sema",
-      "type": "player",
-      "reason": "player",
-      "score": 1007,
-      "candidate": "tmp/sticker-candidates/candidate-0738.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE16",
-      "name": "Roony Bardghji",
-      "type": "player",
-      "reason": "manual-override",
-      "score": 2500,
-      "candidate": "tmp/sticker-candidates/candidate-0740.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE18",
-      "name": "Anthony Elanga",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0745.webp",
-      "page": 49
-    },
-    {
-      "code": "SWE19",
-      "name": "Alexander Isak",
-      "type": "player",
-      "reason": "player",
-      "score": 1013,
-      "candidate": "tmp/sticker-candidates/candidate-0744.webp",
-      "page": 49
     },
     {
       "code": "TUN1",
@@ -7322,33 +7322,139 @@
       "score": 717,
       "candidate": "tmp/sticker-candidates/candidate-0824.webp",
       "page": 54
-    }
-  ],
-  "rejectedCount": 6,
-  "rejected": [
-    {
-      "candidate": "tmp/sticker-candidates/candidate-0159.webp",
-      "page": 10
     },
     {
+      "code": "CC1",
+      "name": "Lamine Yamal",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0221.webp",
+      "page": 14
+    },
+    {
+      "code": "CC2",
+      "name": "Joshua Kimmich",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0208.webp",
+      "page": 14
+    },
+    {
+      "code": "CC3",
+      "name": "Harry Kane",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
       "candidate": "tmp/sticker-candidates/candidate-0209.webp",
       "page": 14
     },
     {
+      "code": "CC4",
+      "name": "Santiago Gimenez",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0210.webp",
+      "page": 14
+    },
+    {
+      "code": "CC5",
+      "name": "Josko Gvardiol",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
       "candidate": "tmp/sticker-candidates/candidate-0211.webp",
       "page": 14
     },
     {
-      "candidate": "tmp/sticker-candidates/candidate-0213.webp",
+      "code": "CC6",
+      "name": "Federico Valverde",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0215.webp",
       "page": 14
     },
     {
+      "code": "CC7",
+      "name": "Jefferson Lerma",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
       "candidate": "tmp/sticker-candidates/candidate-0214.webp",
       "page": 14
     },
     {
+      "code": "CC8",
+      "name": "Enner Valencia",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0213.webp",
+      "page": 14
+    },
+    {
+      "code": "CC9",
+      "name": "Gabriel Magalhaes",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0219.webp",
+      "page": 14
+    },
+    {
+      "code": "CC10",
+      "name": "Virgil Van Dijk",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0218.webp",
+      "page": 14
+    },
+    {
+      "code": "CC11",
+      "name": "Alphonso Davies",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0216.webp",
+      "page": 14
+    },
+    {
+      "code": "CC12",
+      "name": "Emiliano Martinez",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0212.webp",
+      "page": 14
+    },
+    {
+      "code": "CC13",
+      "name": "Raul Gimenez",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
       "candidate": "tmp/sticker-candidates/candidate-0217.webp",
       "page": 14
+    },
+    {
+      "code": "CC14",
+      "name": "Lautaro Martinez",
+      "type": "intro",
+      "reason": "manual-override",
+      "score": 2500,
+      "candidate": "tmp/sticker-candidates/candidate-0220.webp",
+      "page": 14
+    }
+  ],
+  "rejectedCount": 1,
+  "rejected": [
+    {
+      "candidate": "tmp/sticker-candidates/candidate-0159.webp",
+      "page": 10
     }
   ]
 }
