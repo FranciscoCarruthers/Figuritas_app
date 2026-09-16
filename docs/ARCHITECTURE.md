@@ -25,6 +25,8 @@ Las amistades y los intercambios utilizan funciones SQL para consultar álbumes 
 
 ## Decisiones
 
+El ingreso con usuario resuelve el correo exclusivamente en el servidor y verifica la contraseña con un cliente Supabase sin privilegios. Solo entonces devuelve los tokens de sesión. No existe un endpoint público de consulta de correos; la recuperación responde de forma neutra para cuentas existentes, inexistentes o sin correo real.
+
 - **PWA en lugar de una app nativa:** permite distribuir una sola aplicación web e instalarla desde el navegador, con especial atención al uso desde iPhone.
 - **Supabase como backend:** reúne Auth, PostgreSQL, RLS y Realtime. Las reglas de acceso viven junto a los datos, y las operaciones de intercambio se resuelven mediante funciones SQL.
 - **Scanner en el navegador:** OpenCV.js procesa la imagen y Tesseract.js reconoce el código. No requiere un servicio propio de OCR; la carga inicial de sus recursos y el rendimiento dependen del dispositivo y la conexión.

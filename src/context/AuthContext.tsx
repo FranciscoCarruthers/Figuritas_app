@@ -51,27 +51,6 @@ function getUsernameFromSession(session: Session): string {
   return normalizeUsername(session.user.email?.split('@')[0] ?? 'album')
 }
 
-async function resolveLoginEmail(identifierValue: string): Promise<string> {
-  const identifier = identifierValue.trim()
-  if (isEmailIdentifier(identifier)) return normalizeEmail(identifier)
-
-  const username = normalizeUsername(identifier)
-  const response = await fetch('/api/auth/resolve-login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ identifier: username }),
-  })
-
-  if (!response.ok) {
-    const payload = await response.json().catch(() => ({ error: 'No se pudo encontrar ese usuario.' }))
-    throw new Error(payload.error ?? 'No se pudo encontrar ese usuario.')
-  }
-
-  const payload = await response.json() as { email?: string }
-  if (!payload.email) throw new Error('No se pudo encontrar ese usuario.')
-  return payload.email
-}
-
 async function ensureProfile(session: Session): Promise<UserProfile> {
   const supabase = getSupabaseBrowserClient()
   const username = getUsernameFromSession(session)
@@ -159,25 +138,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (passwordError) throw new Error(passwordError)
 
     setIsLoading(true)
-    const supabase = getSupabaseBrowserClient()
-    let email: string
     try {
-      email = await resolveLoginEmail(identifier)
-    } catch (error) {
-      setIsLoading(false)
-      throw error
-    }
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password }),
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.error ?? 'No se pudo iniciar sesión.')
+      if (typeof payload.access_token !== 'string' || typeof payload.refresh_token !== 'string') {
+        throw new Error('No se pudo iniciar sesión.')
+      }
 
-    if (error) {
+      const supabase = getSupabaseBrowserClient()
+      const { data, error } = await supabase.auth.setSession({
+        access_token: payload.access_token,
+        refresh_token: payload.refresh_token,
+      })
+      if (error) throw error
+      await applySession(data.session)
+    } finally {
       setIsLoading(false)
-      throw error
     }
-
-    await applySession(data.session)
   }, [applySession])
 
   const signUp = useCallback(async (usernameValue: string, password: string, emailValue = '') => {

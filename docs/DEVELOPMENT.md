@@ -77,10 +77,11 @@ npm run test:parser
 npm run test:scan
 npm run test:image-mapping
 npm run test:app
+npm run test:auth
 npm run build
 ```
 
-Estos scripts comprueban catálogo, parser, helpers del scanner, mapeo de imágenes y lógica de la app; no sustituyen pruebas de cámara en un teléfono ni pruebas integradas con Supabase y Web Push.
+Estos scripts comprueban catálogo, parser, helpers del scanner, mapeo de imágenes y lógica de la app. `test:auth` ejecuta los endpoints de autenticación con Supabase simulado y verifica que los errores no expongan correos ni credenciales. No sustituyen pruebas de cámara en un teléfono ni pruebas integradas con Supabase y Web Push.
 
 Si ESLint encuentra directorios temporales locales ajenos al proyecto, se pueden excluir en esa ejecución:
 

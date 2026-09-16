@@ -9,6 +9,7 @@
     "lint": "eslint",
     "validate:stickers": "node scripts/generate-supabase-seed.mjs --check",
     "test:parser": "node scripts/test-parser.mjs",
+    "test:auth": "node scripts/test-auth-routes.mjs",
     "test:scan": "node scripts/test-scan-helpers.mjs",
     "test:image-mapping": "node scripts/test-image-mapping.mjs",
     "audit:images": "node scripts/generate-sticker-image-audit.mjs",
