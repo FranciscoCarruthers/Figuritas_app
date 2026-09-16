@@ -8,9 +8,11 @@ Una app web instalable para llevar el álbum del Mundial 2026, organizar repetid
 
 ## Vista previa
 
-| Álbum | Estadísticas | Intercambios |
-| :---: | :---: | :---: |
-| ![Álbum con progreso y figuritas marcadas](docs/images/album.png) | ![Resumen del progreso del álbum](docs/images/estadisticas.png) | ![Propuesta de intercambio entre amigos](docs/images/intercambios.png) |
+<p align="center">
+  <img src="docs/images/album.png" alt="Álbum con progreso y figuritas marcadas" width="30%" />
+  <img src="docs/images/estadisticas.png" alt="Resumen del progreso del álbum" width="30%" />
+  <img src="docs/images/intercambios.png" alt="Propuesta de intercambio entre amigos" width="30%" />
+</p>
 
 *Interfaz real con datos ficticios de demostración.*
 

@@ -8,9 +8,11 @@ An installable web app to track a World Cup 2026 sticker album, manage duplicate
 
 ## Preview
 
-| Album | Statistics | Trades |
-| :---: | :---: | :---: |
-| ![Album progress and collected stickers](docs/images/album.png) | ![Album progress overview](docs/images/estadisticas.png) | ![Sticker trade proposal between friends](docs/images/intercambios.png) |
+<p align="center">
+  <img src="docs/images/album.png" alt="Album progress and collected stickers" width="30%" />
+  <img src="docs/images/estadisticas.png" alt="Album progress overview" width="30%" />
+  <img src="docs/images/intercambios.png" alt="Sticker trade proposal between friends" width="30%" />
+</p>
 
 *Actual interface with fictional demo data. The app's interface is in Spanish.*
 
