@@ -1,45 +1,37 @@
 # FiguritasApp
 
-FiguritasApp es una PWA para llevar el álbum de figuritas Panini de la FIFA World Cup 2026 entre varias personas, pensada para usar desde el iPhone sin pasar por la App Store.
+[English](README.en.md)
 
-La app está disponible en: [figuritasappcarru.vercel.app](https://figuritasappcarru.vercel.app)
+Una app web instalable para llevar el álbum del Mundial 2026, organizar repetidas y coordinar intercambios con amigos. Nació para compartir un álbum en familia y resolver una pregunta cotidiana: **¿cuáles nos faltan?**
 
-## Qué permite hacer
+**[Abrir FiguritasApp →](https://figuritasappcarru.vercel.app)** · Requiere registro gratuito.
 
-- Registrar el progreso del álbum compartido con usuario y contraseña.
-- Marcar rápidamente qué figuritas están pegadas y cuáles faltan.
-- Ver el álbum por secciones, países y figuritas bonus de Coca Cola.
-- Consultar imagen, código, nombre y estado de cada figurita.
-- Cargar repetidas en una pantalla rápida dedicada.
-- Compartir listas de faltantes y repetidas en formato texto.
-- Importar listas de faltantes desde otras apps o desde mensajes compartidos.
-- Ver estadísticas de progreso, actividad diaria, brillantes faltantes y secciones más avanzadas.
-- Agregar amigos, comparar álbumes y ver hace cuánto actualizaron su progreso.
-- Proponer intercambios con amigos usando repetidas de ambos lados.
-- Recibir notificaciones push por intercambios y cambios hechos desde otro dispositivo.
-- Usar scanner manual y cámara para cargar figuritas.
+## Vista previa
 
-## PWA para iPhone
+| Álbum | Estadísticas | Intercambios |
+| :---: | :---: | :---: |
+| ![Álbum con progreso y figuritas marcadas](docs/images/album.png) | ![Resumen del progreso del álbum](docs/images/estadisticas.png) | ![Propuesta de intercambio entre amigos](docs/images/intercambios.png) |
 
-FiguritasApp está preparada para instalarse desde Safari con **Compartir > Agregar a inicio**. Una vez agregada, se abre como web app independiente, con ícono propio, pantalla completa y sin necesidad de App Store ni cuenta de Apple Developer.
+*Interfaz real con datos ficticios de demostración.*
 
-## Stack
+## Qué podés hacer
 
-- **Next.js + React** para la app web.
-- **Vercel** para hosting, HTTPS y deploys.
-- **Supabase** para autenticación, base de datos, realtime, RLS y funciones SQL.
-- **Web Push** para notificaciones en dispositivos compatibles.
-- **OpenCV.js + Tesseract.js** para el scanner local en navegador.
-- **PWA + Service Worker** para instalación, caché de assets e íconos.
+- **Llevar tu álbum:** marcar figuritas, consultar imágenes y ver el progreso por selección.
+- **Organizar repetidas y faltantes:** cargar cantidades, importar listas y compartirlas como texto.
+- **Intercambiar con amigos:** comparar álbumes y armar propuestas con las repetidas que le sirven a cada uno.
+- **Seguir el progreso:** consultar estadísticas, actividad y recibir notificaciones en dispositivos compatibles.
+- **Cargar desde el celular:** usar el scanner con cámara o ingreso manual e instalar la app desde el navegador.
 
-## Datos del álbum
+## Cómo está construida
 
-El catálogo principal incluye 980 figuritas, 48 selecciones, secciones FWC y grupos A-L. Además, la app incluye una sección bonus de 14 figuritas Coca Cola sin afectar el progreso principal del álbum.
+**Next.js · React · TypeScript · Tailwind CSS · Supabase · Vercel**
 
-El progreso principal se calcula sobre las 980 figuritas base. Las figuritas bonus se muestran y se pueden marcar, compartir, cargar como repetidas e incluir en intercambios, pero no cambian el porcentaje principal.
+La **PWA** permite instalarla en el iPhone sin pasar por la App Store. **Supabase** reúne autenticación, PostgreSQL, permisos por fila y sincronización en tiempo real. El scanner procesa las imágenes en el navegador con **OpenCV.js y Tesseract.js**.
 
-## Filosofía del proyecto
+## Más información
 
-La app nació como una herramienta familiar para compartir un álbum real y evitar tener que preguntar todo el tiempo qué figuritas faltan, cuáles están repetidas o si el álbum de otra persona está actualizado.
+[Instalación y desarrollo](docs/DEVELOPMENT.md) · [Arquitectura y decisiones técnicas](docs/ARCHITECTURE.md)
 
-La prioridad es que sea rápida, clara y gratis de mantener: una web app instalable, con datos sincronizados, sin App Store y sin servicios pagos obligatorios.
+Desarrollado por [Francisco Carruthers](https://github.com/FranciscoCarruthers).
+
+*Proyecto independiente, no afiliado a Panini, FIFA ni Coca-Cola. Las marcas e imágenes de terceros pertenecen a sus respectivos titulares. Licencia del código pendiente de definición.*
